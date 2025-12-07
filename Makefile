@@ -10,8 +10,8 @@ MAME_FLAGS := -speed 4 -window -ext:fdc:wd17xx:0 525qd
 MAME_COMMAND := $(MAME) $(EMULATED_SYSTEM) -rompath $(MAME_ROM_PATH) $(MAME_FLAGS)
 
 CC := cmoc
-CFLAGS := --os9 -Icmoc_os9/lib/include -Icmoc_os9/cgfx/include
 CMOC_OS9_DIR := cmoc_os9
+CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 
@@ -25,12 +25,12 @@ all: ${TARGET_DSK}
 
 ${TARGET_DSK}: ${BASEIMAGE} ${TARGET}
 	echo "Creating disk image $@ with program ${TARGET}"
-	head -c 2 ${BASEIMAGE} > $@_head.tmp
-	tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
-	${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/${TARGET}
-	${IMGTOOL_ATTR} $@.tmp,CMDS/${TARGET}
-	cat $@_head.tmp $@.tmp >> $@
-	rm -f $@*.tmp  # Clean up temporary files
+	@head -c 2 ${BASEIMAGE} > $@_head.tmp
+	@tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
+	@${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/${TARGET}
+	@${IMGTOOL_ATTR} $@.tmp,CMDS/${TARGET}
+	@cat $@_head.tmp $@.tmp > $@
+	@rm -f $@*.tmp  # Clean up temporary files
 
 ${TARGET}: libc libcgfx $(CFILES)
 	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lc -lcgfx
