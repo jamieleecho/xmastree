@@ -103,3 +103,7 @@ src/static
 /*.dsk
 *.tmp
 /cfg
+*~
+#*#
+cmoc_os9/cgfx/*.o
+cmoc_os9/cgfx/*.a

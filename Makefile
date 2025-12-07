@@ -17,7 +17,7 @@ CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 
 BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.dsk
 IMGTOOL_COPY := os9 copy
-IMGTOOL_ATTR := os9 attr
+IMGTOOL_ATTR := os9 attr -e -pe -r -pe -npw
 
 .PHONY: libc libcgfx all clean run
 
@@ -28,7 +28,8 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET}
 	head -c 2 ${BASEIMAGE} > $@_head.tmp
 	tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
 	${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/${TARGET}
-	cat $@_head.tmp $@.tmp >> $@  # Append the rest of the image
+	${IMGTOOL_ATTR} $@.tmp,CMDS/${TARGET}
+	cat $@_head.tmp $@.tmp >> $@
 	rm -f $@*.tmp  # Clean up temporary files
 
 ${TARGET}: libc libcgfx $(CFILES)
@@ -43,7 +44,7 @@ libcgfx:
 clean:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} clean
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} clean
-	rm -f ${TARGET} ${TARGET_DSK}* cfg
+	rm -rf ${TARGET} ${TARGET_DSK}* cfg
 
 run:
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
