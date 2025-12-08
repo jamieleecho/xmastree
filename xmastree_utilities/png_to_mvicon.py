@@ -40,6 +40,12 @@ class LCHEntry:
         lch = convert_color(srgb, LCHabColor)
         return cls(luminence=lch.lch_l, chroma=lch.lch_c, hue=lch.lch_h)
 
+    @classmethod
+    def from_rgb(cls, r: int, g: int, b: int) -> "LCHEntry":
+        srgb = sRGBColor(r / 255.0, g / 255.0, b / 255.0)
+        lch = convert_color(srgb, LCHabColor)
+        return cls(luminence=lch.lch_l, chroma=lch.lch_c, hue=lch.lch_h)
+
 
 def _parse_input_palette(palette_path: str) -> Mapping[int, PaletteEntry]:
     with open(palette_path, "r") as file:

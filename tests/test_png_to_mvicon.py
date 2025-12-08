@@ -121,7 +121,7 @@ def test_PALET_FILE_REGEX_invalid_line(
         ),
     ],
 )
-def test_LCHEntry_from_rgb(
+def test_LCHEntry_from_palette_entry(
     entry: PaletteEntry,
     expected_lch_entry: LCHEntry,
 ) -> None:
