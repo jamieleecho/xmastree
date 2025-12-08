@@ -113,7 +113,8 @@ run:
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
 
 run-tests: check-lock
-	uv run pytest .
+	uv run coverage run -m pytest
+	uv run coverage report --show-missing
 
 sync: check-lock
 	uv sync --no-install-workspace

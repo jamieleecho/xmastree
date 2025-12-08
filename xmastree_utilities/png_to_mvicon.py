@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import re
-from collections.abc import Mapping
+import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from colormath.color_conversions import convert_color
@@ -223,9 +224,9 @@ def convert_png_to_mvicon(
     )
 
 
-def main() -> None:
+def png_to_mvicon(*, args: Sequence[str]) -> None:
     parser = _create_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     convert_png_to_mvicon(
         input_png_path=args.input_png,
         input_palette_path=args.input_palette,
@@ -234,5 +235,5 @@ def main() -> None:
     )
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    png_to_mvicon(args=sys.argv[1:])

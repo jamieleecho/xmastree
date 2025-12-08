@@ -1,6 +1,7 @@
+import filecmp
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Mapping
+from typing import Mapping, Tuple
 
 import pytest
 
@@ -10,12 +11,12 @@ from xmastree_utilities.png_to_mvicon import (
     PALET_FILE_REGEX,
     LCHEntry,
     PaletteEntry,
-    _convert_png_2d_array_to_2d_palette_indices,
-    _load_png_image_as_2darray,
+    _create_arg_parser,
     _parse_input_palette,
     _rgb_palette_to_lch_palette,
     _truncate_palette_to_bits_per_pixel,
     _write_mvicon_file,
+    png_to_mvicon,
 )
 
 
@@ -261,50 +262,85 @@ def test_truncate_palette_to_bits_per_pixel(
 
 
 def test_load_png_image_as_2darray(
-    xmastree_image_path: Path,
-    default_palette: Mapping[int, PaletteEntry],
+    xmastree_image: list[list[Tuple[int, int, int, int]]],
 ) -> None:
     # spot check the image
-    image_2d_array = _load_png_image_as_2darray(image_path=str(xmastree_image_path))
-    assert len(image_2d_array) == 24
-    assert len(image_2d_array[0]) == 24
-    assert image_2d_array[0][0] == (0, 0, 0, 255)
-    assert image_2d_array[12][12] == (0, 143, 81, 255)
-    assert image_2d_array[23][23] == (0, 0, 0, 255)
+    assert len(xmastree_image) == 24
+    assert len(xmastree_image[0]) == 24
+    assert xmastree_image[0][0] == (0, 0, 0, 255)
+    assert xmastree_image[12][12] == (0, 143, 81, 255)
+    assert xmastree_image[23][23] == (0, 0, 0, 255)
 
 
 def test_convert_png_2d_array_to_2d_palette_indices(
-    xmastree_image_path: Path,
-    default_lch_palette: Mapping[int, LCHEntry],
+    xmastree_indexed_image: list[list[int]],
 ) -> None:
-    image_2d_array = _load_png_image_as_2darray(image_path=str(xmastree_image_path))
-    palette_indices_2d_array = _convert_png_2d_array_to_2d_palette_indices(
-        png_2d_array=image_2d_array,
-        lch_palette=default_lch_palette,
-    )
-    assert len(palette_indices_2d_array) == 24
-    assert len(palette_indices_2d_array[0]) == 24
-    assert palette_indices_2d_array[0][0] == 2
-    assert palette_indices_2d_array[12][12] == 10
-    assert palette_indices_2d_array[23][23] == 2
+    assert len(xmastree_indexed_image) == 24
+    assert len(xmastree_indexed_image[0]) == 24
+    assert xmastree_indexed_image[0][0] == 2
+    assert xmastree_indexed_image[12][12] == 3
+    assert xmastree_indexed_image[23][23] == 2
 
 
 def test_write_mvicon_file(
+    xmastree_indexed_image: list[list[int]],
+    xmastree_icon_path: Path,
+) -> None:
+    with TemporaryDirectory() as tmpdirname:
+        tmp_path = Path(tmpdirname) / "output.mvicon"
+        _write_mvicon_file(
+            output_icon_path=str(tmp_path),
+            png_palette_indices_2d_array=xmastree_indexed_image,
+            bits_per_pixel=2,
+        )
+        assert filecmp.cmp(tmp_path, xmastree_icon_path)
+
+
+def test_create_arg_parser() -> None:
+    parser = _create_arg_parser()
+    args = parser.parse_args(
+        [
+            "input_image.png",
+            "input_palette.palet",
+            "output_icon.mvicon",
+        ]
+    )
+    assert args.input_png == "input_image.png"
+    assert args.input_palette == "input_palette.palet"
+    assert args.output_icon == "output_icon.mvicon"
+
+
+def test_convert_png_to_mvicon(
     xmastree_image_path: Path,
-    default_lch_palette: Mapping[int, LCHEntry],
+    default_palette_path: Path,
+    images_path: Path,
 ) -> None:
     with TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname)
-        image_2d_array = _load_png_image_as_2darray(image_path=str(xmastree_image_path))
-        palette_indices_2d_array = _convert_png_2d_array_to_2d_palette_indices(
-            png_2d_array=image_2d_array,
-            lch_palette=default_lch_palette,
-        )
         output_icon_path = tmp_path / "output.mvicon"
-        _write_mvicon_file(
+        from xmastree_utilities.png_to_mvicon import convert_png_to_mvicon
+
+        convert_png_to_mvicon(
+            input_png_path=str(xmastree_image_path),
+            input_palette_path=str(default_palette_path),
             output_icon_path=str(output_icon_path),
-            png_palette_indices_2d_array=palette_indices_2d_array,
             bits_per_pixel=2,
         )
-        assert output_icon_path.exists()
-        assert output_icon_path.stat().st_size == 144
+        assert filecmp.cmp(output_icon_path, f"{images_path}/icon.xmt")
+
+
+def test_png_to_mvicon(
+    xmastree_image_path: Path,
+    default_palette_path: Path,
+    images_path: Path,
+) -> None:
+    with TemporaryDirectory() as tmpdirname:
+        tmp_path = Path(tmpdirname)
+        output_icon_path = tmp_path / "output.mvicon"
+        args = [
+            str(xmastree_image_path),
+            str(default_palette_path),
+            str(output_icon_path),
+        ]
+        png_to_mvicon(args=args)
+        assert filecmp.cmp(output_icon_path, f"{images_path}/icon.xmt")
