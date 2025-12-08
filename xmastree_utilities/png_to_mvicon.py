@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import re
-import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
@@ -224,7 +223,7 @@ def convert_png_to_mvicon(
     )
 
 
-def png_to_mvicon(*, args: Sequence[str]) -> None:
+def png_to_mvicon(args: Sequence[str] = None) -> None:
     parser = _create_arg_parser()
     args = parser.parse_args(args)
     convert_png_to_mvicon(
@@ -233,7 +232,3 @@ def png_to_mvicon(*, args: Sequence[str]) -> None:
         output_icon_path=args.output_icon,
         bits_per_pixel=2,
     )
-
-
-def main() -> None:
-    png_to_mvicon(args=sys.argv[1:])

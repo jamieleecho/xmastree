@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-  png-to-mvicon = "xmastree_utilities.png_to_mvicon:main"
+  png-to-mvicon = "xmastree_utilities.png_to_mvicon:png_to_mvicon"
 
 [project.urls]
 Repository = "https://github.com/jamieleecho/coco-tools"
