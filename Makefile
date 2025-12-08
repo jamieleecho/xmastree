@@ -1,5 +1,5 @@
 TARGET := xmastree
-TARGET_DSK = $(shell echo $(TARGET) | tr '[:lower:]' '[:upper:]').DSK
+TARGET_DSK := ${TARGET}.dsk
 CFILES := $(wildcard *.c)
 
 MAME_DIR := ~/Applications/mame
@@ -19,7 +19,8 @@ BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.dsk
 IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR := os9 attr -e -pe -r -pe -npw
 
-.PHONY: libc libcgfx all clean run
+.PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
+		   utilities install-pre-commit lock run-tests sync fix-all fix-format fix-lint fix-lint-unsafe
 
 all: ${TARGET_DSK}
 
@@ -44,7 +45,44 @@ libcgfx:
 clean:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} clean
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} clean
-	rm -rf ${TARGET} ${TARGET_DSK}* cfg
+	rm -rf ${TARGET} ${TARGET_DSK}* cfg build .venv
+
+help:
+	@echo ${.PHONY}
+
+fix-all: fix-format fix-lint lock
+
+fix-format: check-lock
+	uv run ruff format
+
+fix-lint: check-lock
+	uv run ruff check --fix
+
+fix-lint-unsafe: check-lock
+	uv run ruff check --fix --unsafe-fixes
+
+check-all: check-lock check-lint
+
+check-lint: check-lock
+	uv run ruff check
+
+check-lock:
+	uv lock --locked
+
+utilities: check-lock sync
+	uv pip install .
+
+install-pre-commit:
+	uv run pre-commit install
+
+lock:
+	uv lock
 
 run:
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
+
+run-tests: check-lock
+	uv run pytest .
+
+sync: check-lock
+	uv sync --no-install-workspace

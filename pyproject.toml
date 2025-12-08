@@ -1,0 +1,73 @@
+[project]
+name = "xmastree-scripts"
+version = "0.0.1"
+authors = [
+  {name = "Jamie Cho", email = "jamieleecho@gmail.com"},
+]
+description = "TRS-80 Color Computer X-Mas Tree Utilities"
+readme = "README.md"
+classifiers=[
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "Programming Language :: Python :: 3",
+]
+license = "MIT"
+keywords = [
+  "coco",
+  "image",
+  "conversion",
+  "trs-80",
+  "tandy",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "colormath>=3.0.0",
+]
+
+[project.scripts]
+  png-to-mvicon = "xmastree_utilities.png_to_mvicon:main"
+
+[project.urls]
+Repository = "https://github.com/jamieleecho/coco-tools"
+Issues = "https://github.com/jamieleecho/coco-tools/issues"
+
+[dependency-groups]
+dev = [
+  "coverage",
+  "imagehash",
+  "pytest",
+  "pre-commit",
+  "ruff",
+  "types-setuptools",
+]
+
+[build-system]
+requires = [
+  "setuptools",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests.xmastree_utilities"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.pytest.ini_options]
+rootdir = "."
+pythonpath = [
+  ".",
+]
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "quick: marks tests as fast",
+]
+
+[tool.ruff]
+exclude = [
+  "docs/",
+]
+
+[tool.ruff.lint]
+extend-select = ["I"]
