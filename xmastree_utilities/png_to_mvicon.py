@@ -61,15 +61,16 @@ def _parse_input_palette(palette_path: str) -> Mapping[int, PaletteEntry]:
     palette_index_matches = [
         PALET_FILE_REGEX.match(line) for line in palette_match_permissive
     ]
+    bad_line_index = None
     try:
         bad_line_index = palette_index_matches.index(None)
-        if bad_line_index != -1:
-            raise ValueError(
-                f"Invalid PALET line in palette file {palette_path}: "
-                f"{palette_match_permissive[bad_line_index]}"
-            )
     except ValueError:
         pass
+    if bad_line_index is not None:
+        raise ValueError(
+            f"Invalid PALET line in palette file {palette_path}: "
+            f"{palette_match_permissive[bad_line_index]}"
+        )
 
     palette_index_to_entry = {
         int(match.group(3)): PaletteEntry(
@@ -89,12 +90,7 @@ def _parse_input_palette(palette_path: str) -> Mapping[int, PaletteEntry]:
             f"PALET indices must be between 0 and 15 in palette file {palette_path}."
         )
     if any(
-        entry.r < 0
-        or entry.r > 3
-        or entry.g < 0
-        or entry.g > 3
-        or entry.b < 0
-        or entry.b > 3
+        entry.r > 3 or entry.g > 3 or entry.b > 3
         for entry in palette_index_to_entry.values()
     ):
         raise ValueError(
@@ -147,9 +143,6 @@ def _convert_png_2d_array_to_2d_palette_indices(
     for y in range(height):
         for x in range(width):
             r, g, b, a = png_2d_array[y][x]
-            if a < 128:
-                png_palette_indices_2d_array[y][x] = 0
-                continue
             pixel_lch = LCHEntry.from_rgb(r, g, b)
 
             best_index = -1
@@ -186,8 +179,9 @@ def _write_mvicon_file(
             for x in range(width):
                 palette_index = png_palette_indices_2d_array[y][x]
                 byte_index = x // pixels_per_byte
-                bit_offset = (x % pixels_per_byte) * bits_per_pixel
-                row_data[byte_index] |= palette_index << bit_offset
+                row_data[byte_index] = (
+                    row_data[byte_index] << bits_per_pixel
+                ) | palette_index
             file.write(row_data)
 
 

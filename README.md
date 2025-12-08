@@ -95,7 +95,15 @@ If you have your MAME installed in `~/Applications/mame` and your roms in
 * `make all` -- build the xmastree.dsk file
 * `make clean` -- clean out the folder.
 * `make real-clean` -- clean out the folder including the virtual Python environment.
-* `make run-tests` -- run unit tests
+* `make run-tests` -- run unit tests.
+* `make sync` -- create a Python virtual environment and install all dependencies.
+
+### Using Visual Studio Code
+
+This repo includes Python utilities for manipulating images. The repo includes
+Visual Studio Code settings so that the unit tests for these utilities can be run without
+any additionl configuration effort after the virtual enviornment is installed via
+`make sync`.
 
 ## Acknowledgements
 

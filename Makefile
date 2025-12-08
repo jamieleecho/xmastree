@@ -6,7 +6,7 @@ ASSETS := assets
 DEFAULT_PALETTE := ${ASSETS}/default-palette.txt
 
 TARGET := ${BUILD}/${SOURCE}
-TARGET_ICON := ${BUILD}/icon.$(notdir ${TARGET})
+TARGET_ICON := ${BUILD}/icon.${SHORT_3_NAME}
 SOURCE_ICON := ${ASSETS}/$(notdir ${TARGET}).png
 TARGET_AIF := ${BUILD}/aif.${SHORT_3_NAME}
 SOURCE_AIF := ${ASSETS}/$(notdir ${TARGET_AIF})
