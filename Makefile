@@ -33,7 +33,7 @@ IMGTOOL_ATTR_EX := os9 attr -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -r -ne -npe -npw
 
 .PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
-		   utilities install-pre-commit lock run-tests sync fix-all fix-format \
+		   install-pre-commit lock run-tests sync fix-all fix-format \
 		   fix-lint fix-lint-unsafe assets
 
 all: ${TARGET_DSK}
@@ -100,8 +100,9 @@ check-lint: check-lock
 check-lock:
 	uv lock --locked
 
-utilities: check-lock sync
+utilities:
 	uv pip install .
+	touch utilities
 
 install-pre-commit:
 	uv run pre-commit install

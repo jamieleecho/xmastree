@@ -105,3 +105,4 @@ src/static
 #*#
 cmoc_os9/cgfx/*.o
 cmoc_os9/cgfx/*.a
+utilities
