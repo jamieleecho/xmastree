@@ -1,3 +1,6 @@
+#ifndef _APP_H_
+#define _APP_H_
+
 #include <cgfx.h>
 
 
@@ -13,3 +16,5 @@ typedef struct {
 
 
 extern void run_application(WNDSCR *mywindow, const menu_item_action_t *menu_actions);
+
+#endif /* _APP_H_ */
