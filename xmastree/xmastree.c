@@ -1,53 +1,5 @@
 #include <stdio.h>
-#include <cgfx.h>
-
-#define NULL ((void *)0)
-
-extern void Flush(void);
-
-/*** xmastree defines ***/
-
-#define MOUSE_UPDATE_PERIOD    3  /* check every 3 interrupts */
-#define MOUSE_TIMEOUT_PERIOD  10  /* timeout every 10 interrupts */
-#define MOUSE_FOLLOW           1  /* update gc immediately */
-#define MOUSE_SIG             10  /* signal number for mouse interrupts */
-
-#define INPATH 0
-#define OUTPATH 1
-
-
-static char sigcode = 0;
-asm void sighandler(void) {
-    asm {
-        stb ,u
-        rti
-    }
-}
-
-
-void
-intercept()
-{
-    asm
-    {
-        pshs    u
-        leax    sighandler
-        leau    sigcode
-        os9     F$Icpt
-        puls    u
-    }
-}
-
-
-asm void
-sleep(void)
-{
-    asm
-    {
-        os9     F$Sleep
-        rts
-    }
-}
+#include "app.h"
 
 
 MIDSCR file_menu_items[] = {
@@ -83,44 +35,48 @@ WNDSCR mywindow = {
 };
 
 
+void exit_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("Exiting application...\n");
+}
+
+
+void new_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("New file action selected.\n");
+}
+
+
+void open_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("Open file action selected.\n");
+}
+
+
+void save_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("Save file action selected.\n");
+}
+
+
+void save_as_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("Save As action selected.\n");
+}
+
+
+void unknown_action(MSRET *msinfo, int menuid, int itemno) {
+    printf("Menu ID: %d, Item No: %d\n", menuid, itemno);
+}
+
+menu_item_action_t menu_actions[] = {
+    {MN_CLOS, 1, exit_action},
+    {MN_FILE, 1, new_action},
+    {MN_FILE, 3, open_action},
+    {MN_FILE, 4, save_action},
+    {MN_FILE, 5, save_as_action},
+    {MN_FILE, 7, exit_action},
+    {-1, -1, unknown_action}
+};
+
+
 int main(int argc, char **argv) {
-    int local_sig, itemno, menuid;
-    MSRET msinfo;
-
-    intercept();
-
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
-    _cgfx_ss_mouse(OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
-
-    printf("Got signal\n");
-    int err = _cgfx_ss_wnset(0, WT_FWIN, &mywindow);
-
-    while(TRUE) {
-        _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
-        while(sigcode == 0) {
-            sleep();
-        }
-        local_sig = sigcode;
-        sigcode = 0;
-
-        _cgfx_gs_mouse(OUTPATH, &msinfo);
-        if (msinfo.pt_valid == 0) {
-            continue;
-        } else if (msinfo.pt_stat == WR_CNTRL) {
-            menuid = 99;
-            _cgfx_gs_mnsel(OUTPATH, &itemno, &menuid);
-            printf("Menu %d Item %d selected\n", menuid, itemno);
-            switch (menuid) {
-                case MN_CLOS:
-                case MN_FILE:
-                    if (itemno == 0) {
-                        return 0;
-                    }
-                    break;
-            }
-        } else if (msinfo.pt_stat == WR_CNTNT) {
-        }
-    }
+    run_application(&mywindow, menu_actions);
 
     return 0;
 }

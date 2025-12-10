@@ -29,8 +29,8 @@ CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.dsk
 IMGTOOL_MAKDIR := os9 makdir
 IMGTOOL_COPY := os9 copy
-IMGTOOL_ATTR_EX := os9 attr -e -pe -r -pe -npw
-IMGTOOL_ATTR_RO := os9 attr -r -ne -npe -npw
+IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
+IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 .PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
 		   install-pre-commit lock run-tests sync fix-all fix-format \
@@ -62,8 +62,8 @@ ${TARGET_ICON}: ${SOURCE_ICON} ${BUILD} utilities
 	uv run png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
 
 ${TARGET_AIF}: ${SOURCE_AIF} ${BUILD}
-	dos2unix -n ${SOURCE_AIF} $@
-	unix2mac $@
+	@dos2unix -q -n ${SOURCE_AIF} $@
+	@unix2mac -q $@
 
 libc:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
