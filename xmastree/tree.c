@@ -32,6 +32,11 @@ void tree_controller_redo(tree_controller *controller) {
 }
 
 
+BOOL tree_controller_can_add(const tree_controller *controller) {
+    return FALSE;
+}
+
+
 BOOL tree_controller_can_undo(const tree_controller *controller) {
     return FALSE;
 }
@@ -64,6 +69,10 @@ void tree_add_item(tree_t *tree, tree_item_t item) {
 
 
 void tree_remove_last_item(tree_t *tree) {
+}
+
+
+void tree_add_last_item_back(tree_t *tree) {
 }
 
 
