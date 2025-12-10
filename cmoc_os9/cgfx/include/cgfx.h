@@ -692,7 +692,7 @@ typedef struct mousin {
       pt_ttsa,   	/* time this state button A */
       pt_ttsb,   	/* time this state button B */
       pt_tlsa,   	/* time last state button A */
-      pt_tlsb,   	/* time last state button B */ 
+      pt_tlsb,   	/* time last state button B */
       pt_rsrv1[6],	/* reserved */
       pt_stat,   	/* window pointer location type */
       pt_res;    	/* resolution */
@@ -706,7 +706,7 @@ typedef struct mousin {
 #define WR_CNTNT	0 /* content region */
 #define WR_CNTRL	1 /* control region */
 #define WR_OFWIN	2 /* off window */
-      
+
 /**
  * @brief Set the mouse parameters.
  *
@@ -892,6 +892,14 @@ typedef struct {
 #define MN_FUNC 	1 /* call a function */
 #define MN_SUBMN 	2 /* sub-menu */
 
+/* window type defs */
+#define WT_NBOX		0		/* No box- default window type */
+#define WT_FWIN		1		/* Framed window with menus */
+#define WT_FSWIN	2		/* Framed window with menus and scroll bars */
+#define WT_SBOX		3		/* Shadowed window- form menus */
+#define WT_DBOX		4		/* Double border- for dialog boxes */
+#define WT_PBOX		5		/* Plain border- anything */
+
 /**
  * @brief Sets the current window type.
  *
@@ -950,7 +958,7 @@ error_code _cgfx_ss_sbar(path_id path, int horbar, int verbar);
  * @return 0 if successful, otherwise the error code.
  */
 error_code _cgfx_gs_crsr(path_id path, int *x, int *y);
- 
+
 /**
  * @brief Get the screen size.
  *
@@ -1091,4 +1099,4 @@ typedef struct {
 	int p_xcor;
 	int p_ycor;
 } VERTEX;
- 
+

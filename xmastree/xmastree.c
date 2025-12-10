@@ -2,7 +2,6 @@
 #include <cgfx.h>
 
 #define NULL ((void *)0)
-#define WT_FWIN 2
 
 extern void Flush(void);
 
@@ -52,18 +51,24 @@ sleep(void)
 
 
 MIDSCR file_menu_items[] = {
-    {"Exit", MN_ENBL, {0, 0, 0, 0, 0}}
+    {"New", MN_ENBL, {0, 0, 0, 0, 0}},
+    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
+    {"Open...", MN_ENBL, {0, 0, 0, 0, 0}},
+    {"Save", MN_ENBL, {0, 0, 0, 0, 0}},
+    {"Save As...", MN_ENBL, {0, 0, 0, 0, 0}},
+    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
+    {"Exit", MN_ENBL, {0, 0, 0, 0, 0}},
 };
 
 MNDSCR menus[] = {
     {
-        "File",         /* menu title */
-        MN_FILE,        /* menu id */
-        10,             /* menu width */
-        1,              /* number of items */
-        MN_ENBL,        /* menu enabled */
-        {0, 0},         /* reserved */
-        file_menu_items /* pointer to items */
+        "Files",         /* menu title */
+        MN_FILE,         /* menu id */
+        11,              /* menu width */
+        7,               /* number of items */
+        MN_ENBL,         /* menu enabled */
+        {0, 0},          /* reserved */
+        file_menu_items  /* pointer to items */
     }
 };
 
