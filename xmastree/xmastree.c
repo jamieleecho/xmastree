@@ -51,19 +51,35 @@ sleep(void)
 }
 
 
+MIDSCR file_menu_items[] = {
+    {"Exit", MN_ENBL, {0, 0, 0, 0, 0}}
+};
+
+MNDSCR menus[] = {
+    {
+        "File",         /* menu title */
+        MN_FILE,        /* menu id */
+        10,             /* menu width */
+        1,              /* number of items */
+        MN_ENBL,        /* menu enabled */
+        {0, 0},         /* reserved */
+        file_menu_items /* pointer to items */
+    }
+};
+
 WNDSCR mywindow = {
-    "xmastree",     /* window title */
-    0,              /* number of menus */
-    40,             /* min. window width */
-    24,             /* min. window height */
-    0xC0C0,       	/* sync bytes */
-    {0,0,0,0,0,0,0},/* reserved */
-    NULL           	/* pointer to menu descriptors */
+    "xmastree",             /* window title */
+    1,                      /* number of menus */
+    40,                     /* min. window width */
+    24,                     /* min. window height */
+    0xC0C0,       	        /* sync bytes */
+    {0, 0, 0, 0, 0, 0, 0},  /* reserved */
+    menus                   /* pointer to menu descriptors */
 };
 
 
 int main(int argc, char **argv) {
-    int local_sig;
+    int local_sig, itemno, menuid;
     MSRET msinfo;
 
     intercept();
@@ -83,7 +99,22 @@ int main(int argc, char **argv) {
         sigcode = 0;
 
         _cgfx_gs_mouse(OUTPATH, &msinfo);
-        printf("Got signal %d, %d\n", msinfo.pt_acx, msinfo.pt_acy);
+        if (msinfo.pt_valid == 0) {
+            continue;
+        } else if (msinfo.pt_stat == WR_CNTRL) {
+            menuid = 99;
+            _cgfx_gs_mnsel(OUTPATH, &itemno, &menuid);
+            printf("Menu %d Item %d selected\n", menuid, itemno);
+            switch (menuid) {
+                case MN_CLOS:
+                case MN_FILE:
+                    if (itemno == 0) {
+                        return 0;
+                    }
+                    break;
+            }
+        } else if (msinfo.pt_stat == WR_CNTNT) {
+        }
     }
 
     return 0;
