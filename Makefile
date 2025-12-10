@@ -62,7 +62,7 @@ ${TARGET_ICON}: ${SOURCE_ICON} ${BUILD} utilities
 	uv run png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
 
 ${TARGET_AIF}: ${SOURCE_AIF} ${BUILD}
-	cp ${SOURCE_AIF} $@
+	unix2mac -n ${SOURCE_AIF} $@
 
 libc:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
