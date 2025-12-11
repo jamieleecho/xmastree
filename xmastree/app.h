@@ -8,13 +8,34 @@
 #define OUTPATH 1
 
 
+#define MN_HELP 30
+
+
 typedef struct {
     int menuid;
     int itemno;
     void (*action)(MSRET *msinfo, int menuid, int itemno);
-} menu_item_action_t;
+} MenuItemAction;
 
 
-extern void run_application(WNDSCR *mywindow, const menu_item_action_t *menu_actions);
+typedef enum {
+    MessageBoxType_Info,
+    MessageBoxType_Warning,
+    MessageBoxType_Error,
+    MessageBoxType_OkCancel,
+    MessageBoxType_YesNo
+} MessageBoxType;
+
+
+typedef enum {
+    MessageBoxResult_Ok = 0,
+    MessageBoxResult_Cancel,
+    MessageBoxResult_Yes = 0,
+    MessageBoxResult_No
+} MessageBoxResult;
+
+
+extern void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions);
+extern MessageBoxResult show_message_box(const char *message, MessageBoxType type, int default_button);
 
 #endif /* _APP_H_ */

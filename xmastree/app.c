@@ -1,14 +1,34 @@
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "app.h"
 
-#define NULL ((void *)0)
 extern void Flush(void);
-
 
 #define MOUSE_UPDATE_PERIOD    3  /* check every 3 interrupts */
 #define MOUSE_TIMEOUT_PERIOD  10  /* timeout every 10 interrupts */
 #define MOUSE_FOLLOW           1  /* update gc immediately */
 #define MOUSE_SIG             10  /* signal number for mouse interrupts */
+
+#define FOREGROUND_COLOR 1
+#define BACKGROUND_COLOR 0
+
+#define DIALOG_WIDTH  26
+#define DIALOG_HEIGHT  8
+
+#define BUTTON_WIDTH    8
+#define BUTTON_HEIGHT   1
+#define FONT_WIDTH      8
+#define FONT_HEIGHT     8
+
+
+typedef struct {
+    const char *label;
+    int x;
+    int y;
+    int width;
+    int height;
+} UiObject;
 
 
 static char sigcode = 0;
@@ -45,9 +65,9 @@ sleep(void)
 }
 
 
-void run_application(WNDSCR *mywindow, const menu_item_action_t *menu_actions) {
+void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     int local_sig, itemno, menuid, ii;
-    menu_item_action_t const * menu_item_action;
+    MenuItemAction const * menu_item_action;
     MSRET msinfo;
 
     intercept();
@@ -63,6 +83,9 @@ void run_application(WNDSCR *mywindow, const menu_item_action_t *menu_actions) {
             sleep();
         }
         local_sig = sigcode;
+        if (local_sig != MOUSE_SIG) {
+            continue;
+        }
         sigcode = 0;
 
         _cgfx_gs_mouse(OUTPATH, &msinfo);
@@ -85,4 +108,104 @@ void run_application(WNDSCR *mywindow, const menu_item_action_t *menu_actions) {
         } else if (msinfo.pt_stat == WR_CNTNT) {
         }
     }
+}
+
+
+static void draw_buttons(const UiObject *buttons, int num_buttons) {
+    for (int ii = 0; ii < num_buttons; ++ii) {
+        _cgfx_curxy(OUTPATH, buttons[ii].x, buttons[ii].y);
+        Flush();
+        write(OUTPATH, buttons[ii].label, strlen(buttons[ii].label));
+    }
+}
+
+
+static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
+    MSRET msinfo;
+    int local_sig;
+    while (TRUE) {
+        _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+        while(sigcode == 0) {
+            sleep();
+        }
+        local_sig = sigcode;
+        sigcode = 0;
+        if (local_sig != MOUSE_SIG) {
+            continue;
+        }
+
+        _cgfx_gs_mouse(OUTPATH, &msinfo);
+        if (msinfo.pt_valid && msinfo.pt_cbsa) {
+            msinfo.pt_wrx = msinfo.pt_wrx / FONT_WIDTH;
+            msinfo.pt_wry = msinfo.pt_wry / FONT_HEIGHT;
+            for (int ii = 0; ii < num_buttons; ++ii) {
+                if (msinfo.pt_wrx >= buttons[ii].x &&
+                    msinfo.pt_wrx < buttons[ii].x + buttons[ii].width &&
+                    msinfo.pt_wry >= buttons[ii].y &&
+                    msinfo.pt_wry < buttons[ii].y + buttons[ii].height) {
+                    return ii;
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+
+MessageBoxResult show_message_box(const char *message, MessageBoxType type, int default_button) {
+    UiObject buttons[2];
+    int sx, sy;
+    int num_buttons;
+
+    if (_cgfx_gs_scsz(OUTPATH, &sx, &sy) || sx < DIALOG_WIDTH || sy < DIALOG_HEIGHT) {
+        printf("Error: Screen too small for dialog box.\n");
+        exit(1);
+    }
+
+    sx = (sx - DIALOG_WIDTH) / 2;
+    sy = (sy - DIALOG_HEIGHT) / 2;
+    _cgfx_owset(OUTPATH, 1, sx, sy, DIALOG_WIDTH, DIALOG_HEIGHT, FOREGROUND_COLOR, BACKGROUND_COLOR);
+    _cgfx_curoff(OUTPATH);
+    _cgfx_boldsw(OUTPATH, 1);
+    _cgfx_ss_wnset(OUTPATH, WT_DBOX, NULL);
+    Flush();
+    write(OUTPATH, message, strlen(message));
+
+    sy = DIALOG_HEIGHT - BUTTON_HEIGHT - 1 - 2;
+    if (type == MessageBoxType_OkCancel || type == MessageBoxType_YesNo) {
+        num_buttons = 2;
+        sx = (DIALOG_WIDTH - 4) / 2 - BUTTON_WIDTH;
+    } else {
+        num_buttons = 1;
+        sx = (DIALOG_WIDTH - BUTTON_WIDTH - 2) / 2;
+    }
+
+    for (int ii = 0; ii < num_buttons; ++ii) {
+        buttons[ii].x = sx + ii * (BUTTON_WIDTH + 2);
+        buttons[ii].y = sy;
+        buttons[ii].width = BUTTON_WIDTH;
+        buttons[ii].height = BUTTON_HEIGHT;
+    }
+
+    switch(type) {
+        case MessageBoxType_OkCancel:
+            buttons[0].label = "[  OK  ]";
+            buttons[1].label = "[Cancel]";
+            break;
+        case MessageBoxType_YesNo:
+            num_buttons = 2;
+            buttons[0].label = "[ Yes ]";
+            buttons[1].label = "[ No  ]";
+            break;
+        default:
+            num_buttons = 1;
+            buttons[0].label = "[  OK  ]";
+            break;
+    }
+
+    draw_buttons(buttons, num_buttons);
+    int pressed_button = wait_for_button_press(&buttons, num_buttons);
+    _cgfx_owend(OUTPATH);
+
+    return (MessageBoxResult)pressed_button;
 }
