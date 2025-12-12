@@ -1100,3 +1100,13 @@ typedef struct {
 	int p_ycor;
 } VERTEX;
 
+/**
+ * @brief Send signal upon key press.
+ *
+ * The window manager will send the requested signal when any mouse button is clicked.
+ *
+ * @param path_id The path to the window device.
+ * @param signo The desired signal to receive.
+ * @return 0 if successful, otherwise the error code.
+ */
+error_code _cgfx_ss_ssig(path_id path, int signo);

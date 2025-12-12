@@ -18,7 +18,7 @@ static MIDSCR help_menu_items[] = {
 
 static MNDSCR menus[] = {
     {
-        "Files",         /* menu title */
+        "File",          /* menu title */
         MN_FILE,         /* menu id */
         11,              /* menu width */
         7,               /* number of items */

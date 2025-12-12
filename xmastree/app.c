@@ -5,6 +5,10 @@
 
 extern void Flush(void);
 
+#define PATH_MAX 21
+
+#define KEY_SIG               11  /* signal number for key interrupts */
+
 #define MOUSE_UPDATE_PERIOD    3  /* check every 3 interrupts */
 #define MOUSE_TIMEOUT_PERIOD  10  /* timeout every 10 interrupts */
 #define MOUSE_FOLLOW           1  /* update gc immediately */
@@ -14,12 +18,32 @@ extern void Flush(void);
 #define BACKGROUND_COLOR 0
 
 #define DIALOG_WIDTH  26
-#define DIALOG_HEIGHT  8
+#define DIALOG_HEIGHT  10
 
 #define BUTTON_WIDTH    8
 #define BUTTON_HEIGHT   1
 #define FONT_WIDTH      8
 #define FONT_HEIGHT     8
+
+
+typedef enum {
+    UiEvent_Keypress,
+    UiEvent_MouseClick
+} UiEventType;
+
+
+typedef struct {
+    int __unused__;
+} KeyEvent;
+
+
+typedef struct {
+    UiEventType type;
+    union {
+        KeyEvent key;
+        MSRET mouse;
+    } info;
+} UiEvent;
 
 
 typedef struct {
@@ -65,10 +89,35 @@ sleep(void)
 }
 
 
+static void run_event_loop(UiEvent *event) {
+    int local_sig;
+
+    while(TRUE) {
+        sigcode = 0;
+        while(sigcode == 0) {
+            _cgfx_ss_ssig(OUTPATH, KEY_SIG);
+            _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+            sleep();
+        }
+        local_sig = sigcode;
+        sigcode = 0;
+
+        if (local_sig == KEY_SIG) {
+            event->type = UiEvent_Keypress;
+            return;
+        } else if (local_sig == MOUSE_SIG) {
+            event->type = UiEvent_MouseClick;
+            _cgfx_gs_mouse(OUTPATH, &event->info.mouse);
+            return;
+        }
+    }
+}
+
+
 void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     int local_sig, itemno, menuid, ii;
     MenuItemAction const * menu_item_action;
-    MSRET msinfo;
+    UiEvent event;
 
     intercept();
 
@@ -78,34 +127,43 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     int err = _cgfx_ss_wnset(0, WT_FWIN, mywindow);
 
     while(TRUE) {
-        _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
-        while(sigcode == 0) {
-            sleep();
-        }
-        local_sig = sigcode;
-        if (local_sig != MOUSE_SIG) {
-            continue;
-        }
-        sigcode = 0;
+        run_event_loop(&event);
 
-        _cgfx_gs_mouse(OUTPATH, &msinfo);
-        if (msinfo.pt_valid == 0) {
+        if (event.type == UiEvent_Keypress) {
+            char ch;
+            read(OUTPATH, &ch, 1);
+            printf("Key pressed: %c (0x%02X)\n", (ch >= 32 && ch <= 126) ? ch : '.', (unsigned char)ch);
             continue;
-        } else if (msinfo.pt_stat == WR_CNTRL) {
+        }
+
+        /* must be a mouse event */
+
+        if (event.info.mouse.pt_valid == 0) {
+            continue;
+        }
+
+        if (event.info.mouse.pt_stat == WR_CNTRL) {
+            /* handle menus */
             _cgfx_gs_mnsel(OUTPATH, &itemno, &menuid);
-
             for (ii=0; menu_actions[ii].menuid >= 0; ++ii) {
                 menu_item_action = menu_actions + ii;
                 if (menu_item_action->menuid == menuid &&
                     menu_item_action->itemno == itemno) {
-                    menu_item_action->action(&msinfo, menuid, itemno);
+                    menu_item_action->action(&event.info.mouse, menuid, itemno);
                     break;
                 }
             }
+
+            /* unhandled menu */
             if (menu_actions[ii].menuid < 0) {
-                menu_actions[ii].action(&msinfo, menuid, itemno);
+                menu_actions[ii].action(&event.info.mouse, menuid, itemno);
             }
-        } else if (msinfo.pt_stat == WR_CNTNT) {
+
+            continue;
+        }
+
+        /* handle content window events */
+        if (event.info.mouse.pt_stat == WR_CNTNT) {
         }
     }
 }
@@ -121,33 +179,29 @@ static void draw_buttons(const UiObject *buttons, int num_buttons) {
 
 
 static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
-    MSRET msinfo;
-    int local_sig;
+    UiEvent event;
+
     while (TRUE) {
-        _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
-        while(sigcode == 0) {
-            sleep();
-        }
-        local_sig = sigcode;
-        sigcode = 0;
-        if (local_sig != MOUSE_SIG) {
+        run_event_loop(&event);
+
+        if (event.type != UiEvent_MouseClick) {
             continue;
         }
 
-        _cgfx_gs_mouse(OUTPATH, &msinfo);
-        if (msinfo.pt_valid && msinfo.pt_cbsa) {
-            msinfo.pt_wrx = msinfo.pt_wrx / FONT_WIDTH;
-            msinfo.pt_wry = msinfo.pt_wry / FONT_HEIGHT;
+        if (event.info.mouse.pt_valid && event.info.mouse.pt_cbsa) {
+            event.info.mouse.pt_wrx = event.info.mouse.pt_wrx / FONT_WIDTH;
+            event.info.mouse.pt_wry = event.info.mouse.pt_wry / FONT_HEIGHT;
             for (int ii = 0; ii < num_buttons; ++ii) {
-                if (msinfo.pt_wrx >= buttons[ii].x &&
-                    msinfo.pt_wrx < buttons[ii].x + buttons[ii].width &&
-                    msinfo.pt_wry >= buttons[ii].y &&
-                    msinfo.pt_wry < buttons[ii].y + buttons[ii].height) {
+                if (event.info.mouse.pt_wrx >= buttons[ii].x &&
+                    event.info.mouse.pt_wrx < buttons[ii].x + buttons[ii].width &&
+                    event.info.mouse.pt_wry >= buttons[ii].y &&
+                    event.info.mouse.pt_wry < buttons[ii].y + buttons[ii].height) {
                     return ii;
                 }
             }
         }
     }
+
     return -1;
 }
 
@@ -208,4 +262,14 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType type, int 
     _cgfx_owend(OUTPATH);
 
     return (MessageBoxResult)pressed_button;
+}
+
+
+char *show_open_dialog(char *filename) {
+    return NULL;
+}
+
+
+char *show_save_dialog(char *filename) {
+    return NULL;
 }
