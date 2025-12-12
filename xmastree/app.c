@@ -5,9 +5,7 @@
 
 extern void Flush(void);
 
-#define PATH_MAX 21
-
-#define KEY_SIG               11  /* signal number for key interrupts */
+#define KEY_SIG  11  /* signal number for key interrupts */
 
 #define MOUSE_UPDATE_PERIOD    3  /* check every 3 interrupts */
 #define MOUSE_TIMEOUT_PERIOD  10  /* timeout every 10 interrupts */
@@ -18,12 +16,15 @@ extern void Flush(void);
 #define BACKGROUND_COLOR 0
 
 #define DIALOG_WIDTH  26
-#define DIALOG_HEIGHT  10
+#define DIALOG_HEIGHT 10
 
-#define BUTTON_WIDTH    8
-#define BUTTON_HEIGHT   1
-#define FONT_WIDTH      8
-#define FONT_HEIGHT     8
+#define BUTTON_WIDTH  8
+#define BUTTON_HEIGHT 1
+#define FONT_WIDTH    8
+#define FONT_HEIGHT   8
+
+#define PATH_TEXTBOX_WIDTH (DIALOG_WIDTH - 4)
+#define PATH_TEXTBOX_HEIGHT 2
 
 
 typedef enum {
@@ -206,7 +207,9 @@ static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
 }
 
 
-MessageBoxResult show_message_box(const char *message, MessageBoxType type, int default_button) {
+static MessageBoxResult show_generic_message_box(
+    const char *message, char *path, MessageBoxType type,
+    int default_button) {
     UiObject buttons[2];
     int sx, sy;
     int num_buttons;
@@ -226,7 +229,7 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType type, int 
     write(OUTPATH, message, strlen(message));
 
     sy = DIALOG_HEIGHT - BUTTON_HEIGHT - 1 - 2;
-    if (type == MessageBoxType_OkCancel || type == MessageBoxType_YesNo) {
+    if (type >= MessageBoxType_OkCancel) {
         num_buttons = 2;
         sx = (DIALOG_WIDTH - 4) / 2 - BUTTON_WIDTH;
     } else {
@@ -243,6 +246,8 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType type, int 
 
     switch(type) {
         case MessageBoxType_OkCancel:
+        case MessageBoxType_SaveAs:
+        case MessageBoxType_Open:
             buttons[0].label = "[  OK  ]";
             buttons[1].label = "[Cancel]";
             break;
@@ -258,18 +263,40 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType type, int 
     }
 
     draw_buttons(buttons, num_buttons);
-    int pressed_button = wait_for_button_press(&buttons, num_buttons);
+
+    if (type == MessageBoxType_Open || type == MessageBoxType_SaveAs) {
+        _cgfx_cwarea(OUTPATH, (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2,
+                    DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4,
+                    PATH_TEXTBOX_WIDTH, PATH_TEXTBOX_HEIGHT);
+        _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
+        _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
+        Flush();
+        write(OUTPATH, "\f", 1);
+        write(OUTPATH, path, strlen(path));
+        _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
+    }
+
+    MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&buttons, num_buttons);
     _cgfx_owend(OUTPATH);
-
-    return (MessageBoxResult)pressed_button;
+    return result;
 }
 
 
-char *show_open_dialog(char *filename) {
-    return NULL;
+MessageBoxResult show_message_box(const char *message,
+    MessageBoxType type, int default_button) {
+    return show_generic_message_box(message, NULL, type, default_button);
 }
 
 
-char *show_save_dialog(char *filename) {
-    return NULL;
+char *show_open_dialog(char *path) {
+    MessageBoxResult result = show_generic_message_box(
+        "Open File:\r\n\r\n", path, MessageBoxType_Open, 0);
+    return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
+}
+
+
+char *show_save_dialog(char *path) {
+    MessageBoxResult result = show_generic_message_box(
+        "Save File As:\r\n\r\n", path, MessageBoxType_SaveAs, 0);
+    return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
 }

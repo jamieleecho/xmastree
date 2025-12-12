@@ -3,10 +3,9 @@
 
 #include <cgfx.h>
 
-
 #define INPATH 0
 #define OUTPATH 1
-
+#define PATH_MAX 43  /* max path length for files */
 
 #define MN_HELP 30
 
@@ -23,7 +22,9 @@ typedef enum {
     MessageBoxType_Warning,
     MessageBoxType_Error,
     MessageBoxType_OkCancel,
-    MessageBoxType_YesNo
+    MessageBoxType_YesNo,
+    MessageBoxType_Open,
+    MessageBoxType_SaveAs
 } MessageBoxType;
 
 
@@ -37,5 +38,7 @@ typedef enum {
 
 extern void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions);
 extern MessageBoxResult show_message_box(const char *message, MessageBoxType type, int default_button);
+char *show_open_dialog(char *path);
+char *show_save_dialog(char *path);
 
 #endif /* _APP_H_ */

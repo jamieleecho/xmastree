@@ -61,17 +61,20 @@ static void new_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void open_action(MSRET *msinfo, int menuid, int itemno) {
-    printf("Open file action selected.\n");
+    char path[PATH_MAX + 1] = "new_tree.xmas";
+    show_open_dialog(path);
 }
 
 
+static void save_as_action(MSRET *msinfo, int menuid, int itemno);
 static void save_action(MSRET *msinfo, int menuid, int itemno) {
-    printf("Save file action selected.\n");
+    save_as_action(msinfo, menuid, itemno);
 }
 
 
 static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
-    printf("Save As action selected.\n");
+    char path[PATH_MAX + 1] = "new_tree.xmas";
+    show_save_dialog(path);
 }
 
 
