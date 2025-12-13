@@ -8,8 +8,8 @@ _cgfx_ss_opt(path_id path, const SCF_OPT *opts)
     {
 _sysret EXTERNAL
 		pshs 	y
-		ldx		2+2,s		get signal number
-		lda		2+1,s		get path
+		ldx		2+2+2,s		get options
+		lda		2+2+1,s		get path
 		ldb		#SS_Opt
 		os9		I$SetStt
         puls    y
@@ -24,8 +24,8 @@ _cgfx_gs_opt(path_id path, SCF_OPT *opts)
     asm
     {
 		pshs 	y
-		ldx		2+2,s		get signal number
-		lda		2+1,s		get path
+		ldx		2+2+2,s		get signal number
+		lda		2+2+1,s		get path
 		ldb 	#SS_Opt
 		os9 	I$GetStt
 		puls	y

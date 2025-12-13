@@ -121,7 +121,7 @@ static void run_event_loop(UiEvent *event) {
 }
 
 
-void echo_sw(path_id path, int on) {
+void echo_sw(path_id path, char on) {
     SCF_OPT options;
     _cgfx_gs_opt(path, &options);
     options.sg_echo = on;

@@ -98,11 +98,16 @@ src/db.sqlite3
 src/static
 **/docker-compose.override.yml
 
-# Random Stuff
+# cmoc_os9 related files
+!cmoc_os9/lib
+cmoc_os9/lib/libc.a
+cmoc_os9/lib/*.o
+cmoc_os9/cgfx/*.o
+cmoc_os9/cgfx/*.a
+
+# xmastree and convenience files
 /*.dsk
 *.tmp
 *~
-#*#
-cmoc_os9/cgfx/*.o
-cmoc_os9/cgfx/*.a
+*#
 utilities
