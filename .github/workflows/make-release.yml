@@ -8,6 +8,9 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     container: jamieleecho/coco-dev:latest
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@master
 
