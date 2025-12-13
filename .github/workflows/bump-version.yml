@@ -51,6 +51,6 @@ jobs:
 
       - name: Trigger release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_WRITE_TOKEN }}
         run: |
           gh workflow run make-release.yml --ref $TAG
