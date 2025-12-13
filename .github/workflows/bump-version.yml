@@ -37,7 +37,7 @@ jobs:
       - name: Sync and Tag
         run: |
           export VERSION=`grep "version" package.json | sed 's/.*: *"//' | sed 's/" *//'`
-          echo "TAG=v${VERSION}" >> $GITHUB_ENV
+          echo "TAG=${VERSION}" >> $GITHUB_ENV
           make lock
           make sync
 
