@@ -28,18 +28,16 @@ extern void Flush(void);
 
 
 typedef enum {
-    UiEvent_Keypress,
+    UiEvent_KeyPress,
     UiEvent_MouseClick
 } UiEventType;
 
-
 typedef struct {
-    int __unused__;
+    char character;
 } KeyEvent;
 
-
 typedef struct {
-    UiEventType type;
+    UiEventType event_type;
     union {
         KeyEvent key;
         MSRET mouse;
@@ -53,12 +51,26 @@ typedef enum {
 } UiObjectType;
 
 typedef struct {
+    int accelerator_key;
+} UiButtonOptions;
+
+typedef struct {
+    int __reserved__;
+} UiTextBoxOptions;
+
+typedef union {
+    UiButtonOptions button;
+    UiTextBoxOptions text_box;
+} UiObjectOptions;
+
+typedef struct {
     UiObjectType object_type;
     int x;
     int y;
     int width;
     int height;
     const char *text;
+    UiObjectOptions options;
 } UiObject;
 
 
@@ -101,19 +113,23 @@ static void run_event_loop(UiEvent *event) {
 
     while(TRUE) {
         sigcode = 0;
-        while(sigcode == 0) {
+        do {
             _cgfx_ss_ssig(OUTPATH, KEY_SIG);
             _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
             sleep();
-        }
+        } while (sigcode == 0);
         local_sig = sigcode;
-        sigcode = 0;
 
         if (local_sig == KEY_SIG) {
-            event->type = UiEvent_Keypress;
+            char c;
+            if (!read(INPATH, &c, 1)) {
+                c = 0;
+            }
+            event->event_type = UiEvent_KeyPress;
+            event->info.key.character = c;
             return;
         } else if (local_sig == MOUSE_SIG) {
-            event->type = UiEvent_MouseClick;
+            event->event_type = UiEvent_MouseClick;
             _cgfx_gs_mouse(OUTPATH, &event->info.mouse);
             return;
         }
@@ -145,9 +161,8 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     while(TRUE) {
         run_event_loop(&event);
 
-        if (event.type == UiEvent_Keypress) {
-            char ch;
-            read(OUTPATH, &ch, 1);
+        if (event.event_type == UiEvent_KeyPress) {
+            char ch = event.info.key.character;
             printf("Key pressed: %c (0x%02X)\n", (ch >= 32 && ch <= 126) ? ch : '.', (unsigned char)ch);
             continue;
         }
@@ -226,24 +241,80 @@ static void draw_objects(const UiObject *objects, int num_objects) {
 }
 
 
-static int wait_for_button_press(const UiObject *objects, int num_objects) {
+int handle_button_key_event(const UiObject *object, char c) {
+    return (c == object->options.button.accelerator_key);
+}
+
+
+int handle_text_box_key_event(const UiObject *object, char c) {
+    return 1;
+}
+
+
+static int handle_key_event(const UiObject *object, char c) {
+    switch(object->object_type) {
+        case UiObjectType_Button:
+            return handle_button_key_event(object, c);
+        case UiObjectType_TextBox:
+            return handle_text_box_key_event(object, c);
+    }
+    return 0;
+}
+
+
+static int wait_for_button_press(const UiObject *objects, int num_objects, UiObject * const *key_object) {
     UiEvent event;
+    UiObject const *obj;
+    int ii;
 
     while (TRUE) {
         run_event_loop(&event);
 
-        if (event.type != UiEvent_MouseClick) {
+        if (event.event_type == UiEvent_KeyPress) {
+            /* Handle objects designated to handle key presses first */
+            if (key_object && *key_object) {
+                obj = *key_object;
+                if (handle_key_event(obj, event.info.key.character)) {
+                    /* If the object is a button, we may need to return here */
+                    if (obj->object_type == UiObjectType_Button) {
+                        /* Find the index of the object so we can indicate the button was pressed */
+                        for(ii=0; ii<num_objects; ii++) {
+                            if (objects + ii == obj) {
+                                return ii;
+                            }
+                        }
+                    }
+
+                    /* Event not handled or could not find the object */
+                    continue;
+                }
+
+                /* The key object did not handle the event, forward key press to other objects */
+                for (ii = 0; ii < num_objects; ++ii) {
+                    obj = objects + ii;
+                    if (key_object && (obj == *key_object)) {
+                        continue;
+                    }
+                    if (handle_key_event(obj, event.info.key.character)) {
+                        return ii;
+                    }
+                }
+            }
+        }
+
+       if (event.event_type != UiEvent_MouseClick) {
             continue;
         }
 
         if (event.info.mouse.pt_valid && event.info.mouse.pt_cbsa) {
             event.info.mouse.pt_wrx = event.info.mouse.pt_wrx / FONT_WIDTH;
             event.info.mouse.pt_wry = event.info.mouse.pt_wry / FONT_HEIGHT;
-            for (int ii = 0; ii < num_objects; ++ii) {
-                if (event.info.mouse.pt_wrx >= objects[ii].x &&
-                    event.info.mouse.pt_wrx < objects[ii].x + objects[ii].width &&
-                    event.info.mouse.pt_wry >= objects[ii].y &&
-                    event.info.mouse.pt_wry < objects[ii].y + objects[ii].height) {
+            for (ii = 0; ii < num_objects; ++ii) {
+                obj = objects + ii;
+                if (event.info.mouse.pt_wrx >= obj->x &&
+                    event.info.mouse.pt_wrx < obj->x + obj->width &&
+                    event.info.mouse.pt_wry >= obj->y &&
+                    event.info.mouse.pt_wry < obj->y + obj->height) {
                     return ii;
                 }
             }
@@ -255,7 +326,7 @@ static int wait_for_button_press(const UiObject *objects, int num_objects) {
 
 
 static MessageBoxResult show_generic_message_box(
-    const char *message, char *path, MessageBoxType type,
+    const char *message, char *path, MessageBoxType event_type,
     int default_button) {
     UiObject objects[3];
     int sx, sy;
@@ -276,7 +347,7 @@ static MessageBoxResult show_generic_message_box(
     write(OUTPATH, message, strlen(message));
 
     sy = DIALOG_HEIGHT - BUTTON_HEIGHT - 1 - 2;
-    if (type >= MessageBoxType_OkCancel) {
+    if (event_type >= MessageBoxType_OkCancel) {
         num_objects = 2;
         sx = (DIALOG_WIDTH - 4) / 2 - BUTTON_WIDTH;
     } else {
@@ -292,25 +363,30 @@ static MessageBoxResult show_generic_message_box(
         objects[ii].height = BUTTON_HEIGHT;
     }
 
-    switch(type) {
+    switch(event_type) {
         case MessageBoxType_OkCancel:
         case MessageBoxType_SaveAs:
         case MessageBoxType_Open:
             objects[0].text = "[  OK  ]";
+            objects[0].options.button.accelerator_key = '\r';
             objects[1].text = "[Cancel]";
+            objects[1].options.button.accelerator_key = -1;
             break;
         case MessageBoxType_YesNo:
             num_objects = 2;
             objects[0].text = "[ Yes ]";
+            objects[0].options.button.accelerator_key = '\r';
             objects[1].text = "[ No  ]";
+            objects[1].options.button.accelerator_key = -1;
             break;
         default:
             num_objects = 1;
             objects[0].text = "[  OK  ]";
+            objects[0].options.button.accelerator_key = '\r';
             break;
     }
 
-    if (type == MessageBoxType_Open || type == MessageBoxType_SaveAs) {
+    if (event_type == MessageBoxType_Open || event_type == MessageBoxType_SaveAs) {
         num_objects = 3;
         objects[2].object_type = UiObjectType_TextBox;
         objects[2].x = (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2;
@@ -322,27 +398,28 @@ static MessageBoxResult show_generic_message_box(
 
     draw_objects(objects, num_objects);
 
-    MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&objects, num_objects);
+    UiObject *key_object = (num_objects == 2) ? objects + 2 : (UiObject **)NULL;
+    MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&objects, num_objects, &key_object);
     _cgfx_owend(OUTPATH);
     return result;
 }
 
 
 MessageBoxResult show_message_box(const char *message,
-    MessageBoxType type, int default_button) {
-    return show_generic_message_box(message, NULL, type, default_button);
+    MessageBoxType event_type, int default_button) {
+    return show_generic_message_box(message, NULL, event_type, default_button);
 }
 
 
 char *show_open_dialog(char *path) {
     MessageBoxResult result = show_generic_message_box(
-        "Open File:\r\n\r\n", path, MessageBoxType_Open, 0);
+        "Open File:", path, MessageBoxType_Open, 0);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
 }
 
 
 char *show_save_dialog(char *path) {
     MessageBoxResult result = show_generic_message_box(
-        "Save File As:\r\n\r\n", path, MessageBoxType_SaveAs, 0);
+        "Save File As:", path, MessageBoxType_SaveAs, 0);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
 }
