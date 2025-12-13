@@ -9,15 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container: jamieleecho/coco-dev:latest
     steps:
-      - name:  Install requirements
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y libblas-dev liblapack-dev
-
       - uses: actions/checkout@master
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
 
       - name: Check linting, formatting
         run: |
