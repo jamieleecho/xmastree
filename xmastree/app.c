@@ -247,7 +247,7 @@ int handle_button_key_event(const UiObject *object, char c) {
 
 
 int handle_text_box_key_event(const UiObject *object, char c) {
-    return 1;
+    return c != '\r';
 }
 
 
@@ -271,11 +271,11 @@ static int wait_for_button_press(const UiObject *objects, int num_objects, UiObj
         run_event_loop(&event);
 
         if (event.event_type == UiEvent_KeyPress) {
-            /* Handle objects designated to handle key presses first */
+            /* Send key press to designated key object first */
             if (key_object && *key_object) {
                 obj = *key_object;
                 if (handle_key_event(obj, event.info.key.character)) {
-                    /* If the object is a button, we may need to return here */
+                    /* The event was handled, but if it is a button we may need to return */
                     if (obj->object_type == UiObjectType_Button) {
                         /* Find the index of the object so we can indicate the button was pressed */
                         for(ii=0; ii<num_objects; ii++) {
@@ -285,16 +285,18 @@ static int wait_for_button_press(const UiObject *objects, int num_objects, UiObj
                         }
                     }
 
-                    /* Event not handled or could not find the object */
+                    /* Resume looking for events because the event did not dismiss dialog */
                     continue;
                 }
-
-                /* The key object did not handle the event, forward key press to other objects */
-                for (ii = 0; ii < num_objects; ++ii) {
-                    obj = objects + ii;
-                    if (key_object && (obj == *key_object)) {
-                        continue;
-                    }
+            }
+                
+            /* The key object did not handle the event, forward key press to other objects */
+            for (ii = 0; ii < num_objects; ++ii) {
+                obj = objects + ii;
+                if (key_object && (obj == *key_object)) {
+                    continue;
+                }
+                if (obj->object_type == UiObjectType_Button) {
                     if (handle_key_event(obj, event.info.key.character)) {
                         return ii;
                     }
@@ -326,8 +328,7 @@ static int wait_for_button_press(const UiObject *objects, int num_objects, UiObj
 
 
 static MessageBoxResult show_generic_message_box(
-    const char *message, char *path, MessageBoxType event_type,
-    int default_button) {
+    const char *message, char *path, MessageBoxType event_type) {
     UiObject objects[3];
     int sx, sy;
     int num_objects;
@@ -398,7 +399,7 @@ static MessageBoxResult show_generic_message_box(
 
     draw_objects(objects, num_objects);
 
-    UiObject *key_object = (num_objects == 2) ? objects + 2 : (UiObject **)NULL;
+    UiObject *key_object = (num_objects == 3) ? objects + 2 : (UiObject **)NULL;
     MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&objects, num_objects, &key_object);
     _cgfx_owend(OUTPATH);
     return result;
@@ -407,19 +408,19 @@ static MessageBoxResult show_generic_message_box(
 
 MessageBoxResult show_message_box(const char *message,
     MessageBoxType event_type, int default_button) {
-    return show_generic_message_box(message, NULL, event_type, default_button);
+    return show_generic_message_box(message, NULL, event_type);
 }
 
 
 char *show_open_dialog(char *path) {
     MessageBoxResult result = show_generic_message_box(
-        "Open File:", path, MessageBoxType_Open, 0);
+        "Open File:", path, MessageBoxType_Open);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
 }
 
 
 char *show_save_dialog(char *path) {
     MessageBoxResult result = show_generic_message_box(
-        "Save File As:", path, MessageBoxType_SaveAs, 0);
+        "Save File As:", path, MessageBoxType_SaveAs);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
 }
