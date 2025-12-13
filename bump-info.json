@@ -1,6 +1,6 @@
 {
   "scheme": "custom",
-  "schemeDefinition": "major.minor[.build][->patch]",
+  "schemeDefinition": "major.minor",
   "versionFile": "./package.json",
   "files": [{
     "path": "xmastree/version.h",
@@ -10,7 +10,6 @@
       "trigger": "manual",
       "bump": "minor",
       "branch": "main",
-      "reset": "build",
       "tag": true
   }]
 }
