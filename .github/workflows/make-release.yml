@@ -7,8 +7,13 @@ jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    container: jamieleecho/coco-dev:latest
     steps:
       - uses: actions/checkout@master
+
+      - name: Build
+        run: |
+          make
 
       - name: Get the tag
         run: |
@@ -22,28 +27,3 @@ jobs:
           allowUpdates: true
           draft: true
           name: "${{ format('{0} {1}', env.REPO_NAME, env.RELEASE_TAG) }}"
-
-  build-n-publish:
-    name: Build and publish distribution PyPI
-    needs: create-release
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-
-    steps:
-      - name:  Install requirements
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y libblas-dev liblapack-dev
-
-      - uses: actions/checkout@master
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Build the dsitribution
-        run: |
-          make build-dist
-
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
