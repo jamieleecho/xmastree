@@ -1110,3 +1110,57 @@ typedef struct {
  * @return 0 if successful, otherwise the error code.
  */
 error_code _cgfx_ss_ssig(path_id path, int signo);
+
+
+typedef struct sgbuf { /* structure for 'getstat()' and 'setstat()' */
+   char sg_class,       /* device class */
+
+/* The following are for an SCF type device. See below for
+ * structure member definitions for an RBF device.
+ */
+        sg_case,        /* 0 = upper and lower cases, 1 = upper case only */
+        sg_backsp,      /* 0 = BSE, 1 = BSE-SP-BSE */
+        sg_delete,      /* delete sequence */
+        sg_echo,        /* 0 = no echo */
+        sg_alf,         /* 0 = no auto line feed */
+        sg_nulls,       /* end of line null count */
+        sg_pause,       /* 0 = no end of page pause */
+        sg_page,        /* lines per page */
+        sg_bspch,       /* backspace character */
+        sg_dlnch,       /* delete line character */
+        sg_eorch,       /* end of record character */
+        sg_eofch,       /* end of file character */
+        sg_rlnch,       /* reprint line character */
+        sg_dulnch,      /* duplicate last line character */
+        sg_psch,        /* pause character */
+        sg_kbich,       /* keyboard interrupt character */
+        sg_kbach,       /* keyboard abort character */
+        sg_bsech,       /* backspace echo character */
+        sg_bellch,      /* line overflow character (bell) */
+        sg_parity,      /* device initialisation (parity) */
+        sg_baud;        /* baud rate */
+   int  sg_d2p,         /* offset to second device name string */
+        sg_stn;         /* offset to status routine name */
+   char sg_err;         /* most recent error status */
+   char sg_spare[5];    /* spare bytes - necessary for correct sizing */
+} SCF_OPT;
+
+
+/**
+ * @brief Gets options for the given path.
+ *
+ * @param path_id The path to the window device.
+ * @param buffer Updated to contain the options set for path.
+ * @return 0 if successful, otherwise the error code.
+ */
+error_code _cgfx_gs_opt(path_id path, SCF_OPT *opt);
+
+
+/**
+ * @brief Sets options for the given path.
+ *
+ * @param path_id The path to the window device.
+ * @param buffer Updated to contain the options set for path.
+ * @return 0 if successful, otherwise the error code.
+ */
+error_code _cgfx_ss_opt(path_id path, const SCF_OPT *opt);

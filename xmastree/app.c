@@ -121,11 +121,20 @@ static void run_event_loop(UiEvent *event) {
 }
 
 
+void echo_sw(path_id path, int on) {
+    SCF_OPT options;
+    _cgfx_gs_opt(path, &options);
+    options.sg_echo = on;
+    _cgfx_ss_opt(path, &options);
+}
+
+
 void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     int local_sig, itemno, menuid, ii;
     MenuItemAction const * menu_item_action;
     UiEvent event;
 
+    echo_sw(OUTPATH, 0);
     intercept();
 
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
@@ -176,14 +185,42 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
 }
 
 
+static void draw_button(const UiObject *object) {
+    _cgfx_curxy(OUTPATH, object->x, object->y);
+    Flush();
+    write(OUTPATH, object->text, strlen(object->text));
+}
+
+
+static void unfocus_text_box(void) {
+    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
+    _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
+    Flush();
+}
+
+
+static void draw_text_box(const UiObject *object) {
+    _cgfx_cwarea(OUTPATH, object->x, object->y, object->width, object->height);
+    _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
+    Flush();
+    write(OUTPATH, "\f", 1);
+    write(OUTPATH, object->text, strlen(object->text));
+    unfocus_text_box();
+}
+
+
 static void draw_objects(const UiObject *objects, int num_objects) {
     for (int ii = 0; ii < num_objects; ++ii) {
-        if (objects[ii].object_type == UiObjectType_Button) {
-            _cgfx_curxy(OUTPATH, objects[ii].x, objects[ii].y);
-            Flush();
-            write(OUTPATH, objects[ii].text, strlen(objects[ii].text));
-        } else {
-
+        const UiObject *obj = objects + ii;
+        switch(obj->object_type) {
+            case UiObjectType_Button:
+                draw_button(obj);
+                break;
+            case UiObjectType_TextBox:
+                draw_text_box(obj);
+                break;
         }
     }
 }
@@ -217,30 +254,12 @@ static int wait_for_button_press(const UiObject *objects, int num_objects) {
 }
 
 
-static void focus_text_box(void) {
-    _cgfx_cwarea(OUTPATH, (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2,
-                DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4,
-                PATH_TEXTBOX_WIDTH, PATH_TEXTBOX_HEIGHT);
-    _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
-    _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
-    Flush();
-}
-
-
-static void unfocus_text_box(void) {
-    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
-    _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
-    _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
-    Flush();
-}
-
-
 static MessageBoxResult show_generic_message_box(
     const char *message, char *path, MessageBoxType type,
     int default_button) {
-    UiObject buttons[2];
+    UiObject objects[3];
     int sx, sy;
-    int num_buttons;
+    int num_objects;
 
     if (_cgfx_gs_scsz(OUTPATH, &sx, &sy) || sx < DIALOG_WIDTH || sy < DIALOG_HEIGHT) {
         printf("Error: Screen too small for dialog box.\n");
@@ -258,49 +277,52 @@ static MessageBoxResult show_generic_message_box(
 
     sy = DIALOG_HEIGHT - BUTTON_HEIGHT - 1 - 2;
     if (type >= MessageBoxType_OkCancel) {
-        num_buttons = 2;
+        num_objects = 2;
         sx = (DIALOG_WIDTH - 4) / 2 - BUTTON_WIDTH;
     } else {
-        num_buttons = 1;
+        num_objects = 1;
         sx = (DIALOG_WIDTH - BUTTON_WIDTH - 2) / 2;
     }
 
-    for (int ii = 0; ii < num_buttons; ++ii) {
-        buttons[ii].object_type = UiObjectType_Button;
-        buttons[ii].x = sx + ii * (BUTTON_WIDTH + 2);
-        buttons[ii].y = sy;
-        buttons[ii].width = BUTTON_WIDTH;
-        buttons[ii].height = BUTTON_HEIGHT;
+    for (int ii = 0; ii < num_objects; ++ii) {
+        objects[ii].object_type = UiObjectType_Button;
+        objects[ii].x = sx + ii * (BUTTON_WIDTH + 2);
+        objects[ii].y = sy;
+        objects[ii].width = BUTTON_WIDTH;
+        objects[ii].height = BUTTON_HEIGHT;
     }
 
     switch(type) {
         case MessageBoxType_OkCancel:
         case MessageBoxType_SaveAs:
         case MessageBoxType_Open:
-            buttons[0].text = "[  OK  ]";
-            buttons[1].text = "[Cancel]";
+            objects[0].text = "[  OK  ]";
+            objects[1].text = "[Cancel]";
             break;
         case MessageBoxType_YesNo:
-            num_buttons = 2;
-            buttons[0].text = "[ Yes ]";
-            buttons[1].text = "[ No  ]";
+            num_objects = 2;
+            objects[0].text = "[ Yes ]";
+            objects[1].text = "[ No  ]";
             break;
         default:
-            num_buttons = 1;
-            buttons[0].text = "[  OK  ]";
+            num_objects = 1;
+            objects[0].text = "[  OK  ]";
             break;
     }
 
-    draw_objects(buttons, num_buttons);
-
     if (type == MessageBoxType_Open || type == MessageBoxType_SaveAs) {
-        focus_text_box();
-        write(OUTPATH, "\f", 1);
-        write(OUTPATH, path, strlen(path));
-        unfocus_text_box();
+        num_objects = 3;
+        objects[2].object_type = UiObjectType_TextBox;
+        objects[2].x = (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2;
+        objects[2].y = DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4;
+        objects[2].width = PATH_TEXTBOX_WIDTH;
+        objects[2].height = PATH_TEXTBOX_HEIGHT;
+        objects[2].text = path;
     }
 
-    MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&buttons, num_buttons);
+    draw_objects(objects, num_objects);
+
+    MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&objects, num_objects);
     _cgfx_owend(OUTPATH);
     return result;
 }
