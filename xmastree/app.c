@@ -47,12 +47,18 @@ typedef struct {
 } UiEvent;
 
 
+typedef enum {
+    UiObjectType_Button,
+    UiObjectType_TextBox,
+} UiObjectType;
+
 typedef struct {
-    const char *label;
+    UiObjectType object_type;
     int x;
     int y;
     int width;
     int height;
+    const char *text;
 } UiObject;
 
 
@@ -170,16 +176,20 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
 }
 
 
-static void draw_buttons(const UiObject *buttons, int num_buttons) {
-    for (int ii = 0; ii < num_buttons; ++ii) {
-        _cgfx_curxy(OUTPATH, buttons[ii].x, buttons[ii].y);
-        Flush();
-        write(OUTPATH, buttons[ii].label, strlen(buttons[ii].label));
+static void draw_objects(const UiObject *objects, int num_objects) {
+    for (int ii = 0; ii < num_objects; ++ii) {
+        if (objects[ii].object_type == UiObjectType_Button) {
+            _cgfx_curxy(OUTPATH, objects[ii].x, objects[ii].y);
+            Flush();
+            write(OUTPATH, objects[ii].text, strlen(objects[ii].text));
+        } else {
+
+        }
     }
 }
 
 
-static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
+static int wait_for_button_press(const UiObject *objects, int num_objects) {
     UiEvent event;
 
     while (TRUE) {
@@ -192,11 +202,11 @@ static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
         if (event.info.mouse.pt_valid && event.info.mouse.pt_cbsa) {
             event.info.mouse.pt_wrx = event.info.mouse.pt_wrx / FONT_WIDTH;
             event.info.mouse.pt_wry = event.info.mouse.pt_wry / FONT_HEIGHT;
-            for (int ii = 0; ii < num_buttons; ++ii) {
-                if (event.info.mouse.pt_wrx >= buttons[ii].x &&
-                    event.info.mouse.pt_wrx < buttons[ii].x + buttons[ii].width &&
-                    event.info.mouse.pt_wry >= buttons[ii].y &&
-                    event.info.mouse.pt_wry < buttons[ii].y + buttons[ii].height) {
+            for (int ii = 0; ii < num_objects; ++ii) {
+                if (event.info.mouse.pt_wrx >= objects[ii].x &&
+                    event.info.mouse.pt_wrx < objects[ii].x + objects[ii].width &&
+                    event.info.mouse.pt_wry >= objects[ii].y &&
+                    event.info.mouse.pt_wry < objects[ii].y + objects[ii].height) {
                     return ii;
                 }
             }
@@ -204,6 +214,24 @@ static int wait_for_button_press(const UiObject *buttons, int num_buttons) {
     }
 
     return -1;
+}
+
+
+static void focus_text_box(void) {
+    _cgfx_cwarea(OUTPATH, (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2,
+                DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4,
+                PATH_TEXTBOX_WIDTH, PATH_TEXTBOX_HEIGHT);
+    _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
+    Flush();
+}
+
+
+static void unfocus_text_box(void) {
+    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
+    _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
+    Flush();
 }
 
 
@@ -238,6 +266,7 @@ static MessageBoxResult show_generic_message_box(
     }
 
     for (int ii = 0; ii < num_buttons; ++ii) {
+        buttons[ii].object_type = UiObjectType_Button;
         buttons[ii].x = sx + ii * (BUTTON_WIDTH + 2);
         buttons[ii].y = sy;
         buttons[ii].width = BUTTON_WIDTH;
@@ -248,32 +277,27 @@ static MessageBoxResult show_generic_message_box(
         case MessageBoxType_OkCancel:
         case MessageBoxType_SaveAs:
         case MessageBoxType_Open:
-            buttons[0].label = "[  OK  ]";
-            buttons[1].label = "[Cancel]";
+            buttons[0].text = "[  OK  ]";
+            buttons[1].text = "[Cancel]";
             break;
         case MessageBoxType_YesNo:
             num_buttons = 2;
-            buttons[0].label = "[ Yes ]";
-            buttons[1].label = "[ No  ]";
+            buttons[0].text = "[ Yes ]";
+            buttons[1].text = "[ No  ]";
             break;
         default:
             num_buttons = 1;
-            buttons[0].label = "[  OK  ]";
+            buttons[0].text = "[  OK  ]";
             break;
     }
 
-    draw_buttons(buttons, num_buttons);
+    draw_objects(buttons, num_buttons);
 
     if (type == MessageBoxType_Open || type == MessageBoxType_SaveAs) {
-        _cgfx_cwarea(OUTPATH, (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2,
-                    DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4,
-                    PATH_TEXTBOX_WIDTH, PATH_TEXTBOX_HEIGHT);
-        _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
-        _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
-        Flush();
+        focus_text_box();
         write(OUTPATH, "\f", 1);
         write(OUTPATH, path, strlen(path));
-        _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
+        unfocus_text_box();
     }
 
     MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&buttons, num_buttons);
