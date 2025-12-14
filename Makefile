@@ -43,6 +43,7 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF}
 	@head -c 2 ${BASEIMAGE} > $@_head.tmp
 	@tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
 	@${IMGTOOL_MAKDIR} $@.tmp,CMDS/ICONS
+	@${IMGTOOL_MAKDIR} $@.tmp,SYS/xmastree
 	@${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/$(notdir ${TARGET})
 	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/$(notdir ${TARGET})
 	@${IMGTOOL_COPY} ${TARGET_ICON} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
