@@ -17,8 +17,10 @@ from xmastree_utilities.png_utilities import (
     _rgb_palette_to_lch_palette,
     _truncate_palette_to_bits_per_pixel,
     _write_mvicon_file,
+    convert_png_to_os9_image,
     png_to_coco_png,
     png_to_mvicon,
+    png_to_os9_image,
 )
 
 
@@ -369,6 +371,70 @@ def test_png_to_coco_png(
             str(branch_image_path),
             str(xmas_palette_path),
             str(output_png_path),
+            str("--bits-per-pixel=4"),
         ]
         png_to_coco_png(args=args)
         assert _are_identical(branch_image_path, coco_branch_image_path)
+
+
+@pytest.mark.parametrize(
+    "bits_per_pixel,create_mask,mask_index,expected_message",
+    [
+        (0, False, -1, r"bits_per_pixel=0 but must be in dict_keys\(\[1, 2, 4\]\)."),
+        (0, True, -1, r"bits_per_pixel=0 but must be in dict_keys\(\[1, 2, 4\]\)."),
+        (-1, True, -1, r"bits_per_pixel=-1 but must be in dict_keys\(\[1, 2, 4]\)."),
+        (1, True, -1, r"mask_index=-1 must be >= 0."),
+        (1, True, 2, r"mask_index=2 and exceeds value allowed by bits_per_pixel=1."),
+        (2, True, 4, r"mask_index=4 and exceeds value allowed by bits_per_pixel=2."),
+        (4, True, 16, r"mask_index=16 and exceeds value allowed by bits_per_pixel=4."),
+    ],
+)
+def test_convert_png_to_os9_image_with_errors(
+    branch_image_path: Path,
+    default_palette_path: Path,
+    bits_per_pixel: int,
+    create_mask: bool,
+    mask_index: int,
+    expected_message: str,
+) -> None:
+    with pytest.raises(ValueError, match=expected_message):
+        with TemporaryDirectory() as tmpdirname:
+            tmp_path = Path(tmpdirname)
+            output_icon_path = tmp_path / "output.i09"
+            convert_png_to_os9_image(
+                input_png_path=branch_image_path,
+                input_palette_path=default_palette_path,
+                output_os9_image_path=output_icon_path,
+                bits_per_pixel=bits_per_pixel,
+                create_mask=create_mask,
+                mask_index=mask_index,
+            )
+
+
+@pytest.mark.parametrize(
+    "mask_index,expected_image",
+    [
+        (-1, "branch.i09"),
+        (0, "branch_mask0.i09"),
+        (2, "branch_mask2.i09"),
+    ],
+)
+def test_png_to_os9_image(
+    branch_image_path: Path,
+    xmas_palette_path: Path,
+    images_path: Path,
+    mask_index: int,
+    expected_image: str,
+) -> None:
+    with TemporaryDirectory() as tmpdirname:
+        tmp_path = Path(tmpdirname)
+        output_image_path = tmp_path / "output.png"
+        args = [
+            str(branch_image_path),
+            str(xmas_palette_path),
+            str(output_image_path),
+            str("--bits-per-pixel=4"),
+            str(f"--mask-index={mask_index}"),
+        ]
+        png_to_os9_image(args=args)
+        assert filecmp.cmp(output_image_path, f"{images_path}/{expected_image}")

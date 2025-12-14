@@ -57,6 +57,8 @@ static void exit_action(MSRET *msinfo, int menuid, int itemno) {
         if (document_save(&xmastree_doc)) {
             exit(0);
         }
+    } else {
+        exit(0);
     }
 }
 

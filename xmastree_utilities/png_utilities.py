@@ -186,16 +186,24 @@ def _write_mvicon_file(
             file.write(row_data)
 
 
-def _create_mvicon_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Convert a 24x24 PNG image to a Multi Vue icon file."
-    )
+def _add_input_png_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("input_png", type=str, help="Path to the input PNG image file.")
+
+
+def _add_input_palette_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "input_palette",
         type=str,
         help="Path to the input palette file is in the Multi Vue env.file format.",
     )
+
+
+def _create_mvicon_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Convert a 24x24 PNG image to a Multi Vue icon file."
+    )
+    _add_input_png_argument(parser)
+    _add_input_palette_argument(parser)
     parser.add_argument("output_icon", type=str, help="Path to the output icon file.")
     return parser
 
@@ -294,17 +302,86 @@ def convert_png_to_coco_png(
     image.save(output_png_path, format="PNG")
 
 
+BITS_PER_PIXEL_TO_STYLE = {
+    1: 5,
+    2: 6,
+    4: 8,
+}
+
+
+def _mask_for_indexed_image(
+    *, indexed_image: IndexedImage, bits_per_pixel: int, mask_index: int
+) -> IndexedImage:
+    min_index = 0
+    max_index = (1 << bits_per_pixel) - 1
+
+    return IndexedImage(
+        image=[
+            [max_index if pixel == mask_index else min_index for pixel in row]
+            for row in indexed_image.image
+        ],
+        rgb_palette=indexed_image.rgb_palette,
+    )
+
+
+def convert_png_to_os9_image(
+    *,
+    input_png_path: str,
+    input_palette_path: str,
+    output_os9_image_path: str,
+    bits_per_pixel: int,
+    create_mask: bool,
+    mask_index: int = -1,
+) -> None:
+    if bits_per_pixel not in BITS_PER_PIXEL_TO_STYLE.keys():
+        raise ValueError(
+            f"{bits_per_pixel=} but must be in {BITS_PER_PIXEL_TO_STYLE.keys()}."
+        )
+    if create_mask:
+        if mask_index < 0:
+            raise ValueError(f"{mask_index=} must be >= 0.")
+        if mask_index >= 1 << bits_per_pixel:
+            raise ValueError(
+                f"{mask_index=} and exceeds value allowed by {bits_per_pixel=}."
+            )
+
+    indexed_image = _reduce_image_colors(
+        input_png_path=input_png_path,
+        input_palette_path=input_palette_path,
+        bits_per_pixel=bits_per_pixel,
+    )
+
+    if create_mask:
+        indexed_image = _mask_for_indexed_image(
+            indexed_image=indexed_image,
+            bits_per_pixel=bits_per_pixel,
+            mask_index=mask_index,
+        )
+
+    image = indexed_image_to_image(
+        indexed_image=indexed_image,
+    )
+
+    image.save(output_os9_image_path, format="PNG")
+
+
+def _add_bits_per_pixel_argument(parser) -> None:
+    parser.add_argument(
+        "--bits-per-pixel",
+        type=int,
+        default=4,
+        help="Number of bits per pixel.",
+    )
+
+
 def _create_png_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Convert a PNG image to a CoCo 3 palette PNG."
     )
-    parser.add_argument("input_png", type=str, help="Path to the input PNG image file.")
-    parser.add_argument(
-        "input_palette",
-        type=str,
-        help="Path to the input palette file is in the Multi Vue env.file format.",
-    )
+    _add_input_png_argument(parser)
+    _add_input_palette_argument(parser)
     parser.add_argument("output_png", type=str, help="Path to the output PNG file.")
+    _add_bits_per_pixel_argument(parser)
     return parser
 
 
@@ -315,5 +392,36 @@ def png_to_coco_png(args: Sequence[str] | None = None) -> None:
         input_png_path=parsed_args.input_png,
         input_palette_path=parsed_args.input_palette,
         output_png_path=parsed_args.output_png,
-        bits_per_pixel=4,
+        bits_per_pixel=parsed_args.bits_per_pixel,
+    )
+
+
+def _create_os9_image_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Convert an PNG image to an OS-9 image."
+    )
+    _add_input_png_argument(parser)
+    _add_input_palette_argument(parser)
+    parser.add_argument(
+        "output_os9_image", type=str, help="Path to the output OS-9 image file."
+    )
+    parser.add_argument(
+        "--mask-index",
+        type=int,
+        default=-1,
+    )
+    _add_bits_per_pixel_argument(parser)
+    return parser
+
+
+def png_to_os9_image(args: Sequence[str] | None = None) -> None:
+    parser = _create_os9_image_arg_parser()
+    parsed_args = parser.parse_args(args)
+    convert_png_to_os9_image(
+        input_png_path=parsed_args.input_png,
+        input_palette_path=parsed_args.input_palette,
+        output_os9_image_path=parsed_args.output_os9_image,
+        create_mask=parsed_args.mask_index > -1,
+        mask_index=parsed_args.mask_index,
+        bits_per_pixel=parsed_args.bits_per_pixel,
     )
