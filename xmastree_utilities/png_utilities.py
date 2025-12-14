@@ -4,6 +4,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+import numpy as np
 from colormath.color_conversions import convert_color
 from colormath.color_objects import LCHabColor, sRGBColor
 from PIL import Image
@@ -185,7 +186,7 @@ def _write_mvicon_file(
             file.write(row_data)
 
 
-def _create_arg_parser() -> argparse.ArgumentParser:
+def _create_mvicon_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Convert a 24x24 PNG image to a Multi Vue icon file."
     )
@@ -245,36 +246,74 @@ def convert_png_to_mvicon(
     )
 
 
-def convert_png_to_coco_png(
-    *,
-    input_png_path: str,
-    input_palette_path: str,
-    output_icon_path: str,
-    bits_per_pixel: int,
-) -> None:
-    rgb_palette = _parse_input_palette(input_palette_path)
-    truncated_rgb_palette = _truncate_palette_to_bits_per_pixel(
-        rgb_palette=rgb_palette,
-        bits_per_pixel=bits_per_pixel,
-    )
-    lch_palette = _rgb_palette_to_lch_palette(truncated_rgb_palette)
-    png_2d_array = _load_png_image_as_2darray(input_png_path)
-    png_palette_indices_2d_array = _convert_png_2d_array_to_2d_palette_indices(
-        png_2d_array, lch_palette
-    )
-    _write_mvicon_file(
-        output_icon_path=output_icon_path,
-        png_palette_indices_2d_array=png_palette_indices_2d_array,
-        bits_per_pixel=bits_per_pixel,
-    )
-
-
-def png_to_mvicon(args: Sequence[str]) -> None:
-    parser = _create_arg_parser()
+def png_to_mvicon(args: Sequence[str] | None = None) -> None:
+    parser = _create_mvicon_arg_parser()
     parsed_args = parser.parse_args(args)
     convert_png_to_mvicon(
         input_png_path=parsed_args.input_png,
         input_palette_path=parsed_args.input_palette,
         output_icon_path=parsed_args.output_icon,
         bits_per_pixel=2,
+    )
+
+
+def indexed_image_to_image(indexed_image: IndexedImage) -> Image:
+    def two_to_8_bit(b: int):
+        return (b + 1) * 85
+
+    def palette_entry_to_8_bit(p: PaletteEntry) -> tuple[int, int, int]:
+        return (
+            two_to_8_bit(p.r),
+            two_to_8_bit(p.g),
+            two_to_8_bit(p.b),
+        )
+
+    rgb_image = [
+        [palette_entry_to_8_bit(indexed_image.rgb_palette[pixel]) for pixel in row]
+        for row in indexed_image.image
+    ]
+
+    return Image.fromarray(np.array(rgb_image, dtype=np.uint8))
+
+
+def convert_png_to_coco_png(
+    *,
+    input_png_path: str,
+    input_palette_path: str,
+    output_png_path: str,
+    bits_per_pixel: int,
+) -> None:
+    indexed_image = _reduce_image_colors(
+        input_png_path=input_png_path,
+        input_palette_path=input_palette_path,
+        bits_per_pixel=bits_per_pixel,
+    )
+    image = indexed_image_to_image(
+        indexed_image=indexed_image,
+    )
+    image.save(output_png_path, format="PNG")
+
+
+def _create_png_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Convert a PNG image to a CoCo 3 palette PNG."
+    )
+    parser.add_argument("input_png", type=str, help="Path to the input PNG image file.")
+    parser.add_argument(
+        "input_palette",
+        type=str,
+        help="Path to the input palette file is in the Multi Vue env.file format.",
+    )
+    parser.add_argument("output_png", type=str, help="Path to the output PNG file.")
+    return parser
+
+
+def png_to_coco_png(args: Sequence[str] | None = None) -> None:
+    parser = _create_png_arg_parser()
+    parsed_args = parser.parse_args(args)
+    convert_png_to_coco_png(
+        input_png_path=parsed_args.input_png,
+        input_palette_path=parsed_args.input_palette,
+        output_png_path=parsed_args.output_png,
+        bits_per_pixel=4,
     )

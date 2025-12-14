@@ -11,7 +11,7 @@ from xmastree_utilities.png_utilities import (
     PALET_FILE_REGEX,
     LCHEntry,
     PaletteEntry,
-    _create_arg_parser,
+    _create_mvicon_arg_parser,
     _parse_input_palette,
     _rgb_palette_to_lch_palette,
     _truncate_palette_to_bits_per_pixel,
@@ -297,7 +297,7 @@ def test_write_mvicon_file(
 
 
 def test_create_arg_parser() -> None:
-    parser = _create_arg_parser()
+    parser = _create_mvicon_arg_parser()
     args = parser.parse_args(
         [
             "input_image.png",

@@ -102,13 +102,14 @@ check-lock:
 	uv lock --locked
 
 check-types:
-	uv run mypy xmastree_utilities tests 
+	uv run mypy -m xmastree_utilities -m tests
 
 .venv:
 	uv venv
 
-utilities: .venv
+utilities: .venv pyproject.toml xmastree_utilities/*.py
 	uv sync
+	uv pip install .
 	touch utilities
 
 install-pre-commit:
