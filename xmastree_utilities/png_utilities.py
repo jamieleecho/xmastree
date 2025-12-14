@@ -199,7 +199,53 @@ def _create_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+@dataclass
+class IndexedImage:
+    image: list[list[int]]
+    rgb_palette: Mapping[int, PaletteEntry]
+
+
+def _reduce_image_colors(
+    *,
+    input_png_path: str,
+    input_palette_path: str,
+    bits_per_pixel: int,
+) -> IndexedImage:
+    rgb_palette = _parse_input_palette(input_palette_path)
+    truncated_rgb_palette = _truncate_palette_to_bits_per_pixel(
+        rgb_palette=rgb_palette,
+        bits_per_pixel=bits_per_pixel,
+    )
+    lch_palette = _rgb_palette_to_lch_palette(truncated_rgb_palette)
+    png_2d_array = _load_png_image_as_2darray(input_png_path)
+    png_palette_indices_2d_array = _convert_png_2d_array_to_2d_palette_indices(
+        png_2d_array, lch_palette
+    )
+    return IndexedImage(
+        rgb_palette=truncated_rgb_palette, image=png_palette_indices_2d_array
+    )
+
+
 def convert_png_to_mvicon(
+    *,
+    input_png_path: str,
+    input_palette_path: str,
+    output_icon_path: str,
+    bits_per_pixel: int,
+) -> None:
+    indexed_image = _reduce_image_colors(
+        input_png_path=input_png_path,
+        input_palette_path=input_palette_path,
+        bits_per_pixel=bits_per_pixel,
+    )
+    _write_mvicon_file(
+        output_icon_path=output_icon_path,
+        png_palette_indices_2d_array=indexed_image.image,
+        bits_per_pixel=bits_per_pixel,
+    )
+
+
+def convert_png_to_coco_png(
     *,
     input_png_path: str,
     input_palette_path: str,
@@ -223,12 +269,12 @@ def convert_png_to_mvicon(
     )
 
 
-def png_to_mvicon(args: Sequence[str] = None) -> None:
+def png_to_mvicon(args: Sequence[str]) -> None:
     parser = _create_arg_parser()
-    args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
     convert_png_to_mvicon(
-        input_png_path=args.input_png,
-        input_palette_path=args.input_palette,
-        output_icon_path=args.output_icon,
+        input_png_path=parsed_args.input_png,
+        input_palette_path=parsed_args.input_palette,
+        output_icon_path=parsed_args.output_icon,
         bits_per_pixel=2,
     )

@@ -5,7 +5,7 @@ from typing import Mapping, Tuple
 
 import pytest
 
-from xmastree_utilities.png_to_mvicon import (
+from xmastree_utilities.png_utilities import (
     ENV_FILE_REGEX,
     PALET_FILE_PERMISSIVE_REGEX,
     PALET_FILE_REGEX,
@@ -318,7 +318,7 @@ def test_convert_png_to_mvicon(
     with TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname)
         output_icon_path = tmp_path / "output.mvicon"
-        from xmastree_utilities.png_to_mvicon import convert_png_to_mvicon
+        from xmastree_utilities.png_utilities import convert_png_to_mvicon
 
         convert_png_to_mvicon(
             input_png_path=str(xmastree_image_path),

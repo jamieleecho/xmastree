@@ -3,7 +3,7 @@ from typing import Mapping, Tuple
 
 import pytest
 
-from xmastree_utilities.png_to_mvicon import (
+from xmastree_utilities.png_utilities import (
     LCHEntry,
     PaletteEntry,
     _convert_png_2d_array_to_2d_palette_indices,

@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.scripts]
-  png-to-mvicon = "xmastree_utilities.png_to_mvicon:png_to_mvicon"
+  png-to-mvicon = "xmastree_utilities.png_utilities:png_to_mvicon"
 
 [project.urls]
 Repository = "https://github.com/jamieleecho/coco-tools"
@@ -36,6 +36,7 @@ Issues = "https://github.com/jamieleecho/coco-tools/issues"
 dev = [
   "coverage",
   "imagehash",
+  "mypy",
   "pytest",
   "pre-commit",
   "ruff",
@@ -71,3 +72,7 @@ exclude = [
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[[tool.mypy.overrides]]
+module = ["colormath.*"]
+follow_untyped_imports = true

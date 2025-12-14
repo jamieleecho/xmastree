@@ -32,7 +32,7 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
-.PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
+.PHONY := help libc libcgfx all clean run check-all check-lock check-lint check-types \
 		   install-pre-commit lock run-tests sync fix-all fix-format \
 		   fix-lint fix-lint-unsafe assets
 
@@ -74,7 +74,7 @@ libcgfx:
 clean:
 	@$(MAKE) -C ${CMOC_OS9_LIBC_DIR} clean
 	@$(MAKE) -C ${CMOC_OS9_CGFX_DIR} clean
-	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD}
+	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities
 
 real-clean: clean
 	@rm -rf .venv **/*~ **/__pycache__
@@ -93,7 +93,7 @@ fix-lint: check-lock
 fix-lint-unsafe: check-lock
 	uv run ruff check --fix --unsafe-fixes
 
-check-all: check-lock check-lint
+check-all: check-lock check-lint check-types
 
 check-lint: check-lock
 	uv run ruff check
@@ -101,8 +101,14 @@ check-lint: check-lock
 check-lock:
 	uv lock --locked
 
-utilities:
-	uv pip install .
+check-types:
+	uv run mypy xmastree_utilities tests 
+
+.venv:
+	uv venv
+
+utilities: .venv
+	uv sync
 	touch utilities
 
 install-pre-commit:
