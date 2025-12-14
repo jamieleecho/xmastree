@@ -6,8 +6,13 @@ ASSETS := assets
 DEFAULT_PALETTE := ${ASSETS}/default-palette.txt
 
 TARGET := ${BUILD}/${SOURCE}
+TARGET_IMAGES_DIR := ${BUILD}/images
 TARGET_ICON := ${BUILD}/icon.${SHORT_3_NAME}
 SOURCE_ICON := ${ASSETS}/$(notdir ${TARGET}).png
+SYS_IMAGES_DIR := ${ASSETS}/sys-images
+SOURCE_IMAGES :=  $(wildcard ${SYS_IMAGES_DIR}/*.png)
+TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.png=.i09)))
+TARGET_SYS_IMAGES_DIR := SYS/${SOURCE}
 TARGET_AIF := ${BUILD}/aif.${SHORT_3_NAME}
 SOURCE_AIF := ${ASSETS}/$(notdir ${TARGET_AIF})
 TARGET_DSK := ${TARGET}.dsk
@@ -38,20 +43,25 @@ IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 all: ${TARGET_DSK}
 
-${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF}
+${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES}
 	echo "Creating disk image $@ with program ${TARGET}"
 	@head -c 2 ${BASEIMAGE} > $@_head.tmp
 	@tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
 	@${IMGTOOL_MAKDIR} $@.tmp,CMDS/ICONS
-	@${IMGTOOL_MAKDIR} $@.tmp,SYS/xmastree
+	@${IMGTOOL_MAKDIR} $@.tmp,${TARGET_SYS_IMAGES_DIR}
 	@${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/$(notdir ${TARGET})
 	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/$(notdir ${TARGET})
 	@${IMGTOOL_COPY} ${TARGET_ICON} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
 	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
 	@${IMGTOOL_COPY} ${TARGET_AIF} $@.tmp,$(notdir ${TARGET_AIF})
 	@${IMGTOOL_ATTR_RO} $@.tmp,$(notdir ${TARGET_AIF})
+	@for each in ${TARGET_IMAGES}; do \
+		${IMGTOOL_COPY} $${each} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
+		${IMGTOOL_ATTR_RO} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
+	done
 	@cat $@_head.tmp $@.tmp > $@
 	@rm -f $@*.tmp  # Clean up temporary files
+
 
 ${BUILD}:
 	mkdir -p ${BUILD}
@@ -65,6 +75,12 @@ ${TARGET_ICON}: ${SOURCE_ICON} ${BUILD} utilities
 ${TARGET_AIF}: ${SOURCE_AIF} ${BUILD}
 	@dos2unix -q -n ${SOURCE_AIF} $@
 	@unix2mac -q $@
+
+${TARGET_IMAGES_DIR}:
+	mkdir -p ${TARGET_IMAGES_DIR}
+
+${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
+	uv run png-to-os9-image $< ${ASSETS}/xmas-palette.txt $@
 
 libc:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
