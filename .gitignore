@@ -111,3 +111,5 @@ cmoc_os9/cgfx/*.a
 *~
 *#
 utilities
+assets/*.cfg
+
