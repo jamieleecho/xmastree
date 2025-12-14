@@ -3,6 +3,7 @@ import argparse
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from io import BufferedWriter
 
 import numpy as np
 from colormath.color_conversions import convert_color
@@ -162,28 +163,69 @@ def _convert_png_2d_array_to_2d_palette_indices(
     return png_palette_indices_2d_array
 
 
+@dataclass
+class IndexedImage:
+    image: list[list[int]]
+    rgb_palette: Mapping[int, PaletteEntry]
+
+
+@dataclass
+class IndexedImageStats:
+    png_palette_indices_2d_array: list[list[int]]
+    bits_per_pixel: int
+    height: int
+    width: int
+    pixels_per_byte: int
+    row_bytes: int
+    total_bytes: int
+
+    def __init__(
+        self, *, png_palette_indices_2d_array: list[list[int]], bits_per_pixel: int
+    ):
+        self.png_palette_indices_2d_array = png_palette_indices_2d_array
+        self.bits_per_pixel = bits_per_pixel
+        self.height = len(self.png_palette_indices_2d_array)
+        self.width = len(self.png_palette_indices_2d_array[0]) if self.height > 0 else 0
+        self.pixels_per_byte = 8 // bits_per_pixel
+        self.row_bytes = (self.width + self.pixels_per_byte - 1) // self.pixels_per_byte
+        self.total_bytes = self.row_bytes * self.height
+
+
+def _write_image_to_writer(
+    *,
+    writer: BufferedWriter,
+    png_palette_indices_2d_array: list[list[int]],
+    bits_per_pixel: int,  # 1, 2 or 4
+) -> None:
+    stats = IndexedImageStats(
+        png_palette_indices_2d_array=png_palette_indices_2d_array,
+        bits_per_pixel=bits_per_pixel,
+    )
+
+    for y in range(stats.height):
+        row_data = bytearray(stats.row_bytes)
+        for x in range(stats.width):
+            palette_index = png_palette_indices_2d_array[y][x]
+            byte_index = x // stats.pixels_per_byte
+            bit_shift = (
+                stats.pixels_per_byte - (x % stats.pixels_per_byte) - 1
+            ) * bits_per_pixel
+            row_data[byte_index] = row_data[byte_index] | palette_index << bit_shift
+        writer.write(row_data)
+
+
 def _write_mvicon_file(
     *,
     output_icon_path: str,
     png_palette_indices_2d_array: list[list[int]],
     bits_per_pixel: int,  # 1, 2 or 4
 ) -> None:
-    height = len(png_palette_indices_2d_array)
-    width = len(png_palette_indices_2d_array[0]) if height > 0 else 0
-
-    with open(output_icon_path, "wb") as file:
-        pixels_per_byte = 8 // bits_per_pixel
-        row_bytes = width // pixels_per_byte
-
-        for y in range(height):
-            row_data = bytearray(row_bytes)
-            for x in range(width):
-                palette_index = png_palette_indices_2d_array[y][x]
-                byte_index = x // pixels_per_byte
-                row_data[byte_index] = (
-                    row_data[byte_index] << bits_per_pixel
-                ) | palette_index
-            file.write(row_data)
+    with open(output_icon_path, "wb") as writer:
+        _write_image_to_writer(
+            writer=writer,
+            png_palette_indices_2d_array=png_palette_indices_2d_array,
+            bits_per_pixel=bits_per_pixel,
+        )
 
 
 def _add_input_png_argument(parser: argparse.ArgumentParser) -> None:
@@ -206,12 +248,6 @@ def _create_mvicon_arg_parser() -> argparse.ArgumentParser:
     _add_input_palette_argument(parser)
     parser.add_argument("output_icon", type=str, help="Path to the output icon file.")
     return parser
-
-
-@dataclass
-class IndexedImage:
-    image: list[list[int]]
-    rgb_palette: Mapping[int, PaletteEntry]
 
 
 def _reduce_image_colors(
@@ -324,6 +360,36 @@ def _mask_for_indexed_image(
     )
 
 
+def _write_os9_image_file(
+    *,
+    output_os9_image_path: str,
+    png_palette_indices_2d_array: list[list[int]],
+    bits_per_pixel: int,  # 1, 2 or 4
+) -> None:
+    stats = IndexedImageStats(
+        png_palette_indices_2d_array=png_palette_indices_2d_array,
+        bits_per_pixel=bits_per_pixel,
+    )
+
+    with open(output_os9_image_path, "wb") as writer:
+        header_bytes = bytearray(7)
+        header_bytes[0] = BITS_PER_PIXEL_TO_STYLE[bits_per_pixel]
+        header_bytes[1] = 0xFF & (stats.width >> 8)
+        header_bytes[2] = 0xFF & stats.width
+        header_bytes[3] = 0xFF & (stats.height >> 8)
+        header_bytes[4] = 0xFF & stats.height
+        header_bytes[5] = 0xFF & (stats.total_bytes >> 8)
+        header_bytes[6] = 0xFF & stats.total_bytes
+
+        writer.write(header_bytes)
+
+        _write_image_to_writer(
+            writer=writer,
+            png_palette_indices_2d_array=png_palette_indices_2d_array,
+            bits_per_pixel=bits_per_pixel,
+        )
+
+
 def convert_png_to_os9_image(
     *,
     input_png_path: str,
@@ -358,11 +424,11 @@ def convert_png_to_os9_image(
             mask_index=mask_index,
         )
 
-    image = indexed_image_to_image(
-        indexed_image=indexed_image,
+    _write_os9_image_file(
+        output_os9_image_path=output_os9_image_path,
+        png_palette_indices_2d_array=indexed_image.image,
+        bits_per_pixel=bits_per_pixel,
     )
-
-    image.save(output_os9_image_path, format="PNG")
 
 
 def _add_bits_per_pixel_argument(parser) -> None:

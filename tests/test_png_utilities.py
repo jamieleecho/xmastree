@@ -428,7 +428,7 @@ def test_png_to_os9_image(
 ) -> None:
     with TemporaryDirectory() as tmpdirname:
         tmp_path = Path(tmpdirname)
-        output_image_path = tmp_path / "output.png"
+        output_image_path = tmp_path / expected_image
         args = [
             str(branch_image_path),
             str(xmas_palette_path),
