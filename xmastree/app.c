@@ -52,11 +52,12 @@ typedef enum {
 } UiObjectType;
 
 typedef struct {
+    const char *text;
     int accelerator_key;
 } UiButtonOptions;
 
 typedef struct {
-    int __reserved__;
+    char *text;
 } UiTextBoxOptions;
 
 typedef union {
@@ -70,7 +71,6 @@ typedef struct {
     int y;
     int width;
     int height;
-    const char *text;
     UiObjectOptions options;
 } UiObject;
 
@@ -155,6 +155,7 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     intercept();
 
     _cgfx_curoff(OUTPATH);
+    _cgfx_tcharsw(OUTPATH, FALSE);
     _cgfx_scalesw(OUTPATH, FALSE);
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
     _cgfx_ss_mouse(OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
@@ -206,7 +207,8 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
 static void draw_button(const UiObject *object) {
     _cgfx_curxy(OUTPATH, object->x, object->y);
     Flush();
-    write(OUTPATH, object->text, strlen(object->text));
+    write(OUTPATH, object->options.button.text,
+         strlen(object->options.button.text));
 }
 
 
@@ -252,8 +254,9 @@ static void draw_text_box(const UiObject *object) {
     focus_text_box(object);
     _cgfx_curxy(OUTPATH, object->x, object->y);
     Flush();
-    for(ii = 0, sz = strlen(object->text); sz > 0;) {
-        delta = write(OUTPATH, object->text + ii, min(sz, PATH_TEXTBOX_WIDTH - 1));
+    for(ii = 0, sz = strlen(object->options.text_box.text); sz > 0;) {
+        delta = write(OUTPATH, object->options.text_box.text + ii,
+                      min(sz, PATH_TEXTBOX_WIDTH - 1));
         if (delta <= 0) {
             break;
         }
@@ -290,10 +293,40 @@ int handle_button_key_event(const UiObject *object, char c) {
 
 
 int handle_text_box_key_event(UiObject *object, char c) {
-    return c != '\r';
-    if (c >= 32) {
+    if (((c >= 0x20) || (c == '\b')) && !(c & 0x80)) {
+        const char saved_c = c;
+        int sz = strlen(object->options.text_box.text);
+        int x, y;
+        if (c == '\b') {
+            if (sz == 0) {
+                return TRUE;
+            }
+            sz = sz - 1;
+            object->options.text_box.text[sz] = 0;
+            c = ' ';
+        } else {
+            if (sz >= APP_PATH_MAX - 1) {
+                _cgfx_bell(OUTPATH);
+                Flush();
+                return TRUE;
+            }
 
+            object->options.text_box.text[sz] = c;
+            object->options.text_box.text[sz + 1] = 0;
+        }
+
+        x = sz % PATH_TEXTBOX_WIDTH;
+        y = sz / PATH_TEXTBOX_WIDTH;
+        _cgfx_curxy(OUTPATH, x + object->x, y + object->y);
+        Flush();
+        write(OUTPATH, &c, 1);
+        if (saved_c == '\b') {
+            _cgfx_curxy(OUTPATH, x + object->x, y + object->y);
+            Flush();
+        }
+        return TRUE;
     }
+    return FALSE;
 }
 
 
@@ -314,7 +347,7 @@ static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **
     int ii;
 
     if (key_object && *key_object && (*key_object)->object_type == UiObjectType_TextBox) {
-        set_reverse_video(*key_object);
+        focus_text_box(*key_object);
     }
 
     while (TRUE) {
@@ -422,21 +455,21 @@ static MessageBoxResult show_generic_message_box(
         case MessageBoxType_OkCancel:
         case MessageBoxType_SaveAs:
         case MessageBoxType_Open:
-            objects[0].text = "[  OK  ]";
+            objects[0].options.button.text = "[  OK  ]";
             objects[0].options.button.accelerator_key = '\r';
-            objects[1].text = "[Cancel]";
+            objects[1].options.button.text = "[Cancel]";
             objects[1].options.button.accelerator_key = -1;
             break;
         case MessageBoxType_YesNo:
             num_objects = 2;
-            objects[0].text = "[ Yes ]";
+            objects[0].options.button.text = "[ Yes ]";
             objects[0].options.button.accelerator_key = '\r';
-            objects[1].text = "[ No  ]";
+            objects[1].options.button.text = "[ No  ]";
             objects[1].options.button.accelerator_key = -1;
             break;
         default:
             num_objects = 1;
-            objects[0].text = "[  OK  ]";
+            objects[0].options.button.text = "[  OK  ]";
             objects[0].options.button.accelerator_key = '\r';
             break;
     }
@@ -448,7 +481,7 @@ static MessageBoxResult show_generic_message_box(
         objects[2].y = DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4;
         objects[2].width = PATH_TEXTBOX_WIDTH;
         objects[2].height = PATH_TEXTBOX_HEIGHT;
-        objects[2].text = path;
+        objects[2].options.text_box.text = path;
     }
 
     draw_objects(objects, num_objects);
@@ -466,17 +499,29 @@ MessageBoxResult show_message_box(const char *message,
 }
 
 
+static char path_buffer[APP_PATH_MAX];
+
 char *show_open_dialog(char *path) {
     path[APP_PATH_MAX - 1] = 0;
+    strcpy(path_buffer, path);
     MessageBoxResult result = show_generic_message_box(
-        "Open File:", path, MessageBoxType_Open);
-    return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
+        "Open File:", path_buffer, MessageBoxType_Open);
+    if (result == MessageBoxResult_Ok) {
+        strcpy(path, path_buffer);
+        return path;
+    }
+    return (char *)NULL;
 }
 
 
 char *show_save_dialog(char *path) {
     path[APP_PATH_MAX - 1] = 0;
+    strcpy(path_buffer, path);
     MessageBoxResult result = show_generic_message_box(
-        "Save File As:", path, MessageBoxType_SaveAs);
-    return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
+        "Save File As:", path_buffer, MessageBoxType_SaveAs);
+    if (result == MessageBoxResult_Ok) {
+        strcpy(path, path_buffer);
+        return path;
+    }
+    return (char *)NULL;
 }
