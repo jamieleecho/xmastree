@@ -26,6 +26,17 @@ send3   pshs u
         leas 3,s
 
 os9err0 puls u
-		lbra	_sysret
+	lbra	_sysret
     }
+}
+
+
+asm error_code
+_cgfx_tcharsw(path_id path, int sw)
+{
+        asm
+        {
+        ldd #$1b3c
+        bra send3
+        }
 }

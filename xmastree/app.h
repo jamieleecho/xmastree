@@ -5,7 +5,7 @@
 
 #define INPATH 0
 #define OUTPATH 1
-#define PATH_MAX 43  /* max path length for files */
+#define APP_PATH_MAX 44  /* char array for path length */
 
 #define MN_HELP 30
 

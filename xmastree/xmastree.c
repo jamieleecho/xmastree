@@ -61,7 +61,7 @@ static void new_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void open_action(MSRET *msinfo, int menuid, int itemno) {
-    char path[PATH_MAX + 1] = "new_tree.xmas";
+    char path[APP_PATH_MAX] = "new_tree.xmas";
     show_open_dialog(path);
 }
 
@@ -73,7 +73,7 @@ static void save_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
-    char path[PATH_MAX + 1] = "new_tree.xmas";
+    char path[APP_PATH_MAX] = "new_tree.xmas";
     show_save_dialog(path);
 }
 

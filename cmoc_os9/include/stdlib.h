@@ -14,7 +14,7 @@ char     *ltoa();
 char     *utoa();
 int      htoi();
 long     htol();
-int      max();
+int      max(int v1, int v2);
 int      min();
 unsigned umin();
 unsigned umax();

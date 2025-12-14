@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "app.h"
 
@@ -153,6 +154,8 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     echo_sw(OUTPATH, 0);
     intercept();
 
+    _cgfx_curoff(OUTPATH);
+    _cgfx_scalesw(OUTPATH, FALSE);
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
     _cgfx_ss_mouse(OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
 
@@ -207,22 +210,61 @@ static void draw_button(const UiObject *object) {
 }
 
 
-static void unfocus_text_box(void) {
+static void set_normal_video(void) {
     _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
     _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
-    _cgfx_cwarea(OUTPATH, 1, 1, DIALOG_WIDTH - 2, DIALOG_HEIGHT - 2);
-    Flush();
+}
+
+
+static void set_reverse_video(const UiObject *object) {
+    _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
+}
+
+
+static void set_standard_text_mode(void) {
+    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
+    _cgfx_boldsw(OUTPATH, FALSE);
+    _cgfx_tcharsw(OUTPATH, FALSE);
+    _cgfx_curoff(OUTPATH);
+}
+
+
+static void focus_text_box(const UiObject *object) {
+    set_reverse_video(object);
+    _cgfx_boldsw(OUTPATH, TRUE);
+    _cgfx_curon(OUTPATH);
+}
+
+
+static void unfocus_text_box(const UiObject *object) {
+    set_normal_video();
+    _cgfx_curoff(OUTPATH);
 }
 
 
 static void draw_text_box(const UiObject *object) {
-    _cgfx_cwarea(OUTPATH, object->x, object->y, object->width, object->height);
-    _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
-    _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
+    int ii, sz, delta;
+    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
+    _cgfx_setdptr(OUTPATH, object->x * FONT_WIDTH, object->y * FONT_HEIGHT);
+    _cgfx_rbar(OUTPATH, object->width * FONT_WIDTH, object->height * FONT_HEIGHT);
+    focus_text_box(object);
+    _cgfx_curxy(OUTPATH, object->x, object->y);
     Flush();
-    write(OUTPATH, "\f", 1);
-    write(OUTPATH, object->text, strlen(object->text));
-    unfocus_text_box();
+    for(ii = 0, sz = strlen(object->text); sz > 0;) {
+        delta = write(OUTPATH, object->text + ii, min(sz, PATH_TEXTBOX_WIDTH - 1));
+        if (delta <= 0) {
+            break;
+        }
+        sz = sz - delta;
+        ii = ii + delta;
+        if (sz) {
+            _cgfx_curdwn(OUTPATH);
+            Flush();
+        }
+    }
+    unfocus_text_box(object);
 }
 
 
@@ -238,6 +280,7 @@ static void draw_objects(const UiObject *objects, int num_objects) {
                 break;
         }
     }
+    set_normal_video();
 }
 
 
@@ -246,12 +289,15 @@ int handle_button_key_event(const UiObject *object, char c) {
 }
 
 
-int handle_text_box_key_event(const UiObject *object, char c) {
+int handle_text_box_key_event(UiObject *object, char c) {
     return c != '\r';
+    if (c >= 32) {
+
+    }
 }
 
 
-static int handle_key_event(const UiObject *object, char c) {
+static int handle_key_event(UiObject *object, char c) {
     switch(object->object_type) {
         case UiObjectType_Button:
             return handle_button_key_event(object, c);
@@ -262,10 +308,14 @@ static int handle_key_event(const UiObject *object, char c) {
 }
 
 
-static int wait_for_button_press(const UiObject *objects, int num_objects, UiObject * const *key_object) {
+static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **key_object) {
     UiEvent event;
-    UiObject const *obj;
+    UiObject *obj;
     int ii;
+
+    if (key_object && *key_object && (*key_object)->object_type == UiObjectType_TextBox) {
+        set_reverse_video(*key_object);
+    }
 
     while (TRUE) {
         run_event_loop(&event);
@@ -306,6 +356,10 @@ static int wait_for_button_press(const UiObject *objects, int num_objects, UiObj
 
        if (event.event_type != UiEvent_MouseClick) {
             continue;
+        }
+
+        if (key_object && *key_object && (*key_object)->object_type == UiObjectType_TextBox) {
+            set_normal_video();
         }
 
         if (event.info.mouse.pt_valid && event.info.mouse.pt_cbsa) {
@@ -390,7 +444,7 @@ static MessageBoxResult show_generic_message_box(
     if (event_type == MessageBoxType_Open || event_type == MessageBoxType_SaveAs) {
         num_objects = 3;
         objects[2].object_type = UiObjectType_TextBox;
-        objects[2].x = (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH) / 2;
+        objects[2].x = (DIALOG_WIDTH - PATH_TEXTBOX_WIDTH - 2) / 2;
         objects[2].y = DIALOG_HEIGHT - BUTTON_HEIGHT - PATH_TEXTBOX_HEIGHT - 4;
         objects[2].width = PATH_TEXTBOX_WIDTH;
         objects[2].height = PATH_TEXTBOX_HEIGHT;
@@ -399,7 +453,7 @@ static MessageBoxResult show_generic_message_box(
 
     draw_objects(objects, num_objects);
 
-    UiObject *key_object = (num_objects == 3) ? objects + 2 : (UiObject **)NULL;
+    UiObject *key_object = (num_objects == 3) ? objects + 2 : (UiObject *)NULL;
     MessageBoxResult result = (MessageBoxResult)wait_for_button_press(&objects, num_objects, &key_object);
     _cgfx_owend(OUTPATH);
     return result;
@@ -413,6 +467,7 @@ MessageBoxResult show_message_box(const char *message,
 
 
 char *show_open_dialog(char *path) {
+    path[APP_PATH_MAX - 1] = 0;
     MessageBoxResult result = show_generic_message_box(
         "Open File:", path, MessageBoxType_Open);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
@@ -420,6 +475,7 @@ char *show_open_dialog(char *path) {
 
 
 char *show_save_dialog(char *path) {
+    path[APP_PATH_MAX - 1] = 0;
     MessageBoxResult result = show_generic_message_box(
         "Save File As:", path, MessageBoxType_SaveAs);
     return (result == MessageBoxResult_Ok) ? path : (char *)NULL;
