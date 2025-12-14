@@ -37,8 +37,8 @@ typedef enum {
 
 
 extern void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions);
-extern MessageBoxResult show_message_box(const char *message, MessageBoxType type, int default_button);
-char *show_open_dialog(char *path);
-char *show_save_dialog(char *path);
+extern MessageBoxResult show_message_box(const char *message, MessageBoxType type);
+extern char *show_open_dialog(char *path);
+extern char *show_save_dialog(char *path);
 
 #endif /* _APP_H_ */

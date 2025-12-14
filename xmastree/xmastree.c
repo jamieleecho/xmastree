@@ -1,6 +1,10 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "app.h"
+#include "document.h"
 #include "version.h"
+
+static Document xmastree_doc;
 
 static MIDSCR file_menu_items[] = {
     {"New", MN_ENBL, {0, 0, 0, 0, 0}},
@@ -49,32 +53,31 @@ static WNDSCR mywindow = {
 
 
 static void exit_action(MSRET *msinfo, int menuid, int itemno) {
-    if (show_message_box("Exit xmastree?", MessageBoxType_OkCancel, 0) == MessageBoxResult_Ok) {
-        exit(0);
+    if (document_is_dirty(&xmastree_doc)) {
+        if (document_save(&xmastree_doc)) {
+            exit(0);
+        }
     }
 }
 
 
 static void new_action(MSRET *msinfo, int menuid, int itemno) {
-    printf("New file action selected.\n");
+    document_new(&xmastree_doc);
 }
 
 
 static void open_action(MSRET *msinfo, int menuid, int itemno) {
-    char path[APP_PATH_MAX] = "new_tree.xmas";
-    show_open_dialog(path);
+    document_open(&xmastree_doc);
 }
 
 
-static void save_as_action(MSRET *msinfo, int menuid, int itemno);
 static void save_action(MSRET *msinfo, int menuid, int itemno) {
-    save_as_action(msinfo, menuid, itemno);
+    document_save(&xmastree_doc);
 }
 
 
 static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
-    char path[APP_PATH_MAX] = "new_tree.xmas";
-    show_save_dialog(path);
+    document_save_as(&xmastree_doc);
 }
 
 
@@ -82,9 +85,11 @@ static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
     printf("Menu ID: %d, Item No: %d\n", menuid, itemno);
 }
 
+
 static void about_action(MSRET *msinfo, int menuid, int itemno) {
-    show_message_box("     xmastree v" APP_VERSION "\r\n    Build xmas trees!", MessageBoxType_Info, 0);
+    show_message_box("     xmastree v" APP_VERSION "\r\n    Build xmas trees!", MessageBoxType_Info);
 }
+
 
 static MenuItemAction menu_actions[] = {
     {MN_CLOS, 1, exit_action},
@@ -98,7 +103,32 @@ static MenuItemAction menu_actions[] = {
 };
 
 
+int new_model(void *model, const char *path) {
+    return 0;
+}
+
+
+int open_model(void *model, const char *path) {
+    return 0;
+}
+
+
+int save_model(void *model, const char *path) {
+    return 0;
+}
+
+
 int main(int argc, char **argv) {
+    document_init(
+        &xmastree_doc,
+        NULL,
+        "xmastree.xmt",
+        NULL,
+        new_model,
+        open_model,
+        save_model
+    );
+
     run_application(&mywindow, menu_actions);
 
     return 0;

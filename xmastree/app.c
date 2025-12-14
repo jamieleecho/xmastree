@@ -493,8 +493,7 @@ static MessageBoxResult show_generic_message_box(
 }
 
 
-MessageBoxResult show_message_box(const char *message,
-    MessageBoxType event_type, int default_button) {
+MessageBoxResult show_message_box(const char *message, MessageBoxType event_type) {
     return show_generic_message_box(message, NULL, event_type);
 }
 
