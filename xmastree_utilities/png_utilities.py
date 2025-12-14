@@ -143,7 +143,7 @@ def _convert_png_2d_array_to_2d_palette_indices(
 
     for y in range(height):
         for x in range(width):
-            r, g, b, a = png_2d_array[y][x]
+            r, g, b, _ = png_2d_array[y][x]
             pixel_lch = LCHEntry.from_rgb(r, g, b)
 
             best_index = -1
@@ -259,7 +259,7 @@ def png_to_mvicon(args: Sequence[str] | None = None) -> None:
 
 def indexed_image_to_image(indexed_image: IndexedImage) -> Image:
     def two_to_8_bit(b: int):
-        return (b + 1) * 85
+        return b * 85
 
     def palette_entry_to_8_bit(p: PaletteEntry) -> tuple[int, int, int]:
         return (

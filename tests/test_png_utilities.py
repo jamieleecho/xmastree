@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from typing import Mapping, Tuple
 
 import pytest
+from PIL import Image
 
 from xmastree_utilities.png_utilities import (
     ENV_FILE_REGEX,
@@ -16,6 +17,7 @@ from xmastree_utilities.png_utilities import (
     _rgb_palette_to_lch_palette,
     _truncate_palette_to_bits_per_pixel,
     _write_mvicon_file,
+    png_to_coco_png,
     png_to_mvicon,
 )
 
@@ -344,3 +346,29 @@ def test_png_to_mvicon(
         ]
         png_to_mvicon(args=args)
         assert filecmp.cmp(output_icon_path, f"{images_path}/icon.xmt")
+
+
+def _are_identical(
+    image1_path: str,
+    image2_path: str,
+) -> bool:
+    image1 = Image.open(image1_path)
+    image2 = Image.open(image2_path)
+    return image1.tobytes() == image2.tobytes()
+
+
+def test_png_to_coco_png(
+    branch_image_path: Path,
+    xmas_palette_path: Path,
+    coco_branch_image_path: Path,
+) -> None:
+    with TemporaryDirectory() as tmpdirname:
+        tmp_path = Path(tmpdirname)
+        output_png_path = tmp_path / "output.png"
+        args = [
+            str(branch_image_path),
+            str(xmas_palette_path),
+            str(output_png_path),
+        ]
+        png_to_coco_png(args=args)
+        assert _are_identical(branch_image_path, coco_branch_image_path)

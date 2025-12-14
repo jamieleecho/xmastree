@@ -96,3 +96,21 @@ def xmastree_icon_path(
 ) -> Path:
     """Return the path to the xmastree image."""
     return images_path / "icon.xmt"
+
+
+@pytest.fixture(scope="module")
+def branch_image_path(images_path: Path) -> Path:
+    """Return the path to the xmastree images directory."""
+    return images_path / "branch.png"
+
+
+@pytest.fixture(scope="module")
+def xmas_palette_path(palettes_path: Path) -> Path:
+    """Return the path to the default palette file."""
+    return palettes_path / "xmas-palette.txt"
+
+
+@pytest.fixture(scope="module")
+def coco_branch_image_path(images_path: Path) -> Path:
+    """Return the path to the xmastree images directory."""
+    return images_path / "branch.png"
