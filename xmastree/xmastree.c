@@ -3,6 +3,8 @@
 #include "app.h"
 #include "document.h"
 #include "version.h"
+#include "image.h"
+
 
 static Document xmastree_doc;
 
@@ -121,6 +123,9 @@ int save_model(void *model, const char *path) {
 
 
 int main(int argc, char **argv) {
+    image_init("xmastree");
+    Flush();
+
     document_init(
         &xmastree_doc,
         NULL,

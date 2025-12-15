@@ -1,3 +1,7 @@
+
+#ifndef _CGFX_H
+#define _CGFX_H
+
 #include <fcntl.h>
 
 /**** TEXT FUNCTIONS ****/
@@ -244,6 +248,13 @@ error_code _cgfx_curxy(path_id path, int x, int y);
 #define CHR_HRG 	0xCB /* hourglass (Tandy menu) */
 #define CHR_TRR 	0xCC /* triple bar with open right side */
 #define CHR_TRL 	0xCD /* triple bar with open left side */
+
+
+/**
+ * @brief Flush queued up drawing commands.
+ */
+void Flush(void);
+
 
 /**
  * @brief Set the drawing pattern to be used.
@@ -1164,3 +1175,5 @@ error_code _cgfx_gs_opt(path_id path, SCF_OPT *opt);
  * @return 0 if successful, otherwise the error code.
  */
 error_code _cgfx_ss_opt(path_id path, const SCF_OPT *opt);
+
+#endif /* _CGFX_H */

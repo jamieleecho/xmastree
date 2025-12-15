@@ -15,7 +15,7 @@ _oserr  EXTERNAL
         lbcs        _oserr
         tfr         a,b
         clra
-        std         [2+2,s]
+        std         [2,s]
 _osret  EXTERNAL
         lbra        _osret
     }

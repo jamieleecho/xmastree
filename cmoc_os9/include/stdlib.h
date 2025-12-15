@@ -6,7 +6,7 @@
 int rand(void);
 void srand(unsigned seed);
 
-#if _CMOC_VERSION_
+#ifndef _CMOC_VERSION_
 float    atof(char *str);
 #endif
 int      atoi(char *str);

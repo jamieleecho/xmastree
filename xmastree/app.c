@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include "app.h"
 
-extern void Flush(void);
 
 #define KEY_SIG  11  /* signal number for key interrupts */
 
@@ -224,6 +223,7 @@ static void set_reverse_video(const UiObject *object) {
 }
 
 
+#if 0
 static void set_standard_text_mode(void) {
     _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
     _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
@@ -231,6 +231,7 @@ static void set_standard_text_mode(void) {
     _cgfx_tcharsw(OUTPATH, FALSE);
     _cgfx_curoff(OUTPATH);
 }
+#endif
 
 
 static void focus_text_box(const UiObject *object) {
@@ -372,7 +373,7 @@ static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **
                     continue;
                 }
             }
-                
+
             /* The key object did not handle the event, forward key press to other objects */
             for (ii = 0; ii < num_objects; ++ii) {
                 obj = objects + ii;
