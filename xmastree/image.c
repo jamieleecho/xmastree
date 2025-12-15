@@ -64,7 +64,7 @@ int image_load_image(const char *path, int buffer_number) {
 }
 
 
-int image_load_image_from_sys(const char *name, int buffer_number) {
+int image_load_image_resource(const char *name, int buffer_number) {
     strcpy(buffer, "/dd/SYS/");
     strncat(buffer, my_app_name, sizeof(buffer));
     strncat(buffer, "/", sizeof(buffer));

@@ -10,6 +10,24 @@
 #define MN_HELP 30
 
 
+typedef enum {
+    UiEventType_KeyPress,
+    UiEventType_MouseClick
+} UiEventType;
+
+typedef struct {
+    char character;
+} KeyEvent;
+
+typedef struct {
+    UiEventType event_type;
+    union {
+        KeyEvent key;
+        MSRET mouse;
+    } info;
+} UiEvent;
+
+
 typedef struct {
     int menuid;
     int itemno;
@@ -36,7 +54,11 @@ typedef enum {
 } MessageBoxResult;
 
 
-extern void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions);
+extern void run_application(
+    WNDSCR *mywindow,
+    const MenuItemAction *menu_actions,
+    void (*application_action)(UiEvent *event)
+);
 extern MessageBoxResult show_message_box(const char *message, MessageBoxType type);
 extern char *show_open_dialog(char *path);
 extern char *show_save_dialog(char *path);

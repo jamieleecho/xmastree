@@ -107,25 +107,50 @@ static MenuItemAction menu_actions[] = {
 };
 
 
-int new_model(void *model, const char *path) {
+static int new_model(void *model, const char *path) {
     return 0;
 }
 
 
-int open_model(void *model, const char *path) {
+static int open_model(void *model, const char *path) {
     return 0;
 }
 
 
-int save_model(void *model, const char *path) {
+static int save_model(void *model, const char *path) {
     return 0;
+}
+
+
+static void xmastree_init() {
+    image_init("xmastree");
+    Flush();
+    image_load_image_resource("1m.i09", 2);
+    image_load_image_resource("1.i09", 3);
+    image_load_image_resource("2m.i09", 4);
+    image_load_image_resource("2.i09", 5);
+}
+
+
+static void xmastree_action(UiEvent *event) {
+    switch(event->event_type) {
+        case UiEventType_KeyPress:
+            printf("%d pressed", event->info.key.character);
+            break;
+        case UiEventType_MouseClick:
+            _cgfx_lset(OUTPATH, LOG_AND);
+            image_draw_image(4, event->info.mouse.pt_wrx, event->info.mouse.pt_wry);
+            _cgfx_lset(OUTPATH, LOG_XOR);
+            image_draw_image(5, event->info.mouse.pt_wrx, event->info.mouse.pt_wry);
+            _cgfx_lset(OUTPATH, LOG_NONE);
+            Flush();
+            break;
+    }
 }
 
 
 int main(int argc, char **argv) {
-    image_init("xmastree");
-    Flush();
-
+    xmastree_init();
     document_init(
         &xmastree_doc,
         NULL,
@@ -136,7 +161,7 @@ int main(int argc, char **argv) {
         save_model
     );
 
-    run_application(&mywindow, menu_actions);
+    run_application(&mywindow, menu_actions, xmastree_action);
 
     return 0;
 }

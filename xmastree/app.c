@@ -28,24 +28,6 @@
 
 
 typedef enum {
-    UiEvent_KeyPress,
-    UiEvent_MouseClick
-} UiEventType;
-
-typedef struct {
-    char character;
-} KeyEvent;
-
-typedef struct {
-    UiEventType event_type;
-    union {
-        KeyEvent key;
-        MSRET mouse;
-    } info;
-} UiEvent;
-
-
-typedef enum {
     UiObjectType_Button,
     UiObjectType_TextBox,
 } UiObjectType;
@@ -125,11 +107,11 @@ static void run_event_loop(UiEvent *event) {
             if (!read(INPATH, &c, 1)) {
                 c = 0;
             }
-            event->event_type = UiEvent_KeyPress;
+            event->event_type = UiEventType_KeyPress;
             event->info.key.character = c;
             return;
         } else if (local_sig == MOUSE_SIG) {
-            event->event_type = UiEvent_MouseClick;
+            event->event_type = UiEventType_MouseClick;
             _cgfx_gs_mouse(OUTPATH, &event->info.mouse);
             return;
         }
@@ -145,7 +127,8 @@ void echo_sw(path_id path, char on) {
 }
 
 
-void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
+void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions,
+                     void (*application_action)(UiEvent *event)) {
     int local_sig, itemno, menuid, ii;
     MenuItemAction const * menu_item_action;
     UiEvent event;
@@ -164,9 +147,10 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
     while(TRUE) {
         run_event_loop(&event);
 
-        if (event.event_type == UiEvent_KeyPress) {
-            char ch = event.info.key.character;
-            printf("Key pressed: %c (0x%02X)\n", (ch >= 32 && ch <= 126) ? ch : '.', (unsigned char)ch);
+        if (event.event_type == UiEventType_KeyPress) {
+            if (application_action) {
+                application_action(&event);
+            }
             continue;
         }
 
@@ -198,6 +182,9 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions) {
 
         /* handle content window events */
         if (event.info.mouse.pt_stat == WR_CNTNT) {
+            if (application_action) {
+                application_action(&event);
+            }
         }
     }
 }
@@ -354,7 +341,7 @@ static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **
     while (TRUE) {
         run_event_loop(&event);
 
-        if (event.event_type == UiEvent_KeyPress) {
+        if (event.event_type == UiEventType_KeyPress) {
             /* Send key press to designated key object first */
             if (key_object && *key_object) {
                 obj = *key_object;
@@ -388,7 +375,7 @@ static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **
             }
         }
 
-       if (event.event_type != UiEvent_MouseClick) {
+       if (event.event_type != UiEventType_MouseClick) {
             continue;
         }
 

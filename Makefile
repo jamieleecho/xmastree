@@ -11,7 +11,7 @@ TARGET_ICON := ${BUILD}/icon.${SHORT_3_NAME}
 SOURCE_ICON := ${ASSETS}/$(notdir ${TARGET}).png
 SYS_IMAGES_DIR := ${ASSETS}/sys-images
 SOURCE_IMAGES :=  $(wildcard ${SYS_IMAGES_DIR}/*.png)
-TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.png=.i09)))
+TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.png=.i09))) $(addsuffix m.i09, $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(basename ${SOURCE_IMAGES}))))
 TARGET_SYS_IMAGES_DIR := SYS/${SOURCE}
 TARGET_AIF := ${BUILD}/aif.${SHORT_3_NAME}
 SOURCE_AIF := ${ASSETS}/$(notdir ${TARGET_AIF})
@@ -55,6 +55,7 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
 	@${IMGTOOL_COPY} ${TARGET_AIF} $@.tmp,$(notdir ${TARGET_AIF})
 	@${IMGTOOL_ATTR_RO} $@.tmp,$(notdir ${TARGET_AIF})
+	echo ${TARGET_IMAGES}
 	@for each in ${TARGET_IMAGES}; do \
 		${IMGTOOL_COPY} $${each} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
 		${IMGTOOL_ATTR_RO} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
@@ -81,6 +82,9 @@ ${TARGET_IMAGES_DIR}:
 
 ${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
 	uv run png-to-os9-image $< ${ASSETS}/xmas-palette.txt $@
+
+${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
+	uv run png-to-os9-image --mask-index=0 $< ${ASSETS}/xmas-palette.txt $@
 
 libc:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
