@@ -53,7 +53,7 @@ typedef enum {
     MessageBoxResult_No
 } MessageBoxResult;
 
-
+extern void app_init(const int *palette, size_t num_colors);
 extern void run_application(
     WNDSCR *mywindow,
     const MenuItemAction *menu_actions,

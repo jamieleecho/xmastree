@@ -12,8 +12,8 @@
 #define MOUSE_FOLLOW           1  /* update gc immediately */
 #define MOUSE_SIG             10  /* signal number for mouse interrupts */
 
-#define FOREGROUND_COLOR 1
-#define BACKGROUND_COLOR 0
+#define FOREGROUND_COLOR 0
+#define BACKGROUND_COLOR 15
 
 #define DIALOG_WIDTH  26
 #define DIALOG_HEIGHT 10
@@ -54,6 +54,13 @@ typedef struct {
     int height;
     UiObjectOptions options;
 } UiObject;
+
+
+void app_init(const int *palette, size_t num_colors) {
+    for (size_t ii = 0; ii < num_colors; ++ii) {
+        _cgfx_palette(OUTPATH, ii, palette[ii]);
+    }
+}
 
 
 static char sigcode = 0;
