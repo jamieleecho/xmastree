@@ -4,11 +4,12 @@ SHORT_3_NAME := xmt
 BUILD := build
 ASSETS := assets
 DEFAULT_PALETTE := ${ASSETS}/default-palette.txt
+APP_PALLETTE := ${ASSETS}/app-palette.txt
 
 TARGET := ${BUILD}/${SOURCE}
 TARGET_IMAGES_DIR := ${BUILD}/images
 TARGET_ICON := ${BUILD}/icon.${SHORT_3_NAME}
-SOURCE_ICON := ${ASSETS}/$(notdir ${TARGET}).png
+SOURCE_ICON := ${ASSETS}/app-icon.png
 SYS_IMAGES_DIR := ${ASSETS}/sys-images
 SOURCE_IMAGES :=  $(wildcard ${SYS_IMAGES_DIR}/*.png)
 TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.png=.i09))) $(addsuffix m.i09, $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(basename ${SOURCE_IMAGES}))))
@@ -80,11 +81,11 @@ ${TARGET_AIF}: ${SOURCE_AIF} ${BUILD}
 ${TARGET_IMAGES_DIR}:
 	mkdir -p ${TARGET_IMAGES_DIR}
 
-${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
-	uv run png-to-os9-image $< ${ASSETS}/xmas-palette.txt $@
+${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR} ${APP_PALLETTE}
+	uv run png-to-os9-image $< ${APP_PALLETTE} $@
 
 ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
-	uv run png-to-os9-image --mask-index=0 $< ${ASSETS}/xmas-palette.txt $@
+	uv run png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
 
 libc:
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all

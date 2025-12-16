@@ -134,7 +134,8 @@ void echo_sw(path_id path, char on) {
 }
 
 
-void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions,
+void run_application(WNDSCR *mywindow, void (*init)(void),
+                     const MenuItemAction *menu_actions,
                      void (*application_action)(UiEvent *event)) {
     int local_sig, itemno, menuid, ii;
     MenuItemAction const * menu_item_action;
@@ -150,6 +151,9 @@ void run_application(WNDSCR *mywindow, const MenuItemAction *menu_actions,
     _cgfx_ss_mouse(OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
 
     int err = _cgfx_ss_wnset(0, WT_FWIN, mywindow);
+    if (init) {
+        init();
+    }
 
     while(TRUE) {
         run_event_loop(&event);

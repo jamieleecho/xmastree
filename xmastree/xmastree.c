@@ -7,9 +7,11 @@
 
 
 static const int palette[] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x38, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f
+    0x00, 0x3f, 0x07, 0x38, 0x04, 0x05, 0x06, 0x10,
+    0x36, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x01, 0x02
 };
+
+#define XMAS_BACKGROUND 0
 
 static Document xmastree_doc;
 
@@ -127,7 +129,27 @@ static int save_model(void *model, const char *path) {
 }
 
 
-static void xmastree_init() {
+static void xmastree_action(UiEvent *event) {
+    switch(event->event_type) {
+        case UiEventType_KeyPress:
+            printf("%d pressed", event->info.key.character);
+            break;
+        case UiEventType_MouseClick:
+            int x = event->info.mouse.pt_wrx - 12;
+            int y = event->info.mouse.pt_wry - 12;
+            _cgfx_lset(OUTPATH, LOG_AND);
+            image_draw_image(8, x, y);
+            _cgfx_lset(OUTPATH, LOG_XOR);
+            image_draw_image(9, x, y);
+            _cgfx_lset(OUTPATH, LOG_NONE);
+            Flush();
+            break;
+    }
+}
+
+
+static void xmastree_pre_init() {
+    app_init(palette, sizeof(palette)/sizeof(palette[0]));
     image_init("xmastree");
     Flush();
     image_load_image_resource("1m.i09", 2);
@@ -138,29 +160,7 @@ static void xmastree_init() {
     image_load_image_resource("3.i09", 7);
     image_load_image_resource("4m.i09", 8);
     image_load_image_resource("4.i09", 9);
-}
 
-
-static void xmastree_action(UiEvent *event) {
-    switch(event->event_type) {
-        case UiEventType_KeyPress:
-            printf("%d pressed", event->info.key.character);
-            break;
-        case UiEventType_MouseClick:
-            _cgfx_lset(OUTPATH, LOG_AND);
-            image_draw_image(8, event->info.mouse.pt_wrx, event->info.mouse.pt_wry);
-            _cgfx_lset(OUTPATH, LOG_XOR);
-            image_draw_image(9, event->info.mouse.pt_wrx, event->info.mouse.pt_wry);
-            _cgfx_lset(OUTPATH, LOG_NONE);
-            Flush();
-            break;
-    }
-}
-
-
-int main(int argc, char **argv) {
-    app_init(palette, sizeof(palette)/sizeof(palette[0]));
-    xmastree_init();
     document_init(
         &xmastree_doc,
         NULL,
@@ -170,8 +170,20 @@ int main(int argc, char **argv) {
         open_model,
         save_model
     );
+}
 
-    run_application(&mywindow, menu_actions, xmastree_action);
+
+static void xmastree_init(void) {
+    _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
+    _cgfx_clear(OUTPATH);
+    Flush();
+}
+
+
+int main(int argc, char **argv) {
+    xmastree_pre_init();
+
+    run_application(&mywindow, xmastree_init, menu_actions, xmastree_action);
 
     return 0;
 }

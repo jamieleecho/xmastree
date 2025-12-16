@@ -56,6 +56,7 @@ typedef enum {
 extern void app_init(const int *palette, size_t num_colors);
 extern void run_application(
     WNDSCR *mywindow,
+    void (*init)(void),
     const MenuItemAction *menu_actions,
     void (*application_action)(UiEvent *event)
 );
