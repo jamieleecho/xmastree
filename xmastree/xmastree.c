@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <unistd.h>
+
 #include "app.h"
 #include "document.h"
-#include "version.h"
 #include "image.h"
+#include "toolbox.h"
+
+#include "version.h"
 
 
 static const int palette[] = {
@@ -192,6 +195,9 @@ static void xmastree_pre_init() {
 }
 
 
+static ToolBox tool_box;
+
+
 static void xmastree_init(void) {
     _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(OUTPATH);
@@ -202,6 +208,11 @@ static void xmastree_init(void) {
         int y = 2 + (ii / 2) * 26;
         image_draw_image(image, x, y);
     }
+
+    int image_ids[TOOLBOX_NUM_ITEMS] = {
+        3, 5, 7, 9, 11, 13, 15, 17, 19, 21
+    };
+    tool_box_init(&tool_box, 100, 10, image_ids, NULL);
 
     Flush();
 }
