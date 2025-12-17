@@ -129,18 +129,25 @@ static int save_model(void *model, const char *path) {
 }
 
 
+static int selected_item = 2;
+
+
 static void xmastree_action(UiEvent *event) {
     switch(event->event_type) {
         case UiEventType_KeyPress:
+            int item = (event->info.key.character - '0') * 2 + 4;
+            if (item >= 1 && item <= 22) {
+                selected_item = item;
+            }
             printf("%d pressed", event->info.key.character);
             break;
         case UiEventType_MouseClick:
             int x = event->info.mouse.pt_wrx - 12;
             int y = event->info.mouse.pt_wry - 12;
             _cgfx_lset(OUTPATH, LOG_AND);
-            image_draw_image(8, x, y);
+            image_draw_image(selected_item, x, y);
             _cgfx_lset(OUTPATH, LOG_XOR);
-            image_draw_image(9, x, y);
+            image_draw_image(selected_item + 1, x, y);
             _cgfx_lset(OUTPATH, LOG_NONE);
             Flush();
             break;
@@ -160,6 +167,20 @@ static void xmastree_pre_init() {
     image_load_image_resource("3.i09", 7);
     image_load_image_resource("4m.i09", 8);
     image_load_image_resource("4.i09", 9);
+    image_load_image_resource("5m.i09", 10);
+    image_load_image_resource("5.i09", 11);
+    image_load_image_resource("6m.i09", 12);
+    image_load_image_resource("6.i09", 13);
+    image_load_image_resource("7m.i09", 14);
+    image_load_image_resource("7.i09", 15);
+    image_load_image_resource("8m.i09", 16);
+    image_load_image_resource("8.i09", 17);
+    image_load_image_resource("9m.i09", 18);
+    image_load_image_resource("9.i09", 19);
+    image_load_image_resource("10m.i09", 20);
+    image_load_image_resource("10.i09", 21);
+    image_load_image_resource("11m.i09", 22);
+    image_load_image_resource("11.i09", 23);
 
     document_init(
         &xmastree_doc,
