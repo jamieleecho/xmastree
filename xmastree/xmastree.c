@@ -179,8 +179,6 @@ static void xmastree_pre_init() {
     image_load_image_resource("9.i09", 19);
     image_load_image_resource("10m.i09", 20);
     image_load_image_resource("10.i09", 21);
-    image_load_image_resource("11m.i09", 22);
-    image_load_image_resource("11.i09", 23);
 
     document_init(
         &xmastree_doc,
@@ -197,6 +195,14 @@ static void xmastree_pre_init() {
 static void xmastree_init(void) {
     _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(OUTPATH);
+
+    for(int ii=0; ii<10; ii++) {
+        int image = (2 * ii) + 3;
+        int x = 2 + (ii % 2) * 26;
+        int y = 2 + (ii / 2) * 26;
+        image_draw_image(image, x, y);
+    }
+
     Flush();
 }
 
