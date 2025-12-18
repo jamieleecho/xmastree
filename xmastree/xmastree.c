@@ -174,6 +174,7 @@ static int xmastree_handle_click_event(UiEvent *event) {
         _cgfx_lset(OUTPATH, LOG_XOR);
         image_draw_image(image_id, x, y);
         _cgfx_lset(OUTPATH, LOG_NONE);
+        document_set_dirty(&xmastree_doc);
         Flush();
     }
 

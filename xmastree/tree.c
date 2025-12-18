@@ -1,81 +1,86 @@
 #include <stdio.h>
+#include <unistd.h>
+
 #include "tree.h"
 
-void tree_controller_init(XmasTreeController *controller) {
+
+void tree_new(Tree *tree) {
+    tree->num_items = 0;
 }
 
 
-void tree_controller_new(XmasTreeController *controller) {
-}
-
-void tree_controller_open(XmasTreeController *controller) {
-}
-
-
-void tree_controller_save(XmasTreeController *controller) {
-}
-
-
-void tree_controller_save_as(XmasTreeController *controller) {
-}
-
-
-void tree_controller_add_item(XmasTreeController *controller, XmasTreeItem item) {
-}
-
-
-void tree_controller_undo(XmasTreeController *controller) {
-}
-
-
-void tree_controller_redo(XmasTreeController *controller) {
-}
-
-
-BOOL tree_controller_can_add(const XmasTreeController *controller) {
-    return FALSE;
-}
-
-
-BOOL tree_controller_can_undo(const XmasTreeController *controller) {
-    return FALSE;
-}
-
-
-BOOL tree_controller_can_redo(const XmasTreeController *controller) {
-    return FALSE;
-}
-
-
-BOOL tree_controller_has_filename(const XmasTreeController *controller) {
-    return FALSE;
-}
-
-
-void tree_new(XmasTree *tree) {
-}
-
-
-void tree_load(XmasTree *tree, const char *filename) {
-}
-
-
-void tree_save(const XmasTree *tree, const char *filename) {
-}
-
-
-void tree_add_item(XmasTree *tree, XmasTreeItem item) {
-}
-
-
-void tree_remove_last_item(XmasTree *tree) {
-}
-
-
-void tree_add_last_item_back(XmasTree *tree) {
-}
-
-
-int tree_get_item_count(const XmasTree *tree) {
+static int tree_validate(Tree *tree) {
+    if ((tree->num_items < 0) || (tree->num_items > TREE_MAX_ITEMS)) {
+        return E$BMHP;
+    }
+    for (int ii=0; ii<tree->num_items; ii++) {
+        TreeItem *item = tree->items + ii;
+        if ((item->x < 0) || (item->x > 319) || (item->y < 0) || (item->y > 199) ||
+            (item->item_id < 0) || (item->item_id > TREE_MAX_ITEM_ID)) {
+            return E$BMHP;
+        }
+    }
     return 0;
+}
+
+
+int tree_load(Tree *tree, const char *filename) {
+    int fd = open(filename, 0x1);
+    if (fd < 0) {
+        return errno;
+    }
+    int bytes_read = read(fd, (char *)tree, sizeof(tree));
+    int retval;
+    if (bytes_read >= 0) {
+        retval = tree_validate(tree);
+    } else {
+        retval = errno;
+    }
+    close(fd);
+
+    if (retval) {
+        tree_new(tree);
+    }
+
+    return retval;
+}
+
+
+int tree_save(const Tree *tree, const char *filename) {
+    int fd = open(filename, 0x2);
+    if (fd < 0) {
+        return errno;
+    }
+    int bytes_to_write = (char *)(&(tree->items[tree->num_items])) - (char *)tree;
+    int bytes_written = write(fd, (const char *)tree, bytes_to_write);
+    int retval;
+    if (bytes_written < 0) {
+        retval = errno;
+    } else if (bytes_to_write != bytes_written) {
+        retval = E$Write;
+    }
+    close(fd);
+
+    return retval;
+}
+
+
+int tree_add_item(Tree *tree, Tree item) {
+    if (tree->num_items >= TREE_MAX_ITEMS) {
+        return E$MemFul;
+    }
+    tree[tree->num_items] = item;
+    ++tree->num_items;
+}
+
+
+void tree_remove_last_item(Tree *tree) {
+    if (tree->num_items > 1) {
+        --tree->num_items;
+    }
+}
+
+
+int tree_get_item_count(const Tree *tree) {
+    return tree->num_items;
 }

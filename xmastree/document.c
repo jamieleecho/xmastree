@@ -55,6 +55,7 @@ void document_new(Document *doc) {
     }
     doc->file_backed = FALSE;
     doc->is_dirty = FALSE;
+    app_refresh_menubar();
 }
 
 
@@ -89,6 +90,7 @@ void document_open(Document *doc) {
     }
     doc->file_backed = TRUE;
     doc->is_dirty = FALSE;
+    app_refresh_menubar();
 }
 
 
@@ -101,6 +103,7 @@ static int document_save_internal(Document *doc) {
     }
     doc->file_backed = TRUE;
     doc->is_dirty = FALSE;
+    app_refresh_menubar();
     return 0;
 }
 
@@ -123,6 +126,7 @@ void document_revert(Document *doc) {
             }
         }
         strcpy(doc->path, oldpath);
+        app_refresh_menubar();
     }
 }
 
@@ -155,6 +159,7 @@ int document_save(Document *doc) {
 
 void document_set_dirty(Document *doc) {
     doc->is_dirty = TRUE;
+    app_refresh_menubar();
 }
 
 

@@ -438,6 +438,7 @@ static MessageBoxResult show_generic_message_box(
     _cgfx_curoff(OUTPATH);
     _cgfx_boldsw(OUTPATH, 1);
     _cgfx_ss_wnset(OUTPATH, WT_DBOX, NULL);
+    _cgfx_lset(OUTPATH, LOG_NONE);
     Flush();
     write(OUTPATH, message, strlen(message));
 
