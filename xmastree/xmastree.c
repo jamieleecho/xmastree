@@ -132,27 +132,59 @@ static int save_model(void *model, const char *path) {
 }
 
 
-static int selected_item = 2;
+static ToolBox toolbox;
+
+
+static int xmastree_handle_key_event(UiEvent *event) {
+    int item = event->info.key.character - '1';
+    if ((item >= -1) && (item <= 8)) {
+        if (item == -1) {
+            item = 9;
+        }
+        tool_box_select_item(&toolbox, item);
+    } else {
+        printf("%d pressed", event->info.key.character);
+    }
+
+    return TRUE;
+}
+
+
+static int image_ids[TOOLBOX_NUM_ITEMS] = {
+    3, 5, 7, 9, 11, 13, 15, 17, 19, 21
+};
+
+
+static int xmastree_handle_click_event(UiEvent *event) {
+    int x = event->info.mouse.pt_wrx;
+    int y = event->info.mouse.pt_wry;
+
+    if (x < toolbox.x + toolbox.width) {
+        tool_box_select_item_at_xy(&toolbox, x, y);
+    } else {
+        x = x - TOOLBOX_ITEM_WIDTH / 2;
+        y = y - TOOLBOX_ITEM_HEIGHT / 2;
+        int image_id = image_ids[tool_box_item(&toolbox)];
+        _cgfx_lset(OUTPATH, LOG_AND);
+        image_draw_image(image_id - 1, x, y);
+        _cgfx_lset(OUTPATH, LOG_XOR);
+        image_draw_image(image_id, x, y);
+        _cgfx_lset(OUTPATH, LOG_NONE);
+        Flush();
+    }
+
+    return TRUE;
+}
 
 
 static void xmastree_action(UiEvent *event) {
     switch(event->event_type) {
         case UiEventType_KeyPress:
-            int item = (event->info.key.character - '0') * 2 + 4;
-            if (item >= 1 && item <= 22) {
-                selected_item = item;
-            }
-            printf("%d pressed", event->info.key.character);
+            xmastree_handle_key_event(event);
             break;
+
         case UiEventType_MouseClick:
-            int x = event->info.mouse.pt_wrx - 12;
-            int y = event->info.mouse.pt_wry - 12;
-            _cgfx_lset(OUTPATH, LOG_AND);
-            image_draw_image(selected_item, x, y);
-            _cgfx_lset(OUTPATH, LOG_XOR);
-            image_draw_image(selected_item + 1, x, y);
-            _cgfx_lset(OUTPATH, LOG_NONE);
-            Flush();
+            xmastree_handle_click_event(event);
             break;
     }
 }
@@ -195,24 +227,11 @@ static void xmastree_pre_init() {
 }
 
 
-static ToolBox tool_box;
-
-
 static void xmastree_init(void) {
     _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(OUTPATH);
 
-    for(int ii=0; ii<10; ii++) {
-        int image = (2 * ii) + 3;
-        int x = 2 + (ii % 2) * 26;
-        int y = 2 + (ii / 2) * 26;
-        image_draw_image(image, x, y);
-    }
-
-    int image_ids[TOOLBOX_NUM_ITEMS] = {
-        3, 5, 7, 9, 11, 13, 15, 17, 19, 21
-    };
-    tool_box_init(&tool_box, 100, 10, image_ids, NULL);
+    tool_box_init(&toolbox, 4, 4, image_ids, NULL);
 
     Flush();
 }

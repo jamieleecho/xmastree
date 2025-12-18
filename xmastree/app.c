@@ -13,7 +13,7 @@
 #define MOUSE_SIG             10  /* signal number for mouse interrupts */
 
 #define FOREGROUND_COLOR 0
-#define BACKGROUND_COLOR 15
+#define BACKGROUND_COLOR 3
 
 #define DIALOG_WIDTH  26
 #define DIALOG_HEIGHT 10

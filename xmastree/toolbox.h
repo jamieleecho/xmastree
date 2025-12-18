@@ -3,6 +3,9 @@
 
 
 #define TOOLBOX_NUM_ITEMS 10
+#define TOOLBOX_ITEM_WIDTH 24
+#define TOOLBOX_ITEM_HEIGHT 24
+
 
 typedef struct ToolBox {
     int reserved;

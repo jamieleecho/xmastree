@@ -12,8 +12,6 @@
 #define TOOLBOX_FOREGROUND_COLOR 1
 
 #define TOOLBOX_ITEMS_PER_ROW 2
-#define TOOLBOX_ITEM_WIDTH 24
-#define TOOLBOX_ITEM_HEIGHT 24
 #define TOOLBOX_ITEM_BORDER_WIDTH 1
 #define TOOLBOX_ITEM_BORDER_HEIGHT 1
 #define TOOLBOX_BUTTON_WIDTH (TOOLBOX_ITEM_WIDTH + TOOLBOX_ITEM_BORDER_WIDTH)
@@ -47,12 +45,12 @@ int tool_box_select_item_at_xy(ToolBox *toolbox, int x, int y) {
 
 static void tool_box_toggle_item_selection(ToolBox *toolbox) {
     int item = toolbox->item;
-    int button_x = (item % TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_WIDTH + 1;
-    int button_y = (item / TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_HEIGHT + 1;
-    _cgfx_lset(OUTPATH, LOG_NONE);
+    int button_x = toolbox->x + (item % TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_WIDTH + 1;
+    int button_y = toolbox->y + (item / TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_HEIGHT + 1;
+    _cgfx_lset(OUTPATH, LOG_XOR);
     _cgfx_bcolor(OUTPATH, TOOLBOX_BACKGROUND_COLOR);
     _cgfx_setdptr(OUTPATH, button_x, button_y);
-    _cgfx_bar(OUTPATH, TOOLBOX_BUTTON_WIDTH - 2, TOOLBOX_BUTTON_HEIGHT - 2);
+    _cgfx_rbar(OUTPATH, TOOLBOX_BUTTON_WIDTH - 2, TOOLBOX_BUTTON_HEIGHT - 2);
     Flush();
 }
 
@@ -61,6 +59,11 @@ int tool_box_select_item(ToolBox *toolbox, int item) {
     if ((item < 0) || (item > TOOLBOX_NUM_ITEMS)) {
         return FALSE;
     }
+
+    if (item == toolbox->item) {
+        return TRUE;
+    }
+
     tool_box_toggle_item_selection(toolbox);
     toolbox->item = item;
     tool_box_toggle_item_selection(toolbox);
