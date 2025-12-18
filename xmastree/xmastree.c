@@ -18,6 +18,10 @@ static const int palette[] = {
 
 static Document xmastree_doc;
 
+typedef enum {
+    FileMenuIndex_Save = 3,
+} FileMenuIndex;
+
 static MIDSCR file_menu_items[] = {
     {"New", MN_ENBL, {0, 0, 0, 0, 0}},
     {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
@@ -237,10 +241,16 @@ static void xmastree_init(void) {
 }
 
 
+void xmastree_refresh_menus_action() {
+    file_menu_items[FileMenuIndex_Save]._mienbl = document_is_dirty(&xmastree_doc);
+}
+
+
 int main(int argc, char **argv) {
     xmastree_pre_init();
 
-    run_application(&mywindow, xmastree_init, menu_actions, xmastree_action);
+    run_application(&mywindow, xmastree_init, menu_actions,
+                    xmastree_refresh_menus_action, xmastree_action);
 
     return 0;
 }

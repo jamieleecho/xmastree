@@ -134,8 +134,17 @@ void echo_sw(path_id path, char on) {
 }
 
 
+static int refresh_menu_bar;
+
+
+extern void app_refresh_menubar() {
+    refresh_menu_bar = TRUE;
+}
+
+
 void run_application(WNDSCR *mywindow, void (*init)(void),
                      const MenuItemAction *menu_actions,
+                     void (*refresh_menus_action)(void),
                      void (*application_action)(UiEvent *event)) {
     int local_sig, itemno, menuid, ii;
     MenuItemAction const * menu_item_action;
@@ -154,8 +163,18 @@ void run_application(WNDSCR *mywindow, void (*init)(void),
     if (init) {
         init();
     }
+    refresh_menu_bar = TRUE;
 
     while(TRUE) {
+        if (refresh_menu_bar) {
+            if (refresh_menus_action) {
+                refresh_menus_action();
+            }
+
+            _cgfx_ss_umbar(OUTPATH);
+            refresh_menu_bar = FALSE;
+        }
+
         run_event_loop(&event);
 
         if (event.event_type == UiEventType_KeyPress) {
@@ -219,17 +238,6 @@ static void set_reverse_video(const UiObject *object) {
     _cgfx_bcolor(OUTPATH, FOREGROUND_COLOR);
     _cgfx_fcolor(OUTPATH, BACKGROUND_COLOR);
 }
-
-
-#if 0
-static void set_standard_text_mode(void) {
-    _cgfx_fcolor(OUTPATH, FOREGROUND_COLOR);
-    _cgfx_bcolor(OUTPATH, BACKGROUND_COLOR);
-    _cgfx_boldsw(OUTPATH, FALSE);
-    _cgfx_tcharsw(OUTPATH, FALSE);
-    _cgfx_curoff(OUTPATH);
-}
-#endif
 
 
 static void focus_text_box(const UiObject *object) {

@@ -59,8 +59,10 @@ extern void run_application(
     WNDSCR *mywindow,
     void (*init)(void),
     const MenuItemAction *menu_actions,
+    void (*refresh_menus_action)(void),
     void (*application_action)(UiEvent *event)
 );
+extern void app_refresh_menubar();
 extern MessageBoxResult show_message_box(const char *message, MessageBoxType type);
 extern char *show_open_dialog(char *path);
 extern char *show_save_dialog(char *path);
