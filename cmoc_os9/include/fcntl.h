@@ -1,3 +1,6 @@
+#ifndef _FCNTL_H
+#define _FCNTL_H
+
 #include "os.h"
 
 typedef int path_id;
@@ -58,3 +61,5 @@ int create(const char *path, int mode, int perm);
 int ocreat(const char *path, int mode, int perm);
 int open(const char *path, int mode);
 int close(int mode);
+
+#endif /* _FCNTL_H */

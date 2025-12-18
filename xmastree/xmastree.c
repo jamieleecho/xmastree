@@ -6,6 +6,7 @@
 #include "image.h"
 #include "toolbox.h"
 
+#include "tree.h"
 #include "version.h"
 
 
@@ -16,7 +17,9 @@ static const int palette[] = {
 
 #define XMAS_BACKGROUND 0
 
+static Tree tree;
 static Document xmastree_doc;
+
 
 typedef enum {
     FileMenuIndex_Save = 3,
@@ -121,21 +124,6 @@ static MenuItemAction menu_actions[] = {
 };
 
 
-static int new_model(void *model, const char *path) {
-    return 0;
-}
-
-
-static int open_model(void *model, const char *path) {
-    return 0;
-}
-
-
-static int save_model(void *model, const char *path) {
-    return 0;
-}
-
-
 static ToolBox toolbox;
 
 
@@ -223,11 +211,12 @@ static void xmastree_pre_init() {
     document_init(
         &xmastree_doc,
         NULL,
-        "xmastree.xmt",
-        NULL,
-        new_model,
-        open_model,
-        save_model
+        "xmastree",
+        ".xmt",
+        &tree,
+        (int (*)(void *, const char *))tree_new,
+        (int (*)(void *, const char *))tree_open,
+        (int (*)(void *, const char *))tree_save
     );
 }
 

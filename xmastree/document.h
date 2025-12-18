@@ -11,12 +11,14 @@ typedef struct {
     int is_dirty;
     int file_backed;
     const char *default_path;
+    const char *extension;
     char path[APP_PATH_MAX];
 } Document;
 
 extern void document_init(Document *doc,
                           const char *path,
                           const char *default_path,
+                          const char *extension,
                           void *model,
                           int (*new_model)(void *model, const char *path),
                           int (*open_model)(void *model, const char *path),

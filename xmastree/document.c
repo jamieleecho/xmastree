@@ -7,9 +7,32 @@
 static char message[128];
 
 
+/** Derived from Google AI */
+int str_end_cmp(const char *str, const char *suffix) {
+    size_t str_len = strlen(str);
+    size_t suffix_len = strlen(suffix);
+    if (suffix_len > str_len) {
+        return 1;
+    }
+    return strcmp(str + str_len - suffix_len, suffix);
+}
+
+
+static void doc_ensure_extension(Document *doc) {
+    if (str_end_cmp(doc->path, doc->extension)) {
+        size_t str_len = strlen(doc->path);
+        size_t suffix_len = strlen(doc->extension);
+        if ((str_len + suffix_len) < sizeof(doc->path)) {
+            strncat(doc->path + str_len, doc->extension, sizeof(doc->path) - 1 - suffix_len);
+        }
+    }
+}
+
+
 void document_init(Document *doc,
                    const char *path,
                    const char *default_path,
+                   const char *extension,
                    void *model,
                    int (*new_model)(void *model, const char *path),
                    int (*open_model)(void *model, const char *path),
@@ -20,12 +43,14 @@ void document_init(Document *doc,
     doc->open_model = open_model;
     doc->is_dirty = doc->file_backed = FALSE;
     doc->file_backed = FALSE;
-    default_path = default_path;
+    doc->default_path = default_path;
+    doc->extension = extension;
     strncpy(doc->path, path ? path : default_path, sizeof(doc->path));
     doc->path[APP_PATH_MAX - 1] = 0;
     if (path) {
         document_revert(doc);
     }
+    doc_ensure_extension(doc);
 }
 
 
@@ -53,6 +78,9 @@ void document_new(Document *doc) {
         show_message_box(message, MessageBoxType_Error);
         return;
     }
+    strncpy(doc->path, doc->default_path, sizeof(doc->path));
+    doc->path[APP_PATH_MAX - 1] = 0;
+    doc_ensure_extension(doc);
     doc->file_backed = FALSE;
     doc->is_dirty = FALSE;
     app_refresh_menubar();
@@ -80,6 +108,7 @@ void document_open(Document *doc) {
         return;
     }
 
+    doc_ensure_extension(doc);
     int err = doc->open_model(doc->model, doc->path);
 
     if (err) {
@@ -95,6 +124,15 @@ void document_open(Document *doc) {
 
 
 static int document_save_internal(Document *doc) {
+    doc_ensure_extension(doc);
+    int fd = open(doc->path, FAP_READ);
+    if (fd >= 0) {
+        close(fd);
+        if (show_message_box("Overwrite existing\r\nfile?", MessageBoxType_YesNo) == MessageBoxResult_No) {
+            return 0;
+        }
+    }
+
     int err = doc->save_model(doc->model, doc->path);
     if (err) {
         sprintf(message, "Failed to save document.\r\nError = %d", err);

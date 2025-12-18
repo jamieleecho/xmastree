@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -24,8 +25,8 @@ static int tree_validate(Tree *tree) {
 }
 
 
-int tree_load(Tree *tree, const char *filename) {
-    int fd = open(filename, 0x1);
+int tree_open(Tree *tree, const char *filename) {
+    int fd = open(filename, FAP_READ);
     if (fd < 0) {
         return errno;
     }
@@ -47,7 +48,7 @@ int tree_load(Tree *tree, const char *filename) {
 
 
 int tree_save(const Tree *tree, const char *filename) {
-    int fd = open(filename, 0x2);
+    int fd = creat(filename, FAP_WRITE);
     if (fd < 0) {
         return errno;
     }
@@ -58,6 +59,8 @@ int tree_save(const Tree *tree, const char *filename) {
         retval = errno;
     } else if (bytes_to_write != bytes_written) {
         retval = E$Write;
+    } else {
+        retval = 0;
     }
     close(fd);
 

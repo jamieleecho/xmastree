@@ -1,4 +1,5 @@
 #include <cgfx.h>
+#include <fcntl.h>
 #include <os.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,7 +26,7 @@ void image_init(const char *app_name) {
 
 int image_load_image(const char *path, int buffer_number) {
     Flush();
-    int file = open(path, 0x1);
+    int file = open(path, FAP_READ);
     int jj, err, kk = 0;
     if (file < 0) {
         return errno;
