@@ -109,8 +109,11 @@ void document_open(Document *doc) {
     }
 
     doc_ensure_extension(doc);
+    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
+    Flush();
     int err = doc->open_model(doc->model, doc->path);
-
+    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
+    Flush();
     if (err) {
         sprintf(message, "Failed to load document.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);
@@ -133,7 +136,11 @@ static int document_save_internal(Document *doc) {
         }
     }
 
+    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
+    Flush();
     int err = doc->save_model(doc->model, doc->path);
+    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
+    Flush();
     if (err) {
         sprintf(message, "Failed to save document.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);

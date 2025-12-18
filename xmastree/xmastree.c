@@ -184,6 +184,7 @@ static void xmastree_action(UiEvent *event) {
 
 
 static void xmastree_pre_init() {
+    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
     app_init(palette, sizeof(palette)/sizeof(palette[0]));
     image_init("xmastree");
     Flush();
