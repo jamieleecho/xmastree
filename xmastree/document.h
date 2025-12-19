@@ -9,7 +9,6 @@ typedef struct {
     int (*new_model)(void *model, const char *path);
     int (*open_model)(void *model, const char *path);
     int (*save_model)(void *model, const char *path);
-    int is_dirty;
     int file_backed;
     const char *default_path;
     const char *extension;
@@ -25,12 +24,11 @@ extern void document_init(Document *doc,
                           int (*new_model)(void *model, const char *path),
                           int (*open_model)(void *model, const char *path),
                           int (*save_model)(void *model, const char *path));
-extern void document_new(Document *doc);
-extern void document_open(Document *doc);
+extern int document_new(Document *doc);
+extern int document_open(Document *doc);
 extern void document_revert(Document *doc);
 extern int document_save_as(Document *doc);
 extern int document_save(Document *doc);
-extern void document_set_dirty(Document *doc);
 extern void document_make_change(Document *doc, const UndoItem *undo_item);
 extern int document_is_dirty(const Document *doc);
 extern int document_can_new(const Document *doc);

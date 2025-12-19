@@ -8,21 +8,15 @@
 #include "toolbox.h"
 
 
-#define TOOLBOX_BACKGROUND_COLOR 4
+#define TOOLBOX_BACKGROUND_COLOR 0
 #define TOOLBOX_FOREGROUND_COLOR 1
-
-#define TOOLBOX_ITEMS_PER_ROW 2
-#define TOOLBOX_ITEM_BORDER_WIDTH 1
-#define TOOLBOX_ITEM_BORDER_HEIGHT 1
-#define TOOLBOX_BUTTON_WIDTH (TOOLBOX_ITEM_WIDTH + TOOLBOX_ITEM_BORDER_WIDTH)
-#define TOOLBOX_BUTTON_HEIGHT (TOOLBOX_ITEM_HEIGHT + TOOLBOX_ITEM_BORDER_HEIGHT)
 
 
 void tool_box_init(ToolBox *toolbox, int x, int y, const int *image_ids, void (*item_selected)(struct ToolBox *toolbox)) {
     toolbox->x = x;
     toolbox->y = y;
-    toolbox->width = (TOOLBOX_BUTTON_WIDTH * TOOLBOX_ITEMS_PER_ROW);
-    toolbox->height = (TOOLBOX_BUTTON_HEIGHT * ((TOOLBOX_NUM_ITEMS + TOOLBOX_ITEMS_PER_ROW - 1)/ TOOLBOX_ITEMS_PER_ROW));
+    toolbox->width = TOOLBOX_WIDTH;
+    toolbox->height = TOOLBOX_HEIGHT;
     toolbox->is_visible = TRUE;
     memcpy(toolbox->image_ids, image_ids, sizeof(toolbox->image_ids));
     toolbox->item = 0;
@@ -48,7 +42,7 @@ static void tool_box_toggle_item_selection(ToolBox *toolbox) {
     int button_x = toolbox->x + (item % TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_WIDTH + 1;
     int button_y = toolbox->y + (item / TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_HEIGHT + 1;
     _cgfx_lset(OUTPATH, LOG_XOR);
-    _cgfx_bcolor(OUTPATH, TOOLBOX_BACKGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, TOOLBOX_FOREGROUND_COLOR);
     _cgfx_setdptr(OUTPATH, button_x, button_y);
     _cgfx_rbar(OUTPATH, TOOLBOX_BUTTON_WIDTH - 2, TOOLBOX_BUTTON_HEIGHT - 2);
     Flush();
@@ -81,7 +75,7 @@ int tool_box_item(ToolBox *toolbox) {
 
 void tool_box_clear(ToolBox *toolbox) {
     _cgfx_lset(OUTPATH, LOG_NONE);
-    _cgfx_bcolor(OUTPATH, TOOLBOX_BACKGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, TOOLBOX_BACKGROUND_COLOR);
     _cgfx_setdptr(OUTPATH, toolbox->x, toolbox->y);
     _cgfx_rbar(OUTPATH, toolbox->width, toolbox->height);
 }

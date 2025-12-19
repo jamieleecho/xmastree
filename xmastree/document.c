@@ -7,7 +7,7 @@
 static char message[128];
 
 
-/** Derived from Google AI */
+/* Derived from Google AI */
 int str_end_cmp(const char *str, const char *suffix) {
     size_t str_len = strlen(str);
     size_t suffix_len = strlen(suffix);
@@ -41,7 +41,6 @@ void document_init(Document *doc,
     doc->new_model = new_model;
     doc->save_model = save_model;
     doc->open_model = open_model;
-    doc->is_dirty = doc->file_backed = FALSE;
     doc->file_backed = FALSE;
     doc->default_path = default_path;
     doc->extension = extension;
@@ -55,19 +54,17 @@ void document_init(Document *doc,
 }
 
 
-void document_new(Document *doc) {
-    if (!doc->open_model) {
-        return;
+int document_new(Document *doc) {
+    if (!doc->new_model) {
+        return FALSE;
     }
 
-    if (doc->is_dirty) {
+    if (document_is_dirty(doc)) {
         if (show_message_box("Save before starting\r\na new document?", MessageBoxType_YesNo) ==
              MessageBoxResult_Yes) {
-            document_save(doc);
-
-            if (doc->is_dirty) {
+            if (document_save(doc)) {
                 show_message_box("New aborted.", MessageBoxType_Info);
-                return;
+                return FALSE;
             }
         }
     }
@@ -77,37 +74,35 @@ void document_new(Document *doc) {
     if (err) {
         sprintf(message, "Failed to create\r\ndocument.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);
-        return;
+        return FALSE;
     }
     strncpy(doc->path, doc->default_path, sizeof(doc->path));
     doc->path[APP_PATH_MAX - 1] = 0;
     doc_ensure_extension(doc);
     doc->file_backed = FALSE;
-    doc->is_dirty = FALSE;
     undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
+    return TRUE;
 }
 
 
-void document_open(Document *doc) {
+int document_open(Document *doc) {
     if (!doc->open_model) {
-        return;
+        return FALSE;
     }
 
-    if (doc->is_dirty) {
+    if (document_is_dirty(doc)) {
         if (show_message_box("Save before opening\r\na new document?", MessageBoxType_YesNo) ==
              MessageBoxResult_Yes) {
-            document_save(doc);
-
-            if (doc->is_dirty) {
+            if (document_save(doc)) {
                 show_message_box("Open aborted.", MessageBoxType_Info);
-                return;
+                return FALSE;
             }
         }
     }
 
     if (!show_open_dialog(doc->path)) {
-        return;
+        return FALSE;
     }
 
     doc_ensure_extension(doc);
@@ -119,13 +114,14 @@ void document_open(Document *doc) {
     if (err) {
         sprintf(message, "Failed to load document.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);
-        document_new(doc);
-        return;
+        doc->file_backed = FALSE;
+        return TRUE;
+    } else {
+        doc->file_backed = TRUE;
     }
-    doc->file_backed = TRUE;
-    doc->is_dirty = FALSE;
     undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
+    return TRUE;
 }
 
 
@@ -150,7 +146,6 @@ static int document_save_internal(Document *doc) {
         return err;
     }
     doc->file_backed = TRUE;
-    doc->is_dirty = FALSE;
     undo_manager_reset_undo_marker(&(doc->undo_manager));
     app_refresh_menubar();
     return 0;
@@ -162,7 +157,7 @@ void document_revert(Document *doc) {
         return;
     }
 
-    if (doc->is_dirty) {
+    if (document_is_dirty(doc)) {
         char oldpath[APP_PATH_MAX];
         strncpy(oldpath, doc->path, sizeof(oldpath));
         oldpath[APP_PATH_MAX - 1] = 0;
@@ -207,20 +202,17 @@ int document_save(Document *doc) {
 }
 
 
-void document_set_dirty(Document *doc) {
-    doc->is_dirty = TRUE;
-    app_refresh_menubar();
-}
-
-
 void document_make_change(Document *doc, const UndoItem *undo_item) {
-    document_set_dirty(doc);
+    if (undo_manager_all_undone(&(doc->undo_manager))) {
+        app_refresh_menubar();
+    }
     undo_manager_push_undo(&(doc->undo_manager), undo_item);
 }
 
 
 int document_is_dirty(const Document *doc) {
-    return doc->is_dirty;
+    /* Possible optimizer error when we use ! instead of == */
+    return undo_manager_all_undone(&(doc->undo_manager)) == 0;
 }
 
 
@@ -250,8 +242,11 @@ int document_can_undo(const Document *doc) {
 
 
 int document_undo(Document *doc) {
+    if (undo_manager_all_undone(&(doc->undo_manager))) {
+        return FALSE;
+    }
     int val = undo_manager_undo(&(doc->undo_manager));
-    if (val) {
+    if (val || undo_manager_all_undone(&(doc->undo_manager))) {
         app_refresh_menubar();
     }
     return val;

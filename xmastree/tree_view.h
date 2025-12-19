@@ -5,9 +5,9 @@
 #include "toolbox.h"
 #include "tree.h"
 
-#define TREE_VIEW_X 10
+#define TREE_VIEW_X (10 + TOOLBOX_WIDTH)
 #define TREE_VIEW_Y 0
-#define TREE_VIEW_WIDTH (320 - TREE_VIEW_X - (TOOLBOX_ITEM_HEIGHT * TOOLBOX_NUM_ITEMS))
+#define TREE_VIEW_WIDTH (320 - 16 - TREE_VIEW_X)
 #define TREE_VIEW_HEIGHT (200 - 16 - TREE_VIEW_Y)
 
 

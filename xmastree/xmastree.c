@@ -37,7 +37,7 @@ static MIDSCR file_menu_items[] = {
 };
 
 typedef enum {
-    EditMenuIndex_Save = 0,
+    EditMenuIndex_Undo = 0,
 } EditMenuIndex;
 
 static MIDSCR edit_menu_items[] = {
@@ -100,13 +100,20 @@ static void exit_action(MSRET *msinfo, int menuid, int itemno) {
 }
 
 
+static TreeView tree_view;
+
+
 static void new_action(MSRET *msinfo, int menuid, int itemno) {
-    document_new(&xmastree_doc);
+    if (document_new(&xmastree_doc)) {
+        tree_view_refresh(&tree_view);
+    }
 }
 
 
 static void open_action(MSRET *msinfo, int menuid, int itemno) {
-    document_open(&xmastree_doc);
+    if (document_open(&xmastree_doc)) {
+        tree_view_refresh(&tree_view);
+    }
 }
 
 
@@ -127,9 +134,6 @@ static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
 static void about_action(MSRET *msinfo, int menuid, int itemno) {
     show_message_box("     xmastree v" APP_VERSION "\r\n    Build xmas trees!", MessageBoxType_Info);
 }
-
-
-static TreeView tree_view;
 
 
 static void undo_action(MSRET *msinfo, int menuid, int itemno) {
@@ -210,7 +214,7 @@ static void xmastree_pre_init() {
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
     app_init(palette, sizeof(palette)/sizeof(palette[0]));
     image_init("xmastree");
-    Flush();
+
     image_load_image_resource("1m.i09", 2);
     image_load_image_resource("1.i09", 3);
     image_load_image_resource("2m.i09", 4);
@@ -231,7 +235,9 @@ static void xmastree_pre_init() {
     image_load_image_resource("9.i09", 19);
     image_load_image_resource("10m.i09", 20);
     image_load_image_resource("10.i09", 21);
+    Flush();
 
+    tree_init(&tree);
     document_init(
         &xmastree_doc,
         NULL,
@@ -254,9 +260,9 @@ static void xmastree_init(void) {
     _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(OUTPATH);
 
-    tree_init(&tree);
     tool_box_init(&toolbox, 4, 4, image_ids, xmastree_toolbox_item_selected);
     tree_view_init(&tree_view, &tree, tool_box_item(&toolbox), image_ids);
+    tree_view_refresh(&tree_view);
 
     Flush();
 }
@@ -264,12 +270,20 @@ static void xmastree_init(void) {
 
 void xmastree_refresh_menus_action() {
     file_menu_items[FileMenuIndex_Save]._mienbl = (char)document_is_dirty(&xmastree_doc);
-    edit_menu_items[EditMenuIndex_Save]._mienbl = (char)document_can_undo(&xmastree_doc);
+    edit_menu_items[EditMenuIndex_Undo]._mienbl = (char)document_can_undo(&xmastree_doc);
 }
 
 
 int main(int argc, char **argv) {
+    if (argc > 2) {
+        return 1;
+    }
+
     xmastree_pre_init();
+
+    if (argc == 2) {
+        tree_open(&tree, argv[1]);
+    }
 
     run_application(&mywindow, xmastree_init, menu_actions,
                     xmastree_refresh_menus_action, xmastree_action);

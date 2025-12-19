@@ -39,7 +39,7 @@ int tree_view_handle_event(TreeView *view, UiEvent *event) {
     int y = event->info.mouse.pt_wry;
     x = x - TOOLBOX_ITEM_WIDTH / 2;
     y = y - TOOLBOX_ITEM_HEIGHT / 2;
-    TreeItem item = {x + view->x, y + view->y, view->item_id};
+    TreeItem item = {x - view->x, y - view->y, view->item_id};
     tree_add_item(view->tree, &item);
     tree_view_draw_item(x, y, view->image_ids[view->item_id]);
     Flush();
@@ -48,16 +48,15 @@ int tree_view_handle_event(TreeView *view, UiEvent *event) {
 
 
 void tree_view_refresh(const TreeView *view) {
-    printf("here!!!!\r\n");
     _cgfx_lset(OUTPATH, LOG_NONE);
-    _cgfx_bcolor(OUTPATH, TREE_VIEW_BACKGROUND_COLOR);
+    _cgfx_fcolor(OUTPATH, TREE_VIEW_BACKGROUND_COLOR);
     _cgfx_setdptr(OUTPATH, view->x, view->y);
-    _cgfx_rbar(OUTPATH, view->width, view->height);
+    _cgfx_rbar(OUTPATH, view->width - 1, view->height - 1);
+    Flush();
 
     for(int ii = 0; ii < view->tree->num_items; ++ii) {
         const TreeItem *item = view->tree->items + ii;
-        _cgfx_setdptr(OUTPATH, view->x, view->y);
-        tree_view_draw_item(item->x, item->y, view->image_ids[item->item_id]);
+        tree_view_draw_item(item->x + view->x, item->y + view->y, view->image_ids[item->item_id]);
     }
     Flush();
 }
