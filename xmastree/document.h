@@ -2,6 +2,7 @@
 #define _DOCUMENT_H
 
 #include "app.h"
+#include "undo_manager.h"
 
 typedef struct {
     void *model;
@@ -13,6 +14,7 @@ typedef struct {
     const char *default_path;
     const char *extension;
     char path[APP_PATH_MAX];
+    UndoManager undo_manager;
 } Document;
 
 extern void document_init(Document *doc,
@@ -29,10 +31,13 @@ extern void document_revert(Document *doc);
 extern int document_save_as(Document *doc);
 extern int document_save(Document *doc);
 extern void document_set_dirty(Document *doc);
+extern void document_make_change(Document *doc, const UndoItem *undo_item);
 extern int document_is_dirty(const Document *doc);
 extern int document_can_new(const Document *doc);
 extern int document_can_open(const Document *doc);
 extern int document_can_revert(const Document *doc);
 extern int document_can_save(const Document *doc);
+extern int document_can_undo(const Document *doc);
+extern int document_undo(Document *doc);
 
 #endif

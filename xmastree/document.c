@@ -51,6 +51,7 @@ void document_init(Document *doc,
         document_revert(doc);
     }
     doc_ensure_extension(doc);
+    undo_manager_init(&(doc->undo_manager));
 }
 
 
@@ -83,6 +84,7 @@ void document_new(Document *doc) {
     doc_ensure_extension(doc);
     doc->file_backed = FALSE;
     doc->is_dirty = FALSE;
+    undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
 }
 
@@ -122,6 +124,7 @@ void document_open(Document *doc) {
     }
     doc->file_backed = TRUE;
     doc->is_dirty = FALSE;
+    undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
 }
 
@@ -148,6 +151,7 @@ static int document_save_internal(Document *doc) {
     }
     doc->file_backed = TRUE;
     doc->is_dirty = FALSE;
+    undo_manager_reset_undo_marker(&(doc->undo_manager));
     app_refresh_menubar();
     return 0;
 }
@@ -171,6 +175,7 @@ void document_revert(Document *doc) {
             }
         }
         strcpy(doc->path, oldpath);
+        undo_manager_reset(&(doc->undo_manager));
         app_refresh_menubar();
     }
 }
@@ -208,6 +213,12 @@ void document_set_dirty(Document *doc) {
 }
 
 
+void document_make_change(Document *doc, const UndoItem *undo_item) {
+    document_set_dirty(doc);
+    undo_manager_push_undo(&(doc->undo_manager), undo_item);
+}
+
+
 int document_is_dirty(const Document *doc) {
     return doc->is_dirty;
 }
@@ -230,4 +241,18 @@ int document_can_revert(const Document *doc) {
 
 int document_can_save(const Document *doc) {
     return doc->save_model != NULL;
+}
+
+
+int document_can_undo(const Document *doc) {
+    return undo_manager_can_undo(&(doc->undo_manager));
+}
+
+
+int document_undo(Document *doc) {
+    int val = undo_manager_undo(&(doc->undo_manager));
+    if (val) {
+        app_refresh_menubar();
+    }
+    return val;
 }

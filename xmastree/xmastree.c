@@ -35,6 +35,14 @@ static MIDSCR file_menu_items[] = {
     {"Exit", MN_ENBL, {0, 0, 0, 0, 0}},
 };
 
+typedef enum {
+    EditMenuIndex_Save = 0,
+} EditMenuIndex;
+
+static MIDSCR edit_menu_items[] = {
+    {"Undo", MN_ENBL, {0, 0, 0, 0, 0}},
+};
+
 static MIDSCR help_menu_items[] = {
     {"About...", MN_ENBL, {0, 0, 0, 0, 0}},
 };
@@ -44,16 +52,25 @@ static MNDSCR menus[] = {
         "File",          /* menu title */
         MN_FILE,         /* menu id */
         11,              /* menu width */
-        7,               /* number of items */
+        sizeof(file_menu_items) / sizeof(file_menu_items[0]),
         MN_ENBL,         /* menu enabled */
         {0, 0},          /* reserved */
         file_menu_items  /* pointer to items */
     },
     {
+        "Edit",          /* menu title */
+        MN_EDIT,         /* menu id */
+        11,              /* menu width */
+        sizeof(edit_menu_items) / sizeof(edit_menu_items[0]),
+        MN_ENBL,         /* menu enabled */
+        {0, 0},          /* reserved */
+        edit_menu_items  /* pointer to items */
+    },
+    {
         "Help",          /* menu title */
         MN_HELP,         /* menu id */
         11,              /* menu width */
-        1,               /* number of items */
+        sizeof(help_menu_items) / sizeof(help_menu_items[0]),
         MN_ENBL,         /* menu enabled */
         {0, 0},          /* reserved */
         help_menu_items  /* pointer to items */
@@ -112,6 +129,11 @@ static void about_action(MSRET *msinfo, int menuid, int itemno) {
 }
 
 
+static void undo_action(MSRET *msinfo, int menuid, int itemno) {
+    document_undo(&xmastree_doc);
+}
+
+
 static MenuItemAction menu_actions[] = {
     {MN_CLOS, 1, exit_action},
     {MN_FILE, 1, new_action},
@@ -120,6 +142,7 @@ static MenuItemAction menu_actions[] = {
     {MN_FILE, 5, save_as_action},
     {MN_FILE, 7, exit_action},
     {MN_HELP, 1, about_action},
+    {MN_EDIT, 1, undo_action},
     {-1, -1, unknown_action}
 };
 
@@ -162,7 +185,8 @@ static int xmastree_handle_click_event(UiEvent *event) {
         _cgfx_lset(OUTPATH, LOG_XOR);
         image_draw_image(image_id, x, y);
         _cgfx_lset(OUTPATH, LOG_NONE);
-        document_set_dirty(&xmastree_doc);
+        UndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
+        document_make_change(&xmastree_doc, &undo_item);
         Flush();
     }
 
@@ -233,7 +257,8 @@ static void xmastree_init(void) {
 
 
 void xmastree_refresh_menus_action() {
-    file_menu_items[FileMenuIndex_Save]._mienbl = document_is_dirty(&xmastree_doc);
+    file_menu_items[FileMenuIndex_Save]._mienbl = (char)document_is_dirty(&xmastree_doc);
+    edit_menu_items[EditMenuIndex_Save]._mienbl = (char)document_can_undo(&xmastree_doc);
 }
 
 
