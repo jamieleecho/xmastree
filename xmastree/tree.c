@@ -30,7 +30,7 @@ int tree_open(Tree *tree, const char *filename) {
     if (fd < 0) {
         return errno;
     }
-    int bytes_read = read(fd, (char *)tree, sizeof(tree));
+    int bytes_read = read(fd, (char *)tree, sizeof(Tree));
     int retval;
     if (bytes_read >= 0) {
         retval = tree_validate(tree);
