@@ -107,10 +107,22 @@ any additionl configuration effort after the virtual enviornment is installed vi
 
 ## Acknowledgements
 
-### [nitros9](https://github.com/nitros9project/nitros9)
+### [cmoc](http://sarrazip.com/dev/cmoc.html)
 
-This repo includes a disk image that is built from a modified build of nitros9.
+The C files in this project are compiled with the CMOC compiler.
 
 ### [cmoc_os9](https://github.com/tlindner/cmoc_os9)
 
 This repo copies and modifies files from cmoc_os9.
+
+### [LWTOOLS](https://www.lwtools.ca)
+
+LWTOOLS are used to assemble and link the binaries created by this project.
+
+### [nitros9](https://github.com/nitros9project/nitros9)
+
+This repo includes a disk image that is built from a modified build of nitros9.
+
+### [ToolShed](https://github.com/nitros9project/toolshed)
+
+ToolShed is used to build the disk images in this repo.

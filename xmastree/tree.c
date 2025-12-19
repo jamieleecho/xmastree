@@ -5,7 +5,7 @@
 #include "tree.h"
 
 
-void tree_new(Tree *tree) {
+void tree_init(Tree *tree) {
     tree->num_items = 0;
 }
 
@@ -40,7 +40,7 @@ int tree_open(Tree *tree, const char *filename) {
     close(fd);
 
     if (retval) {
-        tree_new(tree);
+        tree_init(tree);
     }
 
     return retval;
@@ -68,17 +68,16 @@ int tree_save(const Tree *tree, const char *filename) {
 }
 
 
-int tree_add_item(Tree *tree, Tree item) {
+int tree_add_item(Tree *tree, const TreeItem *item) {
     if (tree->num_items >= TREE_MAX_ITEMS) {
         return E$MemFul;
     }
-    tree[tree->num_items] = item;
-    ++tree->num_items;
+    tree->items[tree->num_items++] = *item;
 }
 
 
 void tree_remove_last_item(Tree *tree) {
-    if (tree->num_items > 1) {
+    if (tree->num_items > 0) {
         --tree->num_items;
     }
 }

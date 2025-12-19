@@ -4,9 +4,10 @@
 #include "app.h"
 #include "document.h"
 #include "image.h"
-#include "toolbox.h"
 
+#include "toolbox.h"
 #include "tree.h"
+#include "tree_view.h"
 #include "version.h"
 
 
@@ -90,7 +91,7 @@ static WNDSCR mywindow = {
 
 static void exit_action(MSRET *msinfo, int menuid, int itemno) {
     if (document_is_dirty(&xmastree_doc)) {
-        if (document_save(&xmastree_doc)) {
+        if (document_save(&xmastree_doc) == 0) {
             exit(0);
         }
     } else {
@@ -120,7 +121,6 @@ static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
-    printf("Menu ID: %d, Item No: %d\n", menuid, itemno);
 }
 
 
@@ -129,8 +129,13 @@ static void about_action(MSRET *msinfo, int menuid, int itemno) {
 }
 
 
+static TreeView tree_view;
+
+
 static void undo_action(MSRET *msinfo, int menuid, int itemno) {
-    document_undo(&xmastree_doc);
+    if (document_undo(&xmastree_doc)) {
+        tree_view_refresh(&tree_view);
+    }
 }
 
 
@@ -157,8 +162,9 @@ static int xmastree_handle_key_event(UiEvent *event) {
             item = 9;
         }
         tool_box_select_item(&toolbox, item);
+    } else if (event->info.key.character == '\x1A') {
+        undo_action((MSRET *)NULL, -1, -1);
     } else {
-        printf("%d pressed", event->info.key.character);
     }
 
     return TRUE;
@@ -177,17 +183,10 @@ static int xmastree_handle_click_event(UiEvent *event) {
     if (x < toolbox.x + toolbox.width) {
         tool_box_select_item_at_xy(&toolbox, x, y);
     } else {
-        x = x - TOOLBOX_ITEM_WIDTH / 2;
-        y = y - TOOLBOX_ITEM_HEIGHT / 2;
-        int image_id = image_ids[tool_box_item(&toolbox)];
-        _cgfx_lset(OUTPATH, LOG_AND);
-        image_draw_image(image_id - 1, x, y);
-        _cgfx_lset(OUTPATH, LOG_XOR);
-        image_draw_image(image_id, x, y);
-        _cgfx_lset(OUTPATH, LOG_NONE);
-        UndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
-        document_make_change(&xmastree_doc, &undo_item);
-        Flush();
+        if (tree_view_handle_event(&tree_view, event)) {
+            UndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
+            document_make_change(&xmastree_doc, &undo_item);
+        }
     }
 
     return TRUE;
@@ -236,13 +235,18 @@ static void xmastree_pre_init() {
     document_init(
         &xmastree_doc,
         NULL,
-        "xmastree",
+        "tree",
         ".xmt",
         &tree,
-        (int (*)(void *, const char *))tree_new,
+        (int (*)(void *, const char *))tree_init,
         (int (*)(void *, const char *))tree_open,
         (int (*)(void *, const char *))tree_save
     );
+}
+
+
+static void xmastree_toolbox_item_selected(ToolBox *toolbox) {
+    tree_view_set_item_id(&tree_view, tool_box_item(toolbox));
 }
 
 
@@ -250,7 +254,9 @@ static void xmastree_init(void) {
     _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(OUTPATH);
 
-    tool_box_init(&toolbox, 4, 4, image_ids, NULL);
+    tree_init(&tree);
+    tool_box_init(&toolbox, 4, 4, image_ids, xmastree_toolbox_item_selected);
+    tree_view_init(&tree_view, &tree, tool_box_item(&toolbox), image_ids);
 
     Flush();
 }
