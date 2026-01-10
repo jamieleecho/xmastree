@@ -1,7 +1,7 @@
 #include <cgfx.h>
 #include <fcntl.h>
 #include <os.h>
-#include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -24,7 +24,7 @@ void image_init(const char *app_name) {
 }
 
 
-int image_load_image(const char *path, int buffer_number) {
+error_code image_load_image(const char *path, int buffer_number) {
     Flush();
     int file = open(path, FAP_READ);
     int jj, err, kk = 0;
@@ -59,13 +59,13 @@ int image_load_image(const char *path, int buffer_number) {
                 return err;
             }
         }
-    } while(TRUE);
+    } while(true);
 
     return 0;
 }
 
 
-int image_load_image_resource(const char *name, int buffer_number) {
+error_code image_load_image_resource(const char *name, int buffer_number) {
     strcpy(buffer, "/dd/SYS/");
     strncat(buffer, my_app_name, sizeof(buffer));
     strncat(buffer, "/", sizeof(buffer));
@@ -75,16 +75,16 @@ int image_load_image_resource(const char *name, int buffer_number) {
 }
 
 
-int image_draw_image(int buffer_number, int x, int y) {
+error_code image_draw_image(int buffer_number, int x, int y) {
     return _cgfx_putblk(OUTPATH, pid, buffer_number, x, y);
 }
 
 
-int image_free_buffer(int buffer_number) {
+error_code image_free_buffer(int buffer_number) {
     return _cgfx_kilbuf(OUTPATH, pid, buffer_number);
 }
 
 
-int image_free_all_buffers(void) {
+error_code image_free_all_buffers(void) {
     return _cgfx_kilbuf(OUTPATH, pid, 0);
 }

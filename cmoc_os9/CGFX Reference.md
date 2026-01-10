@@ -72,14 +72,14 @@ As previously stated, this version of the library has  optional buffering for th
 - You call one of the following functions:
 
      `writeln()`, `cwriteln()`
-     `read()`, `cread()`, `readln()`, `creadln()` 
+     `read()`, `cread()`, `readln()`, `creadln()`
      `KilBuf()`, `GPLoad()`
      `_ss_mgpb()`, `_ss_wset()`, `_gs_styp()`
      `DWSet()`, `DWEnd()`, `DWSelect()`
      `OWSet()`, `OWEnd()`, `CWArea()`
      `Play()`
 
-- You do I/O with a different path.  
+- You do I/O with a different path.
 
 The  increase  in  speed  for  some things can be phenomenal.   The  table  below   shows   a   few benchmarks for  comparison.    The 'dots' program fills  the   screen   by   setting   each   pixel individually.  The 'hline' program does the same, but uses  horizontal  lines instead.  The 'vline' program uses  vertical  lines.    'Text'   writes 10,000  characters  to a hardware text window one at a time.
 
@@ -201,9 +201,9 @@ For these functions to work  properly,  you  must have window  scaling  turned o
                          it there (default) */
     #define LOG_AND 1  /* AND the contents of
                          the screen with the data */
-    #define LOG_OR 2   /* OR the contents of 
+    #define LOG_OR 2   /* OR the contents of
                          the screen with the data */
-    #define LOG_XOR 3  /* XOR the contents of 
+    #define LOG_XOR 3  /* XOR the contents of
                          the screen with the data */
 
 `PSet()` will set the drawing pattern to be used on path.  A number of standard patterns are included with OS-9.  The  <buffs.h>  header  file  defines them as follows:
@@ -230,7 +230,7 @@ For these functions to work  properly,  you  must have window  scaling  turned o
 5  |  4  |  3  |  2  |  1  |  0
 -----|-----|-----|-----|-----|-----
 RED | GREEN | BLUE | red | green | blue
-               
+
 The  operating  system   automatically   converts palette settings when using a composite monitor.
 
 `ScaleSw()`  will  turn graphics scaling on or off. If  bsw  is  0,  then  scaling  is  turned   off. Otherwise, scaling  is  turned  on.  Graphics are scaled from 640x192 to the size of the window.
@@ -336,7 +336,7 @@ The D_RADIO type of  object  is  a  simple  radio button.   If  the user presses
 
 The D_END type of object signals the end  of  the array   of   objects   in  the  dialog  box  (pun intended!) This must be the last element  in  the array you send to the `Dialog()` function.
 
-### Example: 
+### Example:
 
     #include <dialog.h>
     #include <buffs.h>
@@ -386,52 +386,52 @@ The D_END type of object signals the end  of  the array   of   objects   in  the
 
           int SetDPtr(path,x,y)
           int path,x,y;
-          
+
           int RSetDPtr(path,xo,yo)
           int path,xo,yo;
-          
+
           int Point(path,x,y)
           int path,x,y;
-          
+
           int RPoint(path,xo,yo)
           int path,xo,yo;
-          
+
           int Line(path,x,y)
           int path,x,y;
-          
+
           int RLine(path,xo,yo)
           int path,xo,yo;
-          
+
           int LineM(path,x,y)
           int path,x,y;
-          
+
           int RLineM(path,xo,yo)
           int path,xo,yo;
-          
+
           int Box(path,x,y)
           int path,x,y;
-          
+
           int RBox(path,xo,yo)
           int path,xo,yo;
-          
+
           int Bar(path,x,y)
           int path,x,y;
-          
+
           int RBar(path,xo,yo)
           int path,xo,yo;
-          
+
           int FFill(path)
           int path;
-          
+
           int Circle(path,radius)
           int path,radius;
-          
+
           int Ellipse(path,xrad,yrad)
           int path,xrad,yrad;
-          
+
           int Arc(path,xrad,yrad,xo1,yo1,xo2,yo2)
           int path,xrad,yrad,xo1,yo1,xo2,yo2;
-          
+
           int PutGC(path,x,y)
           int path,x,y;
 
@@ -464,7 +464,7 @@ On  error,  these  functions  return  -1 with the error number in errno.
 ### Bugs
 
 The `Circle()`, `Ellipse()`, and `Arc()` radii are  not scaled when draw scaling is enabled.  Presumably, this bug will be fixed in a future release of the operating system.
-          
+
 <a name="draw"></a>
 ## Draw
 
@@ -534,15 +534,15 @@ These  functions  will  read the environment file into a buffer  pointed  to  by
     char *MVFName(path,title,column,row,fg,bg)
     int path,fg,bg;
     char *title;
-          
-          
+
+
 ### Description
 
 These functions provide an on-screen file-picking facility  which  allows a user to choose any file from any disk on the system.  Path  is  the  path number  to  use  (usually  1,  but  it can be any window path that has read-write access.)  Fg  and bg  are  the  foreground and background colors of the overlay that is created by  these  functions. Title  is  the  NULL-terminated  character string that is displayed at  the  top  of  the  overlay. Column  and  row are the column and row where the overlay will appear.  In the case of `FName()`, the overlay  is  centered  on  the  current   window. `MVFName()` is the Multi-Vue version of the `FName()` functions.    Centering   was  omitted  for  this function due to the way overlay  coordinates  are used by  GrfDrv.    `MVFName()` requires 22 columns and 11 rows for its overlay,  while  `FName()`  and `FNameXY()` require  32 columns and 12 rows.  Mouse sampling must  be  enabled  with  the  `_ss_mous()` function prior to calling `MVFName()`.
 
 The  filename returned is stored in a static data area.   Future  calls  to  these  functions  will destroy the previous name.
 
-### Example: 
+### Example:
 
     #include <buffs.h>
 
@@ -594,7 +594,7 @@ The  filename returned is stored in a static data area.   Future  calls  to  the
 
     int TCharSw(path,bsw)
     int path,bsw;
-          
+
 ### Description
 
 `BoldSw()`  will turn boldfacing of text on or off. If bsw is  0,  then  boldfacing  is  turned  off. Otherwise, boldfacing is turned on.
@@ -673,7 +673,7 @@ There are several known WindInt bugs which affect the operation of these functio
 - Mapping of multiple buffers smaller than  8k will  confuse  WindInt. The address returned seldom is correct.
 - If  you  attempt  to  kill  a  non-existent buffer,  WindInt  will trash the buffer list forcing you to reboot.  Killing all  buffers with  bufnum equal to 0 does work correctly, however. - As stated above, things  like  killing  font buffers while other processes are using them do nasty things forcing a reboot.
 - `GetBlk()` can only get 639 dots across.
-               
+
 <a name="get-string"></a>
 ## Get String
 
@@ -752,7 +752,7 @@ The ITEM structure is defined in <menu.h> as:
 
     typedef struct {
         char *itemname;  /* name of the item */
-        char enabled;    /* TRUE=enabled */
+        char enabled;    /* true=enabled */
         char (*itemfunc)(); /* function to call */
     } ITEM;
 
@@ -760,7 +760,7 @@ When enabled equals 1, itemfunc is a pointer to a function to  call when that it
 
 All of these functions  return  the  item  number selected  or  0  if  no  selection was made (user pressed BREAK or moved mouse pointer off window.)
 
-### Example: 
+### Example:
 
     #include <menu.h>
 
@@ -819,7 +819,7 @@ All of these functions  return  the  item  number selected  or  0  if  no  selec
          pt_ttsa,   /* time this state button A */
          pt_ttsb,   /* time this state button B */
          pt_tlsa,   /* time last state button A */
-         pt_tlsb,   /* time last state button B */ 
+         pt_tlsb,   /* time last state button B */
          pt_rsrv1[6],/* reserved */
          pt_stat,   /* window pointer location type */
          pt_res;    /* resolution */
@@ -834,7 +834,7 @@ All of these functions  return  the  item  number selected  or  0  if  no  selec
     #define WR_CNTNT 0 /* content region */
     #define WR_CNTRL 1 /* control region */
     #define WR_OFWIN 2 /* off window */
-               
+
 <a name="mousekey"></a>
 ## MouseKey
 
@@ -1012,7 +1012,7 @@ Note  that  all coordinates and accelerations are fixed point numbers.  That is,
 
 The `DelObj()`  function  will  delete  the  object pointed to  by  objptr.   If path is equal to -1, then the object  will  not  be  erased  from  the screen.   This  is  most  useful  from within the `MoveObj()`  function,  as  the  object  will  have already been  erased.    `DelObj()`  also frees any memory used to hold the object in memory that the `AddObj()` function has allocated.
 
-### Examples: 
+### Examples:
 
 Look in the main archive 'CGFXLib.ar' to find the example program 'Balls.c'
 
@@ -1041,7 +1041,7 @@ MN | This makes notes play normally.
 ML | This makes notes play legato.
 T{n} | This  sets  the  tempo  to  the  number following it.
 
-Additionally,   the   play   string  can  contain substrings  (indicated  by   %s)   and   integers (indicated by %d) for variable arguments, much as can be done with `printf()`.  
+Additionally,   the   play   string  can  contain substrings  (indicated  by   %s)   and   integers (indicated by %d) for variable arguments, much as can be done with `printf()`.
 
 <a name="polygon-functions"></a>
 ## Polygon Functions
@@ -1085,7 +1085,7 @@ These  functions  will  draw  closed  polygons on path.  Polygon  is  a  pointer
 `PolyScal()`  will  scale  a  polygon from (cx,cy). Xmult and ymult are the x and y axis multipliers, respectively.     The     result     from     the multiplications is divided by div.
 
 `PolyTran()` will translate (move) a polygon.  Xoff and  yoff  are  the  x and y offsets to move each vertex of the polygon.
-          
+
 <a name="set-type"></a>
 ## Set Type
 
@@ -1254,7 +1254,7 @@ Due to an error in the system code, specifying  a volume  of  0  will force an i
 
 ### Description
 
-All of these functions perform  an  operation  on the cursor or window on path.  For `CurXY()`, x and y  are  the column and row to position the cursor to.  These coordinates are zero-based (the origin is  0,0.)  The   remaining   functions   do   the following: 
+All of these functions perform  an  operation  on the cursor or window on path.  For `CurXY()`, x and y  are  the column and row to position the cursor to.  These coordinates are zero-based (the origin is  0,0.)  The   remaining   functions   do   the following:
 
 Function | Description
 -------- | -----------

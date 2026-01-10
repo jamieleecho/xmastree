@@ -894,7 +894,7 @@ typedef struct wnstr {  	/* window descriptor */
 
 typedef struct {
 	char *i_name; 			/* name of this menu item */
-	char i_enabled; 		/* TRUE if this item is enabled */
+	char i_enabled; 		/* true if this item is enabled */
 	char (*i_func)(); 		/* pointer to function to call if this item selected */
 } ITEM;
 

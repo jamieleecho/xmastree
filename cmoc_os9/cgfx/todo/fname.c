@@ -33,7 +33,7 @@ char *title;
  write(path,title,strlen(title));
  CurXY(path,4,12); /* and the instructions at the bottom */
  write(path,"UP/DOWN/ENTER to select",23);
-  
+
  CWArea(path,1,3,30,8); /* restrict ourselves to the inside now */
 
  _gs_opt(path,&oldopts); /* now turn off echo, abort, and interrupt */
@@ -45,16 +45,16 @@ char *title;
 
  _ss_opt(path,&newopts);
 
- while (TRUE)
+ while (true)
   {
-  
+
    if ((dpath=open(".",READ | DIR))==-1)
     {
      OWEnd(path);
      return(0); /* return nothing if we can't open the current dir... */
     };
-  
- 
+
+
    index=0;
 
    while (index<256)
@@ -71,9 +71,9 @@ char *title;
         index++;
        };
     };
- 
+
    Clear(path);
- 
+
    for (line=1;line<8;line++)
     if (line<=(numfiles+1))
      {
@@ -83,11 +83,11 @@ char *title;
       strhcpy(_FName,dbuf);
       write(path,_FName,strlen(_FName));
      };
-  
+
    line=0;
    index=-1;
- 
- 
+
+
    while (index<256)
     {
      RevOn(path);
@@ -107,7 +107,7 @@ char *title;
      CurXY(path,0,line);
      write(path,s,strlen(s));
      _Flush();
-   
+
      if (ch==0x0a && index<numfiles) /* down arrow ? */
       {
        index++;

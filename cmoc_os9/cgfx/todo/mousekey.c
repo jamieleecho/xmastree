@@ -29,7 +29,7 @@ register path_id path;
  newopts.sg_echo=newopts.sg_kbich=newopts.sg_kbach=0;
  _ss_opt(path,&newopts);
 
- while (TRUE)
+ while (true)
   {
    if (_gs_rdy(path)>0) /* chars ready? */
     {

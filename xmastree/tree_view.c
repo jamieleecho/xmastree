@@ -30,20 +30,23 @@ static void tree_view_draw_item(int x, int y, int image_id) {
 }
 
 
-int tree_view_handle_event(TreeView *view, UiEvent *event) {
+bool tree_view_handle_event(TreeView *view, UiEvent *event) {
     if (event->event_type != UiEventType_MouseClick) {
-        return FALSE;
+        return false;
     }
 
     int x = event->info.mouse.pt_wrx;
     int y = event->info.mouse.pt_wry;
     x = x - TOOLBOX_ITEM_WIDTH / 2;
     y = y - TOOLBOX_ITEM_HEIGHT / 2;
+    if ((x < view->x) || (y < view->y)) {
+        return false;
+    }
     TreeItem item = {x - view->x, y - view->y, view->item_id};
     tree_add_item(view->tree, &item);
     tree_view_draw_item(x, y, view->image_ids[view->item_id]);
     Flush();
-    return TRUE;
+    return true;
 }
 
 

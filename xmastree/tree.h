@@ -21,9 +21,9 @@ typedef struct {
 
 
 extern void tree_init(Tree *tree);
-extern int tree_open(Tree *tree, const char *filename);
-extern int tree_save(const Tree *tree, const char *filename);
-extern int tree_add_item(Tree *tree, const TreeItem *item);
+extern error_code tree_open(Tree *tree, const char *filename);
+extern error_code tree_save(const Tree *tree, const char *filename);
+extern error_code tree_add_item(Tree *tree, const TreeItem *item);
 extern void tree_remove_last_item(Tree *tree);
 int tree_get_item_count(const Tree *tree);
 

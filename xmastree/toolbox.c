@@ -17,7 +17,7 @@ void tool_box_init(ToolBox *toolbox, int x, int y, const int *image_ids, void (*
     toolbox->y = y;
     toolbox->width = TOOLBOX_WIDTH;
     toolbox->height = TOOLBOX_HEIGHT;
-    toolbox->is_visible = TRUE;
+    toolbox->is_visible = true;
     memcpy(toolbox->image_ids, image_ids, sizeof(toolbox->image_ids));
     toolbox->item = 0;
     toolbox->item_selected = item_selected;
@@ -25,11 +25,11 @@ void tool_box_init(ToolBox *toolbox, int x, int y, const int *image_ids, void (*
 }
 
 
-int tool_box_select_item_at_xy(ToolBox *toolbox, int x, int y) {
+bool tool_box_select_item_at_xy(ToolBox *toolbox, int x, int y) {
     if (!toolbox->is_visible ||
         (x < toolbox->x) || (x >= toolbox->x + toolbox->width) ||
         (y < toolbox->y) || (y >= toolbox->y + toolbox->height)) {
-        return FALSE;
+        return false;
     }
     x = (x - toolbox->x) / TOOLBOX_BUTTON_WIDTH;
     y = (y - toolbox->y) / TOOLBOX_BUTTON_HEIGHT;
@@ -49,13 +49,13 @@ static void tool_box_toggle_item_selection(ToolBox *toolbox) {
 }
 
 
-int tool_box_select_item(ToolBox *toolbox, int item) {
+bool tool_box_select_item(ToolBox *toolbox, int item) {
     if ((item < 0) || (item > TOOLBOX_NUM_ITEMS)) {
-        return FALSE;
+        return false;
     }
 
     if (item == toolbox->item) {
-        return TRUE;
+        return true;
     }
 
     tool_box_toggle_item_selection(toolbox);
@@ -64,7 +64,7 @@ int tool_box_select_item(ToolBox *toolbox, int item) {
     if (toolbox->item_selected) {
         toolbox->item_selected(toolbox);
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -81,14 +81,14 @@ void tool_box_clear(ToolBox *toolbox) {
 }
 
 
-void tool_box_set_is_visible(ToolBox *toolbox, int is_visible) {
+void tool_box_set_is_visible(ToolBox *toolbox, bool is_visible) {
     toolbox->is_visible = is_visible;
     tool_box_refresh(toolbox);
     Flush();
 }
 
 
-int tool_box_is_visible(ToolBox *toolbox) {
+bool tool_box_is_visible(ToolBox *toolbox) {
     return toolbox->is_visible;
 }
 

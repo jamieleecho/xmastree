@@ -19,23 +19,23 @@ void undo_manager_push_undo(UndoManager *undo_manager, const UndoItem *item) {
 }
 
 
-int undo_manager_can_undo(const UndoManager *undo_manager) {
+bool undo_manager_can_undo(const UndoManager *undo_manager) {
     return undo_manager->index > 0;
 }
 
 
-int undo_manager_undo(UndoManager *undo_manager) {
+bool undo_manager_undo(UndoManager *undo_manager) {
     if (!undo_manager_can_undo(undo_manager)) {
-        return FALSE;
+        return false;
     }
     UndoItem undo_item = undo_manager->undo_items[--undo_manager->index];
     undo_item.undo_function(undo_item.object);
     undo_manager->undo_marker = undo_manager->undo_marker - 1;
-    return TRUE;
+    return true;
 }
 
 
-int undo_manager_all_undone(const UndoManager *undo_manager) {
+bool undo_manager_all_undone(const UndoManager *undo_manager) {
     return undo_manager->undo_marker == 0;
 }
 

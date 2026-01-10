@@ -22,7 +22,7 @@ typedef struct {
 } TreeView;
 
 extern void tree_view_init(TreeView *view, Tree *tree, int item_id, const int *image_ids);
-extern int tree_view_handle_event(TreeView *view, UiEvent *event);
+extern bool tree_view_handle_event(TreeView *view, UiEvent *event);
 extern void tree_view_refresh(const TreeView *view);
 extern void tree_view_set_item_id(TreeView *view, int item_id);
 

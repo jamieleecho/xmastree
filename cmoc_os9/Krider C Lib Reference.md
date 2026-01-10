@@ -877,7 +877,7 @@ The following are the device types and returned values:
 
     0 = SCF     1 = RBF     2 = PIPE     3 = SBF
 
-`ISATTY`  functions in the same manner as __devtype,__  but returns __TRUE__  if the device is an `SCF`  type and __FALSE__  if it is not.
+`ISATTY`  functions in the same manner as __devtype,__  but returns __true__  if the device is an `SCF`  type and __false__  if it is not.
 ### NOTE
 
 `FOR COCO USERS:`  These functions do not return any different values for a Level II device window since they are defined as SCF type devices.
@@ -2562,7 +2562,7 @@ If no match is found, false is returned.
 If __flag__  is set as true, `PATMATCH`  will ignore the case of both strings buy calling the function __toupper()__  to make both the pattern and the string all uppercase characters prior to matching. Otherwise, an exact match is required.
 ### EXAMPLE
 
-    if (patmatch("*.ar", dir_string, TRUE) == TRUE)
+    if (patmatch("*.ar", dir_string, true) == true)
        puts("A match has been found");
     else
        puts("No match was found");
@@ -3199,7 +3199,7 @@ A -1 will be returned if the process does not have the same user ID as the calli
 `ADDC2SET`  adds the character __c__  to the set __s.__  No error is possible. Adding a single character or any value in the range 0 - 255 decimal is the same as ORing the bit that corresponds to the numeric value of that character, i.e., adding a character 'A' to the set will set bit number $41, 65 decimal.
 `ADDS2SET`  adds the string __p__  to the set __s.__  No error is possible. The string __p__  is added to the set in that same manner as `ADDC2SET`  above, but the entire string of bits is added in a bit-by-bit progression.
 `RMFMSET`  removes character __c__  from the set __s.__  Again, no error is possible. Removing a character from the set amounts to ANDing the bit at the position corresponding to the numeric value of the character as in `ADDC2SET`  above, but is the reverse procedure.
-`SMEMBER`  returns TRUE if character __c__  is a member of set __s,__  or returns FALSE if it is not a member.
+`SMEMBER`  returns true if character __c__  is a member of set __s,__  or returns false if it is not a member.
 `SUNION`  merges a second set __s2__  into the first set __s1.__
 `SINTERSECT`  returns any elements that only exist in both sets __s1__  and __s2.__
 `SDIFFERENCE`  returns unigue elements of both sets that are in the first set, __s1.__

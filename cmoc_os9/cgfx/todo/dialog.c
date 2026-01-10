@@ -66,7 +66,7 @@ DIALOG *dlgptr;
    CurXY(path,textptr->d_column,textptr->d_row);
   };
 
- while (TRUE)
+ while (true)
   {
    _Flush();
    ch=MouseKey(path); /* get a keypress or button click */
@@ -83,7 +83,7 @@ DIALOG *dlgptr;
          return(textptr->d_val);
         };
        textptr=0;
-      }        
+      }
      else if (ch==10) /* down arrow ? */
       {
        for (n=textnum+1,temp=textptr+1;temp->d_type!=D_END;n++,temp++)
@@ -137,7 +137,7 @@ DIALOG *dlgptr;
     continue;
 
    temp=&dlgptr[event];
-   
+
    if (temp->d_type==D_BUTTON)
     {
      BDown(path,temp->d_column,temp->d_row,temp->d_string);

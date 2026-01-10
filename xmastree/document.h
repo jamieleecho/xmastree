@@ -24,18 +24,18 @@ extern void document_init(Document *doc,
                           int (*new_model)(void *model, const char *path),
                           int (*open_model)(void *model, const char *path),
                           int (*save_model)(void *model, const char *path));
-extern int document_new(Document *doc);
-extern int document_open(Document *doc);
+extern bool document_new(Document *doc);
+extern bool document_open(Document *doc);
 extern void document_revert(Document *doc);
-extern int document_save_as(Document *doc);
-extern int document_save(Document *doc);
+extern error_code document_save_as(Document *doc);
+extern error_code document_save(Document *doc);
 extern void document_make_change(Document *doc, const UndoItem *undo_item);
-extern int document_is_dirty(const Document *doc);
-extern int document_can_new(const Document *doc);
-extern int document_can_open(const Document *doc);
-extern int document_can_revert(const Document *doc);
-extern int document_can_save(const Document *doc);
-extern int document_can_undo(const Document *doc);
-extern int document_undo(Document *doc);
+extern bool document_is_dirty(const Document *doc);
+extern bool document_can_new(const Document *doc);
+extern bool document_can_open(const Document *doc);
+extern bool document_can_revert(const Document *doc);
+extern bool document_can_save(const Document *doc);
+extern bool document_can_undo(const Document *doc);
+extern bool document_undo(Document *doc);
 
 #endif

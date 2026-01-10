@@ -47,7 +47,7 @@ char *title;
 
 
  OWSet(path,1,column,row,22,10,fg,bg); /* create an overlay window */
- 
+
  write(path,"\x1b\x3a\xc8\x01\x05 \x1b\x35\x00\x1bH\x00\xaf\x00\x4f\x1b@\x00\xa8\x00\x00\x1bD\x00\xa8\x00\x4f",27);
  OWSet(path,0,column,row,22,11,bg,fg);
  write(path,"\x03\x1b\x3a\xc8\x03\x06\xc7\x02\x35!\xc4\x02\x35)\xc3\x02\# \x1b\x3a\xc8\x01",22);
@@ -59,8 +59,8 @@ char *title;
 
  SetGC(path,GRP_PTR,PTR_ARR);
  _Flush();
- 
- while (TRUE)
+
+ while (true)
   {
    if ((dpath=open(".",READ | DIR))==-1)
     {
@@ -68,7 +68,7 @@ char *title;
      _ss_opt(path,&oldopts);
      return(0); /* return nothing if we can't open the current dir... */
     };
- 
+
    index=0;
 
    while (index<256)
@@ -85,12 +85,12 @@ char *title;
         index++;
        };
     };
- 
-   refresh=TRUE;
+
+   refresh=true;
    scrlsize=53/(numfiles/8+1);
    if (scrlsize<4)
     scrlsize=4;
-   
+
    startnum=-1;
    line=0;
 
@@ -101,7 +101,7 @@ char *title;
        OWSet(path,0,column,row,20,8,fg,bg);
        Clear(path);
        OWEnd(path);
-       
+
        for (index=startnum;index<startnum+8;index++)
         if (index<=numfiles)
          {
@@ -122,7 +122,7 @@ char *title;
          };
         refresh=0;
        };
-       
+
       FColor(path,bg);
       SetDPtr(path,170,17);
       Bar(path,173,71);
@@ -132,7 +132,7 @@ char *title;
       SetDPtr(path,170,temp);
       FColor(path,fg);
       RBar(path,3,scrlsize);
-       
+
       if ((line+startnum)==-1)
        strcpy(_FName,"[new file]");
       else
@@ -154,23 +154,23 @@ char *title;
          bflag=0;
        }
       while ((_gs_rdy(path)==-1) && !(mp.pt_cbsa ^ bflag));
-      
+
       CurXY(path,1,line+1);
       cwrite(path,_FName,19);
       _Flush();
-      
+
       if (_gs_rdy(path)==-1)
        ch=0;
       else
        read(path,&ch,1);
       mp.pt_wrx/=8;
       ypos=mp.pt_wry/8;
-      
+
       if (!mp.pt_valid && (ch==0))
        continue;
       if (ch)
        mp.pt_wrx=ypos=-1;
-     
+
       if ((((mp.pt_wrx==21) && (ypos==9)) || (ch==10)) && ((line+startnum)<numfiles)) /* down arrow ? */
        {
         line++;
@@ -215,7 +215,7 @@ char *title;
          {
           line=ypos-1;
           bflag=1;
-         }; 
+         };
       }
      else if (((mp.pt_wrx==1) && (ypos==0)) || ch==5) /* break ? */
       {
@@ -229,7 +229,7 @@ char *title;
        temp=startnum;
        startnum=(mp.pt_wry-16)*numfiles/56;
        if (temp!=startnum)
-        refresh=TRUE;
+        refresh=true;
       };
     };
   };

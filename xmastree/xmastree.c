@@ -171,7 +171,7 @@ static int xmastree_handle_key_event(UiEvent *event) {
     } else {
     }
 
-    return TRUE;
+    return true;
 }
 
 
@@ -193,7 +193,7 @@ static int xmastree_handle_click_event(UiEvent *event) {
         }
     }
 
-    return TRUE;
+    return true;
 }
 
 

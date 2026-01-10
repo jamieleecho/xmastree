@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -41,7 +42,7 @@ void document_init(Document *doc,
     doc->new_model = new_model;
     doc->save_model = save_model;
     doc->open_model = open_model;
-    doc->file_backed = FALSE;
+    doc->file_backed = false;
     doc->default_path = default_path;
     doc->extension = extension;
     strncpy(doc->path, path ? path : default_path, sizeof(doc->path));
@@ -54,9 +55,9 @@ void document_init(Document *doc,
 }
 
 
-int document_new(Document *doc) {
+bool document_new(Document *doc) {
     if (!doc->new_model) {
-        return FALSE;
+        return false;
     }
 
     if (document_is_dirty(doc)) {
@@ -64,7 +65,7 @@ int document_new(Document *doc) {
              MessageBoxResult_Yes) {
             if (document_save(doc)) {
                 show_message_box("New aborted.", MessageBoxType_Info);
-                return FALSE;
+                return false;
             }
         }
     }
@@ -74,21 +75,21 @@ int document_new(Document *doc) {
     if (err) {
         sprintf(message, "Failed to create\r\ndocument.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);
-        return FALSE;
+        return false;
     }
     strncpy(doc->path, doc->default_path, sizeof(doc->path));
     doc->path[APP_PATH_MAX - 1] = 0;
     doc_ensure_extension(doc);
-    doc->file_backed = FALSE;
+    doc->file_backed = false;
     undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
-    return TRUE;
+    return true;
 }
 
 
-int document_open(Document *doc) {
+bool document_open(Document *doc) {
     if (!doc->open_model) {
-        return FALSE;
+        return false;
     }
 
     if (document_is_dirty(doc)) {
@@ -96,13 +97,13 @@ int document_open(Document *doc) {
              MessageBoxResult_Yes) {
             if (document_save(doc)) {
                 show_message_box("Open aborted.", MessageBoxType_Info);
-                return FALSE;
+                return false;
             }
         }
     }
 
     if (!show_open_dialog(doc->path)) {
-        return FALSE;
+        return false;
     }
 
     doc_ensure_extension(doc);
@@ -114,18 +115,18 @@ int document_open(Document *doc) {
     if (err) {
         sprintf(message, "Failed to load document.\r\nError = %d", err);
         show_message_box(message, MessageBoxType_Error);
-        doc->file_backed = FALSE;
-        return TRUE;
+        doc->file_backed = false;
+        return true;
     } else {
-        doc->file_backed = TRUE;
+        doc->file_backed = true;
     }
     undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
-    return TRUE;
+    return true;
 }
 
 
-static int document_save_internal(Document *doc) {
+static error_code document_save_internal(Document *doc) {
     doc_ensure_extension(doc);
     int fd = open(doc->path, FAP_READ);
     if (fd >= 0) {
@@ -145,7 +146,7 @@ static int document_save_internal(Document *doc) {
         show_message_box(message, MessageBoxType_Error);
         return err;
     }
-    doc->file_backed = TRUE;
+    doc->file_backed = true;
     undo_manager_reset_undo_marker(&(doc->undo_manager));
     app_refresh_menubar();
     return 0;
@@ -176,7 +177,7 @@ void document_revert(Document *doc) {
 }
 
 
-int document_save_as(Document *doc) {
+error_code document_save_as(Document *doc) {
     if (!doc->save_model) {
         return 0;
     }
@@ -189,7 +190,7 @@ int document_save_as(Document *doc) {
 }
 
 
-int document_save(Document *doc) {
+error_code document_save(Document *doc) {
     if (!doc->save_model) {
         return 0;
     }
@@ -210,40 +211,40 @@ void document_make_change(Document *doc, const UndoItem *undo_item) {
 }
 
 
-int document_is_dirty(const Document *doc) {
+bool document_is_dirty(const Document *doc) {
     /* Possible optimizer error when we use ! instead of == */
     return undo_manager_all_undone(&(doc->undo_manager)) == 0;
 }
 
 
-int document_can_new(const Document *doc) {
+bool document_can_new(const Document *doc) {
     return doc->new_model != NULL;
 }
 
 
-int document_can_open(const Document *doc) {
+bool document_can_open(const Document *doc) {
     return doc->open_model != NULL;
 }
 
 
-int document_can_revert(const Document *doc) {
+bool document_can_revert(const Document *doc) {
     return doc->open_model != NULL;
 }
 
 
-int document_can_save(const Document *doc) {
+bool document_can_save(const Document *doc) {
     return doc->save_model != NULL;
 }
 
 
-int document_can_undo(const Document *doc) {
+bool document_can_undo(const Document *doc) {
     return undo_manager_can_undo(&(doc->undo_manager));
 }
 
 
-int document_undo(Document *doc) {
+bool document_undo(Document *doc) {
     if (undo_manager_all_undone(&(doc->undo_manager))) {
-        return FALSE;
+        return false;
     }
     int val = undo_manager_undo(&(doc->undo_manager));
     if (val || undo_manager_all_undone(&(doc->undo_manager))) {

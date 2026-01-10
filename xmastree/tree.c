@@ -5,6 +5,9 @@
 #include "tree.h"
 
 
+#define MIN_COORDINATE (-12)
+
+
 void tree_init(Tree *tree) {
     tree->num_items = 0;
 }
@@ -16,7 +19,7 @@ static int tree_validate(Tree *tree) {
     }
     for (int ii=0; ii<tree->num_items; ii++) {
         TreeItem *item = tree->items + ii;
-        if ((item->x < 0) || (item->x > 319) || (item->y < 0) || (item->y > 199) ||
+        if ((item->x < MIN_COORDINATE) || (item->x > 319) || (item->y < MIN_COORDINATE) || (item->y > 199) ||
             (item->item_id < 0) || (item->item_id > TREE_MAX_ITEM_ID)) {
             return E$BMHP;
         }
@@ -25,7 +28,7 @@ static int tree_validate(Tree *tree) {
 }
 
 
-int tree_open(Tree *tree, const char *filename) {
+error_code tree_open(Tree *tree, const char *filename) {
     int fd = open(filename, FAP_READ);
     if (fd < 0) {
         return errno;
@@ -47,7 +50,7 @@ int tree_open(Tree *tree, const char *filename) {
 }
 
 
-int tree_save(const Tree *tree, const char *filename) {
+error_code tree_save(const Tree *tree, const char *filename) {
     int fd = creat(filename, FAP_WRITE);
     if (fd < 0) {
         return errno;
@@ -68,11 +71,12 @@ int tree_save(const Tree *tree, const char *filename) {
 }
 
 
-int tree_add_item(Tree *tree, const TreeItem *item) {
+error_code tree_add_item(Tree *tree, const TreeItem *item) {
     if (tree->num_items >= TREE_MAX_ITEMS) {
         return E$MemFul;
     }
     tree->items[tree->num_items++] = *item;
+    return 0;
 }
 
 

@@ -100,7 +100,7 @@ sleep(void)
 static void run_event_loop(UiEvent *event) {
     int local_sig;
 
-    while(TRUE) {
+    while(true) {
         sigcode = 0;
         do {
             _cgfx_ss_ssig(OUTPATH, KEY_SIG);
@@ -138,7 +138,7 @@ static int refresh_menu_bar;
 
 
 extern void app_refresh_menubar() {
-    refresh_menu_bar = TRUE;
+    refresh_menu_bar = true;
 }
 
 
@@ -154,8 +154,8 @@ void run_application(WNDSCR *mywindow, void (*init)(void),
     intercept();
 
     _cgfx_curoff(OUTPATH);
-    _cgfx_tcharsw(OUTPATH, FALSE);
-    _cgfx_scalesw(OUTPATH, FALSE);
+    _cgfx_tcharsw(OUTPATH, false);
+    _cgfx_scalesw(OUTPATH, false);
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
     _cgfx_ss_mouse(OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
 
@@ -163,16 +163,16 @@ void run_application(WNDSCR *mywindow, void (*init)(void),
     if (init) {
         init();
     }
-    refresh_menu_bar = TRUE;
+    refresh_menu_bar = true;
 
-    while(TRUE) {
+    while(true) {
         if (refresh_menu_bar) {
             if (refresh_menus_action) {
                 refresh_menus_action();
             }
 
             _cgfx_ss_umbar(OUTPATH);
-            refresh_menu_bar = FALSE;
+            refresh_menu_bar = false;
         }
 
         run_event_loop(&event);
@@ -242,7 +242,7 @@ static void set_reverse_video(const UiObject *object) {
 
 static void focus_text_box(const UiObject *object) {
     set_reverse_video(object);
-    _cgfx_boldsw(OUTPATH, TRUE);
+    _cgfx_boldsw(OUTPATH, true);
     _cgfx_curon(OUTPATH);
 }
 
@@ -306,7 +306,7 @@ int handle_text_box_key_event(UiObject *object, char c) {
         int x, y;
         if (c == '\b') {
             if (sz == 0) {
-                return TRUE;
+                return true;
             }
             sz = sz - 1;
             object->options.text_box.text[sz] = 0;
@@ -315,7 +315,7 @@ int handle_text_box_key_event(UiObject *object, char c) {
             if (sz >= APP_PATH_MAX - 1) {
                 _cgfx_bell(OUTPATH);
                 Flush();
-                return TRUE;
+                return true;
             }
 
             object->options.text_box.text[sz] = c;
@@ -331,9 +331,9 @@ int handle_text_box_key_event(UiObject *object, char c) {
             _cgfx_curxy(OUTPATH, x + object->x, y + object->y);
             Flush();
         }
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 
@@ -357,7 +357,7 @@ static int wait_for_button_press(UiObject *objects, int num_objects, UiObject **
         focus_text_box(*key_object);
     }
 
-    while (TRUE) {
+    while (true) {
         run_event_loop(&event);
 
         if (event.event_type == UiEventType_KeyPress) {

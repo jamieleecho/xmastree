@@ -9,9 +9,8 @@ extern int errno;
 
 typedef int error_code;
 
-/* These probably need to go into cmoc.h */
+/* This probably needs to go into cmoc.h */
 typedef unsigned char byte;
-typedef byte BOOL;
 
 /* System calls */
 #define F$Link          0x00
@@ -299,8 +298,8 @@ typedef struct _registers_6809 {
 /**
  * @brief Perform a system call.
  *
- * @param callcode 
- * @param registers Address of the structure containing the 6809 registers. 
+ * @param callcode
+ * @param registers Address of the structure containing the 6809 registers.
  * @return 0 if successful, otherwise the error code.
  */
 error_code _os_syscall(int callcode, registers_6809 *registers);

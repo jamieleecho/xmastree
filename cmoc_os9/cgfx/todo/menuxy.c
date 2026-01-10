@@ -23,7 +23,7 @@ is created on 'path' with a foreground color of 'fg' and a background color
 of 'bg'.  The user can use the up and down arrow keys to highlight the item
 he/she wants.  If the item is disabled, then the item will be skipped, other-
 wise the function pointed to by 'func' will be executed.  'title' is the title
-that is displayed at the top of the overlay window.  If the user presses the 
+that is displayed at the top of the overlay window.  If the user presses the
 BREAK key during the selection proceess, the function will return after
 closing  the overlay without calling any of the item functions.
 Note that because of the limitations of screen size, do not have more than 19
@@ -31,7 +31,7 @@ items  for any given menu (or 20 if you have patched GRFDRV for 25 lines.)
 The array of items should end with an element with the name field NULL.
 'Menu' also returns the item # selected or 0 (if BREAK was pressed.)
 */
- 
+
 int MenuXY(path,title,itemptr,column,row,fg,bg)
 register int path;
 int fg,bg,column,row;
@@ -41,7 +41,7 @@ ITEM itemptr[];
  int index,numitems;
  char ch; /* for keypresses */
  int width,offset;
- 
+
  numitems=0;
  if (levels==0)
   {
@@ -52,7 +52,7 @@ ITEM itemptr[];
   };
 
  width=strlen(title);
- 
+
  while (itemptr[numitems].i_name)
   {
    if (width<(index=strlen(itemptr[numitems].i_name)))
@@ -84,8 +84,8 @@ ITEM itemptr[];
   };
 
  for (index=0;!itemptr[index].i_enabled;index++);
-   
- while (TRUE) /* OK, let's just stick around 'till we do something */
+
+ while (true) /* OK, let's just stick around 'till we do something */
   {
    CurXY(path,1,index+offset);
    RevOn(path);
@@ -97,7 +97,7 @@ ITEM itemptr[];
    RevOff(path);
    cwrite(path,itemptr[index].i_name,80);
    _Flush();
-   
+
    if (ch==0x0a) /* down arrow ? */
     do
      {
@@ -105,8 +105,8 @@ ITEM itemptr[];
       if (index==numitems)
        index=0;
      }
-    while (itemptr[index].i_enabled==FALSE);
-    
+    while (itemptr[index].i_enabled==false);
+
    else if (ch==0x0c) /* up arrow ? */
     do
      {
@@ -114,15 +114,15 @@ ITEM itemptr[];
       if (index<0)
        index+=numitems;
      }
-    while (itemptr[index].i_enabled==FALSE);
- 
+    while (itemptr[index].i_enabled==false);
+
    else if (ch==0x0d)
     {
      if (itemptr[index].i_enabled==MN_SUBMN)
       {
        index+=1+16*MenuXY(path,0,itemptr[index].i_func,column+width-1,row+offset,bg,fg);
        return (index);
-      };    
+      };
      remove(path); /* close the overlay */
      _ss_opt(path,&oldopts);
      if (itemptr[index].i_func)
