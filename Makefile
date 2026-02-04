@@ -38,7 +38,7 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
-.PHONY := help libc libcgfx all clean run check-all check-lock check-lint check-types \
+.PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
 		   install-pre-commit lock run-tests sync fix-all fix-format \
 		   fix-lint fix-lint-unsafe assets
 
@@ -123,18 +123,15 @@ check-lint: check-lock
 check-lock:
 	uv lock --locked
 
-check-types:
-	uv run mypy -m xmastree_utilities -m tests
-
 .venv:
 	uv venv
 
-utilities: .venv pyproject.toml xmastree_utilities/*.py
-	uv sync
-	uv pip install .
+utilities: .venv
+	uv pip install coco-tools==0.25
 	touch utilities
 
-install-pre-commit:
+install-pre-commit: .venv
+	uv pip install pre-commit
 	uv run pre-commit install
 
 lock:
