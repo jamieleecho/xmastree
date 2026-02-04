@@ -15,6 +15,7 @@ jobs:
 
       - name: Check linting, formatting
         run: |
+          cd ${{ github.workspace }}
           make check-all
 
   check-build:
@@ -27,12 +28,15 @@ jobs:
 
       - name: Install Requirements
         run: |
+          cd ${{ github.workspace }}
           make sync
 
       - name: Run tests
         run: |
+          cd ${{ github.workspace }}
           make run-tests
 
       - name: Check compile
         run: |
+          cd ${{ github.workspace }}
           make
