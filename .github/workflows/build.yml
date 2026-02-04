@@ -8,6 +8,7 @@ jobs:
   check-linting-and-formatting:
     runs-on: ubuntu-latest
     container: jamieleecho/coco-dev:latest
+    options: --user root
     steps:
       - uses: actions/checkout@master
 
@@ -18,6 +19,7 @@ jobs:
   check-build:
     runs-on: ubuntu-latest
     container: jamieleecho/coco-dev:latest
+    options: --user root
     steps:
       - uses: actions/checkout@master
 
@@ -28,7 +30,7 @@ jobs:
       - name: Run tests
         run: |
           make run-tests
-      
+
       - name: Check compile
         run: |
           make
