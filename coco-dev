@@ -7,7 +7,7 @@ else
   params=( bash )
 fi
 
-COCO_DEV_IMAGE=jamieleecho/coco-dev:0.71
+COCO_DEV_IMAGE=jamieleecho/coco-dev:latest
 
 case "$(uname -s)" in
 
@@ -27,7 +27,7 @@ case "$(uname -s)" in
    # See correspondence table at the bottom of this answer
 
    *)
-     echo 'Unknown OS not supported' 
+     echo 'Unknown OS not supported'
      ;;
 esac
 

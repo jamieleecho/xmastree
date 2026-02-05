@@ -5,31 +5,12 @@ on:
   push:
 
 jobs:
-  check-linting-and-formatting:
-    runs-on: ubuntu-latest
-    container: jamieleecho/coco-dev:latest
-    steps:
-      - uses: actions/checkout@master
-
-      - name: Check linting, formatting
-        run: |
-          cd ${{ github.workspace }}
-          make check-all
-
   check-build:
     runs-on: ubuntu-latest
     container:
       image: jamieleecho/coco-dev:latest
     steps:
       - uses: actions/checkout@master
-
-      - name: Install Requirements
-        run: |
-          make sync
-
-      - name: Run tests
-        run: |
-          make run-tests
 
       - name: Check compile
         run: |

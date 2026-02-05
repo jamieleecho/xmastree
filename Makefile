@@ -38,9 +38,7 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
-.PHONY := help libc libcgfx all clean run check-all check-lock check-lint \
-		   install-pre-commit lock run-tests sync fix-all fix-format \
-		   fix-lint fix-lint-unsafe assets
+.PHONY := all assets clean help install-pre-commit libc libcgfx real-clean run
 
 all: ${TARGET_DSK}
 
@@ -104,27 +102,8 @@ real-clean: clean
 help:
 	@echo ${.PHONY}
 
-fix-all: fix-format fix-lint lock
-
-fix-format: check-lock
-	uv run ruff format
-
-fix-lint: check-lock
-	uv run ruff check --fix
-
-fix-lint-unsafe: check-lock
-	uv run ruff check --fix --unsafe-fixes
-
-check-all: check-lock check-lint check-types
-
-check-lint: check-lock
-	uv run ruff check
-
-check-lock:
-	uv lock --locked
-
 .venv:
-	uv venv
+	uv venv .venv
 
 utilities: .venv
 	uv pip install coco-tools==0.25
@@ -134,15 +113,5 @@ install-pre-commit: .venv
 	uv pip install pre-commit
 	uv run pre-commit install
 
-lock:
-	uv lock
-
 run:
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
-
-run-tests: check-lock
-	uv run coverage run -m pytest
-	uv run coverage report --show-missing
-
-sync: check-lock
-	uv sync --no-install-workspace

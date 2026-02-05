@@ -1,6 +1,10 @@
 {
   "name": "coco-dev Environment",
   "image": "jamieleecho/coco-dev:latest",
+  "containerEnv": {
+      "VIRTUAL_ENV": "/home/vscode/.venv",
+      "PATH": "/home/vscode/.venv/bin:/root/venv/bin:${localEnv:PATH}"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
