@@ -16,14 +16,14 @@ TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.pn
 TARGET_SYS_IMAGES_DIR := SYS/${SOURCE}
 TARGET_AIF := ${BUILD}/aif.${SHORT_3_NAME}
 SOURCE_AIF := ${ASSETS}/$(notdir ${TARGET_AIF})
-TARGET_DSK := ${TARGET}.dsk
+TARGET_DSK := ${TARGET}.os9
 CFILES := $(wildcard ${SOURCE}/*.c)
 
 MAME_DIR := ~/Applications/mame
 MAME_ROM_PATH := $(MAME_DIR)/roms
 EMULATED_SYSTEM := coco3
 MAME := $(MAME_DIR)/mame
-MAME_FLAGS := -speed 4 -window -cfg_directory ${ASSETS}/mame-cfgs -rompath $(MAME_ROM_PATH) ${ASSETS }-ext:fdc:wd17xx:0 525qd
+MAME_FLAGS := -speed 4 -window -cfg_directory ${ASSETS}/mame-cfgs -rompath $(MAME_ROM_PATH) -ext:fdc:wd17xx:0 525qd
 MAME_COMMAND := $(MAME) $(EMULATED_SYSTEM) $(MAME_FLAGS)
 
 CC := cmoc
@@ -32,7 +32,7 @@ CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 
-BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.dsk
+BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.os9
 IMGTOOL_MAKDIR := os9 makdir
 IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
@@ -44,24 +44,19 @@ all: ${TARGET_DSK}
 
 ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES}
 	echo "Creating disk image $@ with program ${TARGET}"
-	@head -c 2 ${BASEIMAGE} > $@_head.tmp
-	@tail -c +3 ${BASEIMAGE} > $@.tmp  # Remove 2-byte header (start at char 3)
-	@${IMGTOOL_MAKDIR} $@.tmp,CMDS/ICONS
-	@${IMGTOOL_MAKDIR} $@.tmp,${TARGET_SYS_IMAGES_DIR}
-	@${IMGTOOL_COPY} ${TARGET} $@.tmp,CMDS/$(notdir ${TARGET})
-	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/$(notdir ${TARGET})
-	@${IMGTOOL_COPY} ${TARGET_ICON} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
-	@${IMGTOOL_ATTR_EX} $@.tmp,CMDS/ICONS/$(notdir ${TARGET_ICON})
-	@${IMGTOOL_COPY} ${TARGET_AIF} $@.tmp,$(notdir ${TARGET_AIF})
-	@${IMGTOOL_ATTR_RO} $@.tmp,$(notdir ${TARGET_AIF})
+	@${IMGTOOL_MAKDIR} $@,CMDS/ICONS
+	@${IMGTOOL_MAKDIR} $@,${TARGET_SYS_IMAGES_DIR}
+	@${IMGTOOL_COPY} ${TARGET} $@,CMDS/$(notdir ${TARGET})
+	@${IMGTOOL_ATTR_EX} $@,CMDS/$(notdir ${TARGET})
+	@${IMGTOOL_COPY} ${TARGET_ICON} $@,CMDS/ICONS/$(notdir ${TARGET_ICON})
+	@${IMGTOOL_ATTR_EX} $@,CMDS/ICONS/$(notdir ${TARGET_ICON})
+	@${IMGTOOL_COPY} ${TARGET_AIF} $@,$(notdir ${TARGET_AIF})
+	@${IMGTOOL_ATTR_RO} $@,$(notdir ${TARGET_AIF})
 	echo ${TARGET_IMAGES}
 	@for each in ${TARGET_IMAGES}; do \
-		${IMGTOOL_COPY} $${each} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
-		${IMGTOOL_ATTR_RO} $@.tmp,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
+		${IMGTOOL_COPY} $${each} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
+		${IMGTOOL_ATTR_RO} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
 	done
-	@cat $@_head.tmp $@.tmp > $@
-	@rm -f $@*.tmp  # Clean up temporary files
-
 
 ${BUILD}:
 	mkdir -p ${BUILD}
@@ -97,9 +92,7 @@ libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
 clean:
-	@$(MAKE) -C ${CMOC_OS9_LIBC_DIR} clean
-	@$(MAKE) -C ${CMOC_OS9_CGFX_DIR} clean
-	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities cmoc_os9
+	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities ${CMOC_OS9_DIR}
 
 real-clean: clean
 	@rm -rf .venv **/*~ **/__pycache__
