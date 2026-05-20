@@ -85,16 +85,21 @@ ${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DI
 ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
 	uv run png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
 
-libc:
+cmoc_os9:
+	git clone https://github.com/nitros9project/cmoc_os9.git && \
+	  cd cmoc_os9 && \
+	  git switch codex/cmoc-os9-libc-port-and-assembly-normalization
+
+libc: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
 
-libcgfx:
+libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
 clean:
 	@$(MAKE) -C ${CMOC_OS9_LIBC_DIR} clean
 	@$(MAKE) -C ${CMOC_OS9_CGFX_DIR} clean
-	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities
+	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities cmoc_os9
 
 real-clean: clean
 	@rm -rf .venv **/*~ **/__pycache__
