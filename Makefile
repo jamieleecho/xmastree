@@ -44,6 +44,7 @@ all: ${TARGET_DSK}
 
 ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES}
 	echo "Creating disk image $@ with program ${TARGET}"
+	@cp ${BASEIMAGE} $@
 	@${IMGTOOL_MAKDIR} $@,CMDS/ICONS
 	@${IMGTOOL_MAKDIR} $@,${TARGET_SYS_IMAGES_DIR}
 	@${IMGTOOL_COPY} ${TARGET} $@,CMDS/$(notdir ${TARGET})
@@ -52,7 +53,6 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 	@${IMGTOOL_ATTR_EX} $@,CMDS/ICONS/$(notdir ${TARGET_ICON})
 	@${IMGTOOL_COPY} ${TARGET_AIF} $@,$(notdir ${TARGET_AIF})
 	@${IMGTOOL_ATTR_RO} $@,$(notdir ${TARGET_AIF})
-	echo ${TARGET_IMAGES}
 	@for each in ${TARGET_IMAGES}; do \
 		${IMGTOOL_COPY} $${each} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
 		${IMGTOOL_ATTR_RO} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
