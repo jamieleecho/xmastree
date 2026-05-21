@@ -1,7 +1,12 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "keyboard.h"
+#include "mouse.h"
+
 #include "app.h"
 
 
@@ -171,9 +176,9 @@ typedef struct sgbuf { /* structure for 'getstat()' and 'setstat()' */
 
 void echo_sw(path_id path, char on) {
     SCF_OPT options;
-    cgfx_gs_opt(path, &options);
+    _gs_opt(path, &options);
     options.sg_echo = on;
-    cgfx_ss_opt(path, &options);
+    _ss_opt(path, &options);
 }
 
 

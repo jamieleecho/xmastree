@@ -83,7 +83,7 @@ ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_D
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
 	  cd cmoc_os9 && \
-	  git switch codex/cmoc-os9-libc-port-and-assembly-normalization
+	  git switch cmoc-os9-libc-port-and-assembly-normalization-minor-patches
 
 libc: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
