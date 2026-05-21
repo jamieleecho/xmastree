@@ -12,6 +12,8 @@
 #define MN_HELP 30
 
 
+error_code Flush(void);
+
 typedef enum {
     UiEventType_KeyPress,
     UiEventType_MouseClick
