@@ -11,7 +11,7 @@ TARGET_IMAGES_DIR := ${BUILD}/images
 TARGET_ICON := ${BUILD}/icon.${SHORT_3_NAME}
 SOURCE_ICON := ${ASSETS}/app-icon.png
 SYS_IMAGES_DIR := ${ASSETS}/sys-images
-SOURCE_IMAGES :=  $(wildcard ${SYS_IMAGES_DIR}/*.png)
+SOURCE_IMAGES := $(wildcard ${SYS_IMAGES_DIR}/*.png)
 TARGET_IMAGES := $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(SOURCE_IMAGES:.png=.i09))) $(addsuffix m.i09, $(addprefix ${TARGET_IMAGES_DIR}/, $(notdir $(basename ${SOURCE_IMAGES}))))
 TARGET_SYS_IMAGES_DIR := SYS/${SOURCE}
 TARGET_AIF := ${BUILD}/aif.${SHORT_3_NAME}
@@ -38,8 +38,9 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
-.PHONY := all assets clean help install-pre-commit libc libcgfx real-clean run
+.PHONY: all clean help install-pre-commit libc libcgfx real-clean run
 
+## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
 
 ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES}
@@ -61,44 +62,58 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 ${BUILD}:
 	mkdir -p ${BUILD}
 
-${TARGET}: libc libcgfx $(CFILES) ${BUILD}
+${TARGET}: libc libcgfx $(CFILES) | ${BUILD}
 	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lc -lcgfx
 
-${TARGET_ICON}: ${SOURCE_ICON} ${BUILD} utilities
+${TARGET_ICON}: ${SOURCE_ICON} utilities | ${BUILD}
 	uv run png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
 
-${TARGET_AIF}: ${SOURCE_AIF} ${BUILD}
+${TARGET_AIF}: ${SOURCE_AIF} | ${BUILD}
 	@dos2unix -q -n ${SOURCE_AIF} $@
 	@unix2mac -q $@
 
 ${TARGET_IMAGES_DIR}:
 	mkdir -p ${TARGET_IMAGES_DIR}
 
-${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR} ${APP_PALLETTE}
+${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png ${APP_PALLETTE} utilities | ${TARGET_IMAGES_DIR}
 	uv run png-to-os9-image $< ${APP_PALLETTE} $@
 
-${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities ${TARGET_IMAGES_DIR}
+${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities | ${TARGET_IMAGES_DIR}
 	uv run png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
 
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
-	  cd cmoc_os9 && \
-	  git switch cmoc-os9-libc-port-and-assembly-normalization-minor-patches
+	cd cmoc_os9 && \
+	git checkout e77ba4cd490df33262e2bf9a830ff341180fe09c
 
+## Build the cmoc_os9 C library (libc)
 libc: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_LIBC_DIR} all
 
+## Build the cmoc_os9 CoCo graphics library (libcgfx)
 libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
+## Remove build artifacts and the cmoc_os9 checkout
 clean:
 	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities ${CMOC_OS9_DIR}
 
+## Remove everything clean removes, plus the Python virtualenv and caches
 real-clean: clean
 	@rm -rf .venv **/*~ **/__pycache__
 
+## Show this help message
 help:
-	@echo ${.PHONY}
+	@awk 'BEGIN { \
+		FS = ":"; \
+		printf "Usage: make \033[36m<target>\033[0m\n\nTargets:\n"; \
+	} \
+	/^## / { doc = substr($$0, 4); next } \
+	/^[a-zA-Z_][a-zA-Z0-9_-]*:/ { \
+		if (doc) printf "  \033[36m%-20s\033[0m %s\n", $$1, doc; \
+		doc = ""; next; \
+	} \
+	{ doc = "" }' $(MAKEFILE_LIST)
 
 .venv:
 	uv venv .venv
@@ -107,9 +122,11 @@ utilities: .venv
 	uv pip install coco-tools==0.25
 	touch utilities
 
+## Install and configure the pre-commit Git hook
 install-pre-commit: .venv
 	uv pip install pre-commit
 	uv run pre-commit install
 
-run:
+## Run the disk image in the MAME CoCo 3 emulator
+run: ${TARGET_DSK}
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
