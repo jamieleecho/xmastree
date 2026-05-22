@@ -38,7 +38,7 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
-.PHONY: all check-all check-lint check-lock clean fix-all fix-format fix-lint fix-lint-unsafe help install-pre-commit libc libcgfx real-clean run
+.PHONY: all clean help install-pre-commit libc libcgfx real-clean run
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
@@ -96,7 +96,7 @@ libcgfx: cmoc_os9
 
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
-	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} utilities ${CMOC_OS9_DIR}
+	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} ${CMOC_OS9_DIR}
 
 ## Remove everything clean removes, plus the Python virtualenv and caches
 real-clean: clean
@@ -115,38 +115,8 @@ help:
 	} \
 	{ doc = "" }' $(MAKEFILE_LIST)
 
-## Run all auto-fixers (format, lint, lock)
-fix-all: fix-format fix-lint lock
-
-## Auto-format Python sources with ruff
-fix-format: check-lock
-	uv run ruff format
-
-## Auto-fix lint issues with ruff
-fix-lint: check-lock
-	uv run ruff check --fix
-
-## Auto-fix lint issues with ruff, including unsafe fixes
-fix-lint-unsafe: check-lock
-	uv run ruff check --fix --unsafe-fixes
-
-## Run all checks (lock, lint, types)
-check-all: check-lock check-lint check-types
-
-## Check for lint issues with ruff
-check-lint: check-lock
-	uv run ruff check
-
-## Verify uv.lock is consistent with pyproject.toml
-check-lock:
-	uv lock --locked
-
 .venv:
 	uv venv .venv
-
-utilities: .venv
-	uv pip install coco-tools==0.25
-	touch utilities
 
 ## Install and configure the pre-commit Git hook
 install-pre-commit: .venv

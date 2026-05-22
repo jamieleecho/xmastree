@@ -94,10 +94,10 @@ If you have your MAME installed in `~/Applications/mame` and your roms in
 
 * `make all` -- build the xmastree.dsk file.
 * `make clean` -- clean out the folder.
+* `make help` -- Show this help message.
 * `make install-pre-commit` -- install pre-commit hooks.
 * `make real-clean` -- clean out the folder including the virtual Python environment.
-* `make run-tests` -- run unit tests.
-* `make sync` -- create a Python virtual environment and install all dependencies.
+* `make run` -- Run the disk image in the MAME CoCo 3 emulator
 
 ### Using Visual Studio Code
 
