@@ -65,8 +65,8 @@ ${BUILD}:
 ${TARGET}: libc libcgfx $(CFILES) | ${BUILD}
 	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lc -lcgfx
 
-${TARGET_ICON}: ${SOURCE_ICON} utilities | ${BUILD}
-	uv run png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
+${TARGET_ICON}: ${SOURCE_ICON} | ${BUILD}
+	png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
 
 ${TARGET_AIF}: ${SOURCE_AIF} | ${BUILD}
 	@dos2unix -q -n ${SOURCE_AIF} $@
@@ -75,11 +75,11 @@ ${TARGET_AIF}: ${SOURCE_AIF} | ${BUILD}
 ${TARGET_IMAGES_DIR}:
 	mkdir -p ${TARGET_IMAGES_DIR}
 
-${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png ${APP_PALLETTE} utilities | ${TARGET_IMAGES_DIR}
-	uv run png-to-os9-image $< ${APP_PALLETTE} $@
+${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png ${APP_PALLETTE} ${TARGET_IMAGES_DIR}
+	png-to-os9-image $< ${APP_PALLETTE} $@
 
-${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png utilities | ${TARGET_IMAGES_DIR}
-	uv run png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
+${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png ${TARGET_IMAGES_DIR}
+	png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
 
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
