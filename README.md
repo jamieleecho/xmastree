@@ -114,10 +114,6 @@ You can also use this with Visual Studio Code Dev Containers. See [these documen
 
 The C files in this project are compiled with the CMOC compiler.
 
-### [cmoc_os9](https://github.com/tlindner/cmoc_os9)
-
-This repo copies and modifies files from cmoc_os9.
-
 ### [LWTOOLS](https://www.lwtools.ca)
 
 LWTOOLS are used to assemble and link the binaries created by this project.

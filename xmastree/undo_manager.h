@@ -1,7 +1,7 @@
 #ifndef _UNDO_MANAGER_H
 #define _UNDO_MANAGER_H
 
-#include <stdbool.h>
+#include "stdbool.h"
 
 #define UNDO_MANAGER_MAX_UNDOS 16
 

@@ -1,9 +1,9 @@
 #ifndef _APP_H_
 #define _APP_H_
 
-#include <stdbool.h>
 #include <stdlib.h>
 #include <cgfx.h>
+#include "stdbool.h"
 
 #define INPATH 0
 #define OUTPATH 1
@@ -11,6 +11,8 @@
 
 #define MN_HELP 30
 
+
+error_code Flush(void);
 
 typedef enum {
     UiEventType_KeyPress,

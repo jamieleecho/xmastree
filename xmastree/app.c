@@ -1,7 +1,12 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "keyboard.h"
+#include "mouse.h"
+
 #include "app.h"
 
 
@@ -86,26 +91,15 @@ intercept()
 }
 
 
-asm void
-sleep(void)
-{
-    asm
-    {
-        os9     F$Sleep
-        rts
-    }
-}
-
-
 static void run_event_loop(UiEvent *event) {
     int local_sig;
 
     while(true) {
         sigcode = 0;
         do {
-            _cgfx_ss_ssig(OUTPATH, KEY_SIG);
-            _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
-            sleep();
+            cgfx_ss_ssig(OUTPATH, KEY_SIG);
+            cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+            sleep(0);
         } while (sigcode == 0);
         local_sig = sigcode;
 
@@ -126,11 +120,20 @@ static void run_event_loop(UiEvent *event) {
 }
 
 
+/* window type defs */
+#define WT_NBOX		0		/* No box- default window type */
+#define WT_FWIN		1		/* Framed window with menus */
+#define WT_FSWIN	2		/* Framed window with menus and scroll bars */
+#define WT_SBOX		3		/* Shadowed window- form menus */
+#define WT_DBOX		4		/* Double border- for dialog boxes */
+#define WT_PBOX		5		/* Plain border- anything */
+
+
 void echo_sw(path_id path, char on) {
-    SCF_OPT options;
-    _cgfx_gs_opt(path, &options);
+    struct sgbuf options;
+    _gs_opt(path, &options);
     options.sg_echo = on;
-    _cgfx_ss_opt(path, &options);
+    _ss_opt(path, &options);
 }
 
 

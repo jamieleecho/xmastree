@@ -1,9 +1,10 @@
 #include <cgfx.h>
 #include <fcntl.h>
 #include <os.h>
-#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "stdbool.h"
 
 #include "app.h"
 #include "image.h"
