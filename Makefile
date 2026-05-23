@@ -31,6 +31,10 @@ CMOC_OS9_DIR := cmoc_os9
 CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
+CMOC_OS9_UTILS_DIR := ${CMOC_OS9_DIR}/utils
+
+UEMACS_FILE := umacs
+UEMACS_BINARY := ${CMOC_OS9_UTILS_DIR}/uemacs/${UEMACS_FILE}
 
 BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.os9
 IMGTOOL_MAKDIR := os9 makdir
@@ -38,12 +42,13 @@ IMGTOOL_COPY := os9 copy
 IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
+
 .PHONY: all clean help install-pre-commit libc libcgfx real-clean run
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
 
-${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES}
+${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES} | utils
 	echo "Creating disk image $@ with program ${TARGET}"
 	@cp ${BASEIMAGE} $@
 	@${IMGTOOL_MAKDIR} $@,CMDS/ICONS
@@ -58,11 +63,13 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 		${IMGTOOL_COPY} $${each} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
 		${IMGTOOL_ATTR_RO} $@,${TARGET_SYS_IMAGES_DIR}/$$(basename $${each}); \
 	done
+	@${IMGTOOL_COPY} ${UEMACS_BINARY} $@,CMDS/$(notdir ${UEMACS_FILE})
+	@${IMGTOOL_ATTR_EX} $@,CMDS/$(notdir ${UEMACS_FILE})
 
 ${BUILD}:
 	mkdir -p ${BUILD}
 
-${TARGET}: libc libcgfx $(CFILES) | ${BUILD}
+${TARGET}: ${CFILES} | ${BUILD} libc libcgfx
 	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lc -lcgfx
 
 ${TARGET_ICON}: ${SOURCE_ICON} | ${BUILD}
@@ -84,7 +91,8 @@ ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png ${TARGET_IMAGES_DIR}
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
 	cd cmoc_os9 && \
-	git checkout e77ba4cd490df33262e2bf9a830ff341180fe09c
+	git checkout 9df40618f4816602b03cb775395c8911a6a1dc77
+	make
 
 ## Build the cmoc_os9 C library (libc)
 libc: cmoc_os9
@@ -93,6 +101,10 @@ libc: cmoc_os9
 ## Build the cmoc_os9 CoCo graphics library (libcgfx)
 libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
+
+## Build the utils
+utils: cmoc_os9
+	$(MAKE) -C ${CMOC_OS9_UTILS_DIR} all
 
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
