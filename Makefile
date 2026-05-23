@@ -32,9 +32,13 @@ CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 CMOC_OS9_UTILS_DIR := ${CMOC_OS9_DIR}/utils
+CMOC_OS9_UNITTEST_DIR := ${CMOC_OS9_DIR}/unittest
 
 UEMACS_FILE := umacs
 UEMACS_BINARY := ${CMOC_OS9_UTILS_DIR}/uemacs/${UEMACS_FILE}
+
+MAZE_FILE := maze
+MAZE_BINARY := ${CMOC_OS9_UNITTEST_DIR}/${MAZE_FILE}
 
 BASEIMAGE := disks/NOS9_6809_L2_v030300_coco3_80d.os9
 IMGTOOL_MAKDIR := os9 makdir
@@ -48,7 +52,7 @@ IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
 
-${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES} | utils
+${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAGES} | ${CMOC_OS9_UTILS_DIR} ${CMOC_OS9_UNITTEST_DIR}
 	echo "Creating disk image $@ with program ${TARGET}"
 	@cp ${BASEIMAGE} $@
 	@${IMGTOOL_MAKDIR} $@,CMDS/ICONS
@@ -65,6 +69,8 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 	done
 	@${IMGTOOL_COPY} ${UEMACS_BINARY} $@,CMDS/$(notdir ${UEMACS_FILE})
 	@${IMGTOOL_ATTR_EX} $@,CMDS/$(notdir ${UEMACS_FILE})
+	@${IMGTOOL_COPY} ${MAZE_BINARY} $@,CMDS/$(notdir ${MAZE_FILE})
+	@${IMGTOOL_ATTR_EX} $@,CMDS/$(notdir ${MAZE_FILE})
 
 ${BUILD}:
 	mkdir -p ${BUILD}
@@ -102,8 +108,12 @@ libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
 ## Build the utils
-utils: cmoc_os9
+${CMOC_OS9_UTILS_DIR}: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_UTILS_DIR} all
+
+## Build the unittest
+${CMOC_OS9_UNITTEST_DIR}: cmoc_os9
+	$(MAKE) -C ${CMOC_OS9_UNITTEST_DIR} all
 
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
