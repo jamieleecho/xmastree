@@ -120,15 +120,6 @@ static void run_event_loop(UiEvent *event) {
 }
 
 
-/* window type defs */
-#define WT_NBOX		0		/* No box- default window type */
-#define WT_FWIN		1		/* Framed window with menus */
-#define WT_FSWIN	2		/* Framed window with menus and scroll bars */
-#define WT_SBOX		3		/* Shadowed window- form menus */
-#define WT_DBOX		4		/* Double border- for dialog boxes */
-#define WT_PBOX		5		/* Plain border- anything */
-
-
 void echo_sw(path_id path, char on) {
     struct sgbuf options;
     _gs_opt(path, &options);
