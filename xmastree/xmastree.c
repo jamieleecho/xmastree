@@ -132,7 +132,7 @@ static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void about_action(MSRET *msinfo, int menuid, int itemno) {
-    show_message_box("     xmastree v" APP_VERSION "\r\n    Build xmas trees!", MessageBoxType_Info);
+    show_message_box("xmastree v" APP_VERSION "\r\nBuild xmas trees!", MessageBoxType_Info);
 }
 
 
