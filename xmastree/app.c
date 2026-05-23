@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <os.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -495,8 +496,140 @@ static MessageBoxResult show_generic_message_box(
 }
 
 
+/* cmoc_os9's Dialog() polls input via MouseKey() and returns while the
+   dismissing fire button may still be held. Handing control straight back to
+   our signal-driven main loop then drops the user's next click, so wait for
+   release, let the subsystem settle, consume the click, and release the path's
+   signal requests. Tune DIALOG_SETTLE_TICKS if a first click still drops. */
+#define DIALOG_SETTLE_TICKS 20
+
+static void dialog_settle(int path) {
+    MSRET mp;
+
+    do {
+        _cgfx_gs_mouse(path, &mp);
+    } while (mp.pt_cbsa);
+
+    tsleep(DIALOG_SETTLE_TICKS);
+    _cgfx_gs_mouse(path, &mp);
+    _os_ss_relea(path);
+}
+
+static int app_dialog_centered(DIALOG *dialog, int width, int height) {
+    int sx, sy, result;
+
+    if (_cgfx_gs_scsz(OUTPATH, &sx, &sy)) {
+        sx = 0;
+        sy = 0;
+    } else {
+        sx = (sx - width) / 2;
+        sy = (sy - height) / 2;
+        if (sx < 0) {
+            sx = 0;
+        }
+        if (sy < 0) {
+            sy = 0;
+        }
+    }
+
+    result = Dialog(OUTPATH, dialog, sx, sy, width, height,
+                    FOREGROUND_COLOR, BACKGROUND_COLOR);
+    dialog_settle(OUTPATH);
+    return result;
+}
+
+
+/* Message box drawn with cmoc_os9's button widget via Dialog(). The frame
+   costs one character on each edge, so usable columns are 1..(WIDTH-2). */
+#define MSGBOX_WIDTH      28
+#define MSGBOX_HEIGHT     10
+#define MSGBOX_INTERIOR   (MSGBOX_WIDTH - 2)
+#define MSGBOX_TEXT_ROW   2
+#define MSGBOX_BUTTON_ROW 6
+#define MSGBOX_MAX_LINES  3
+
+#define MSGBOX_VAL_PRIMARY   1  /* OK / Yes */
+#define MSGBOX_VAL_SECONDARY 2  /* Cancel / No */
+
+static int add_button(DIALOG *item, int column, int row, int key, int val, char *label) {
+    item->d_type = D_BUTTON;
+    item->d_column = (char)column;
+    item->d_row = (char)row;
+    item->d_key = (char)key;
+    item->d_val = (char)val;
+    item->d_string = label;
+    return 1;
+}
+
 MessageBoxResult show_message_box(const char *message, MessageBoxType event_type) {
-    return show_generic_message_box(message, NULL, event_type);
+    char buf[80];
+    char *lines[MSGBOX_MAX_LINES];
+    DIALOG items[MSGBOX_MAX_LINES + 3];  /* lines + up to 2 buttons + D_END */
+    int num_lines = 0;
+    int n = 0;
+    int val;
+    char *p;
+
+    /* Split the message into up to MSGBOX_MAX_LINES lines on CR/LF. */
+    strncpy(buf, message, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = 0;
+    p = buf;
+    lines[num_lines++] = p;
+    while (*p && num_lines < MSGBOX_MAX_LINES) {
+        if (*p == '\r' || *p == '\n') {
+            *p++ = 0;
+            while (*p == '\r' || *p == '\n') {
+                p++;
+            }
+            if (!*p) {
+                break;
+            }
+            lines[num_lines++] = p;
+        } else {
+            p++;
+        }
+    }
+
+    /* Text lines, centered horizontally within the interior. */
+    for (int ii = 0; ii < num_lines; ++ii) {
+        int len = strlen(lines[ii]);
+        items[n].d_type = D_TEXT;
+        items[n].d_column = (char)(1 + (MSGBOX_INTERIOR - len) / 2);
+        items[n].d_row = (char)(MSGBOX_TEXT_ROW + ii);
+        items[n].d_key = 0;
+        items[n].d_val = 0;
+        items[n].d_string = lines[ii];
+        n++;
+    }
+
+    /* Buttons, centered as a row, depending on the box type. */
+    if (event_type == MessageBoxType_YesNo) {
+        n += add_button(&items[n],  8, MSGBOX_BUTTON_ROW, '\r', MSGBOX_VAL_PRIMARY,   (char *)" Yes ");
+        n += add_button(&items[n], 15, MSGBOX_BUTTON_ROW, 0x1b, MSGBOX_VAL_SECONDARY, (char *)" No ");
+    } else if (event_type == MessageBoxType_OkCancel) {
+        n += add_button(&items[n],  8, MSGBOX_BUTTON_ROW, '\r', MSGBOX_VAL_PRIMARY,   (char *)" OK ");
+        n += add_button(&items[n], 14, MSGBOX_BUTTON_ROW, 0x1b, MSGBOX_VAL_SECONDARY, (char *)"Cancel");
+    } else {
+        n += add_button(&items[n], 11, MSGBOX_BUTTON_ROW, '\r', MSGBOX_VAL_PRIMARY,   (char *)"  OK  ");
+    }
+
+    items[n].d_type = D_END;
+    items[n].d_column = 0;
+    items[n].d_row = 0;
+    items[n].d_key = 0;
+    items[n].d_val = 0;
+    items[n].d_string = (char *)NULL;
+
+    val = app_dialog_centered(items, MSGBOX_WIDTH, MSGBOX_HEIGHT);
+
+    switch (event_type) {
+        case MessageBoxType_YesNo:
+            return (val == MSGBOX_VAL_PRIMARY) ? MessageBoxResult_Yes : MessageBoxResult_No;
+        case MessageBoxType_OkCancel:
+            return (val == MSGBOX_VAL_PRIMARY) ? MessageBoxResult_Ok : MessageBoxResult_Cancel;
+        default:
+            return MessageBoxResult_Ok;
+    }
 }
 
 

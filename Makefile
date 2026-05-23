@@ -97,7 +97,7 @@ ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png | ${TARGET_IMAGES_DIR}
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
 	cd cmoc_os9 && \
-	git checkout 2394d79696d6cb55b77be37cdecc26f41ec198a5
+	git checkout 102c2896f1255b38b1441e8904f1ba459882ab61
 
 ## Build the cmoc_os9 C library (libc)
 libc: cmoc_os9
