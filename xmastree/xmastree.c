@@ -283,6 +283,7 @@ int main(int argc, char **argv) {
 
     if (argc == 2) {
         tree_open(&tree, argv[1]);
+        document_opened(&xmastree_doc);
     }
 
     run_application(&mywindow, xmastree_init, menu_actions,

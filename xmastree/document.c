@@ -118,12 +118,16 @@ bool document_open(Document *doc) {
         show_message_box(message, MessageBoxType_Error);
         doc->file_backed = false;
         return true;
-    } else {
-        doc->file_backed = true;
     }
+    document_opened(doc);
+    return true;
+}
+
+
+void document_opened(Document *doc) {
+    doc->file_backed = true;
     undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
-    return true;
 }
 
 
