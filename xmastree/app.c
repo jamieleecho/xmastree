@@ -54,13 +54,20 @@ intercept()
 
 static void run_event_loop(UiEvent *event) {
     int local_sig;
+    bool first = true;
 
     while(true) {
         sigcode = 0;
         do {
-            cgfx_ss_ssig(OUTPATH, KEY_SIG);
             cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
-            sleep(0);
+            do {
+                sigcode = 0;
+                cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+            }
+            while (first && sigcode);
+            first = false;
+            cgfx_ss_ssig(OUTPATH, KEY_SIG);
+            sleep(1);
         } while (sigcode == 0);
         local_sig = sigcode;
 
@@ -175,25 +182,6 @@ void run_application(WNDSCR *mywindow, void (*init)(void),
 }
 
 
-/* cmoc_os9's Dialog() polls input via MouseKey() and returns while the
-   dismissing fire button may still be held. Handing control straight back to
-   our signal-driven main loop then drops the user's next click, so wait for
-   release, let the subsystem settle, consume the click, and release the path's
-   signal requests. Tune DIALOG_SETTLE_TICKS if a first click still drops. */
-#define DIALOG_SETTLE_TICKS 20
-
-static void dialog_settle(int path) {
-    MSRET mp;
-
-    do {
-        _cgfx_gs_mouse(path, &mp);
-    } while (mp.pt_cbsa);
-
-    tsleep(DIALOG_SETTLE_TICKS);
-    _cgfx_gs_mouse(path, &mp);
-    _os_ss_relea(path);
-}
-
 static int app_dialog_centered(DIALOG *dialog, int width, int height) {
     int sx, sy, result;
 
@@ -213,7 +201,6 @@ static int app_dialog_centered(DIALOG *dialog, int width, int height) {
 
     result = Dialog(OUTPATH, dialog, sx, sy, width, height,
                     FOREGROUND_COLOR, BACKGROUND_COLOR);
-    dialog_settle(OUTPATH);
     return result;
 }
 
@@ -345,7 +332,6 @@ static char *app_file_dialog_centered(const char *title, const char *confirm_lab
 
     result = app_file_dialog(OUTPATH, title, confirm_label, allow_new, ext,
                              sx, sy, FOREGROUND_COLOR, BACKGROUND_COLOR);
-    dialog_settle(OUTPATH);
 
     if (result) {
         strncpy(path, result, APP_PATH_MAX - 1);

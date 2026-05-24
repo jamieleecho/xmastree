@@ -26,6 +26,7 @@ extern void document_init(Document *doc,
                           int (*save_model)(void *model, const char *path));
 extern bool document_new(Document *doc);
 extern bool document_open(Document *doc);
+extern void document_opened(Document *doc);
 extern void document_revert(Document *doc);
 extern error_code document_save_as(Document *doc);
 extern error_code document_save(Document *doc);
