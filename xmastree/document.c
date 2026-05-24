@@ -127,13 +127,16 @@ bool document_open(Document *doc) {
 }
 
 
-static error_code document_save_internal(Document *doc) {
+static error_code document_save_internal(Document *doc, bool force_overwrite) {
     doc_ensure_extension(doc);
-    int fd = open(doc->path, FAP_READ);
-    if (fd >= 0) {
-        close(fd);
-        if (show_message_box("Overwrite existing\r\nfile?", MessageBoxType_YesNo) == MessageBoxResult_No) {
-            return 0;
+
+    if (!force_overwrite) {
+        int fd = open(doc->path, FAP_READ);
+        if (fd >= 0) {
+            close(fd);
+            if (show_message_box("Overwrite existing\r\nfile?", MessageBoxType_YesNo) == MessageBoxResult_No) {
+                return 0;
+            }
         }
     }
 
@@ -165,7 +168,7 @@ void document_revert(Document *doc) {
         oldpath[APP_PATH_MAX - 1] = 0;
         if (show_message_box("Save before reverting\r\ndocument?", MessageBoxType_YesNo) ==
              MessageBoxResult_Yes) {
-            if (document_save_internal(doc)) {
+            if (document_save_internal(doc, true)) {
                 strcpy(doc->path, oldpath);
                 show_message_box("Revert aborted.", MessageBoxType_Info);
                 return;
@@ -187,7 +190,7 @@ error_code document_save_as(Document *doc) {
         return 0;
     }
 
-    return document_save_internal(doc);
+    return document_save_internal(doc, false);
 }
 
 
@@ -199,7 +202,7 @@ error_code document_save(Document *doc) {
     if (!doc->file_backed) {
         return document_save_as(doc);
     } else {
-        return document_save_internal(doc);
+        return document_save_internal(doc, true);
     }
 }
 

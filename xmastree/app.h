@@ -44,9 +44,7 @@ typedef enum {
     MessageBoxType_Warning,
     MessageBoxType_Error,
     MessageBoxType_OkCancel,
-    MessageBoxType_YesNo,
-    MessageBoxType_Open,
-    MessageBoxType_SaveAs
+    MessageBoxType_YesNo
 } MessageBoxType;
 
 
