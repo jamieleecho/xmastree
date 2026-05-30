@@ -2,7 +2,7 @@
 #define _DOCUMENT_H
 
 #include "app.h"
-#include "undo_manager.h"
+#include <mvkit/mv_undo_manager.h>
 
 typedef struct {
     void *model;
@@ -13,7 +13,7 @@ typedef struct {
     const char *default_path;
     const char *extension;
     char path[APP_PATH_MAX];
-    UndoManager undo_manager;
+    MVUndoManager undo_manager;
 } Document;
 
 extern void document_init(Document *doc,
@@ -30,7 +30,7 @@ extern void document_opened(Document *doc);
 extern void document_revert(Document *doc);
 extern error_code document_save_as(Document *doc);
 extern error_code document_save(Document *doc);
-extern void document_make_change(Document *doc, const UndoItem *undo_item);
+extern void document_make_change(Document *doc, const MVUndoItem *undo_item);
 extern bool document_is_dirty(const Document *doc);
 extern bool document_can_new(const Document *doc);
 extern bool document_can_open(const Document *doc);

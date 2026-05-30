@@ -52,7 +52,7 @@ void document_init(Document *doc,
         document_revert(doc);
     }
     doc_ensure_extension(doc);
-    undo_manager_init(&(doc->undo_manager));
+    mv_undo_manager_init(&(doc->undo_manager));
 }
 
 
@@ -82,7 +82,7 @@ bool document_new(Document *doc) {
     doc->path[APP_PATH_MAX - 1] = 0;
     doc_ensure_extension(doc);
     doc->file_backed = false;
-    undo_manager_reset(&(doc->undo_manager));
+    mv_undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
     return true;
 }
@@ -126,7 +126,7 @@ bool document_open(Document *doc) {
 
 void document_opened(Document *doc) {
     doc->file_backed = true;
-    undo_manager_reset(&(doc->undo_manager));
+    mv_undo_manager_reset(&(doc->undo_manager));
     app_refresh_menubar();
 }
 
@@ -155,7 +155,7 @@ static error_code document_save_internal(Document *doc, bool force_overwrite) {
         return err;
     }
     doc->file_backed = true;
-    undo_manager_reset_undo_marker(&(doc->undo_manager));
+    mv_undo_manager_reset_undo_marker(&(doc->undo_manager));
     app_refresh_menubar();
     return 0;
 }
@@ -179,7 +179,7 @@ void document_revert(Document *doc) {
             }
         }
         strcpy(doc->path, oldpath);
-        undo_manager_reset(&(doc->undo_manager));
+        mv_undo_manager_reset(&(doc->undo_manager));
         app_refresh_menubar();
     }
 }
@@ -211,17 +211,17 @@ error_code document_save(Document *doc) {
 }
 
 
-void document_make_change(Document *doc, const UndoItem *undo_item) {
-    if (undo_manager_all_undone(&(doc->undo_manager))) {
+void document_make_change(Document *doc, const MVUndoItem *undo_item) {
+    if (mv_undo_manager_all_undone(&(doc->undo_manager))) {
         app_refresh_menubar();
     }
-    undo_manager_push_undo(&(doc->undo_manager), undo_item);
+    mv_undo_manager_push_undo(&(doc->undo_manager), undo_item);
 }
 
 
 bool document_is_dirty(const Document *doc) {
     /* Possible optimizer error when we use ! instead of == */
-    return undo_manager_all_undone(&(doc->undo_manager)) == 0;
+    return mv_undo_manager_all_undone(&(doc->undo_manager)) == 0;
 }
 
 
@@ -246,16 +246,16 @@ bool document_can_save(const Document *doc) {
 
 
 bool document_can_undo(const Document *doc) {
-    return undo_manager_can_undo(&(doc->undo_manager));
+    return mv_undo_manager_can_undo(&(doc->undo_manager));
 }
 
 
 bool document_undo(Document *doc) {
-    if (undo_manager_all_undone(&(doc->undo_manager))) {
+    if (mv_undo_manager_all_undone(&(doc->undo_manager))) {
         return false;
     }
-    int val = undo_manager_undo(&(doc->undo_manager));
-    if (val || undo_manager_all_undone(&(doc->undo_manager))) {
+    int val = mv_undo_manager_undo(&(doc->undo_manager));
+    if (val || mv_undo_manager_all_undone(&(doc->undo_manager))) {
         app_refresh_menubar();
     }
     return val;

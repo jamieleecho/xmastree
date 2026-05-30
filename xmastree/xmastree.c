@@ -188,7 +188,7 @@ static int xmastree_handle_click_event(UiEvent *event) {
         tool_box_select_item_at_xy(&toolbox, x, y);
     } else {
         if (tree_view_handle_event(&tree_view, event)) {
-            UndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
+            MVUndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
             document_make_change(&xmastree_doc, &undo_item);
         }
     }

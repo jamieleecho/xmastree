@@ -17,5 +17,6 @@
  */
 
 #include "mvkit/mv_version.h"
+#include "mvkit/mv_undo_manager.h"
 
 #endif /* _MVKIT_H */
