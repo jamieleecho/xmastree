@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "keyboard.h"
 #include "mouse.h"
 
 #include "app.h"
@@ -66,7 +65,7 @@ static void run_event_loop(UiEvent *event) {
             }
             while (first && sigcode);
             first = false;
-            cgfx_ss_ssig(OUTPATH, KEY_SIG);
+            _ss_ssig(OUTPATH, KEY_SIG);
             sleep(1);
         } while (sigcode == 0);
         local_sig = sigcode;
