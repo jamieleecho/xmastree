@@ -112,8 +112,8 @@ ${CMOC_OS9_UTILS_DIR}: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_UTILS_DIR} all
 
 ## Build the unittest
-${CMOC_OS9_UNITTEST_DIR}: cmoc_os9
-	$(MAKE) -C ${CMOC_OS9_UNITTEST_DIR} all
+${CMOC_OS9_UNITTEST_DIR}: libc libcgfx
+	cd ${CMOC_OS9_DIR} && $(MAKE) unittest-dsk all
 
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
