@@ -103,7 +103,7 @@ bool document_open(Document *doc) {
         }
     }
 
-    if (!show_open_dialog(doc->path)) {
+    if (!show_open_dialog(doc->path, doc->extension)) {
         return false;
     }
 
@@ -190,7 +190,7 @@ error_code document_save_as(Document *doc) {
         return 0;
     }
 
-    if (!show_save_dialog(doc->path)) {
+    if (!show_save_dialog(doc->path, doc->extension)) {
         return 0;
     }
 

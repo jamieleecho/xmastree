@@ -300,12 +300,10 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType event_type
 #define FILEDIALOG_WIDTH  24
 #define FILEDIALOG_HEIGHT 14
 
-/* xmastree document extension (no dot); appended to new Save filenames. */
-#define FILEDIALOG_EXT "xmt"
-
 /* Center app_file_dialog() on screen and copy the chosen name into `path`.
    Returns `path` on confirm, NULL on cancel. The browser starts in the CWD;
    `path` is an output buffer only. `allow_new` adds the "[new file]" entry.
+   `ext` is the document extension including its dot (e.g. ".xmt"), or NULL.
    On confirm the CWD is left at the chosen file's directory; on cancel the
    dialog restores the starting CWD. */
 static char *app_file_dialog_centered(const char *title, const char *confirm_label,
@@ -338,11 +336,11 @@ static char *app_file_dialog_centered(const char *title, const char *confirm_lab
     return (char *)NULL;
 }
 
-char *show_open_dialog(char *path) {
-    return app_file_dialog_centered("Open File", "Open", 0, FILEDIALOG_EXT, path);
+char *show_open_dialog(char *path, const char *ext) {
+    return app_file_dialog_centered("Open File", "Open", 0, ext, path);
 }
 
 
-char *show_save_dialog(char *path) {
-    return app_file_dialog_centered("Save File", "Save", 1, FILEDIALOG_EXT, path);
+char *show_save_dialog(char *path, const char *ext) {
+    return app_file_dialog_centered("Save File", "Save", 1, ext, path);
 }

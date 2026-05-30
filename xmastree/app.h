@@ -65,7 +65,7 @@ extern void run_application(
 );
 extern void app_refresh_menubar();
 extern MessageBoxResult show_message_box(const char *message, MessageBoxType type);
-extern char *show_open_dialog(char *path);
-extern char *show_save_dialog(char *path);
+extern char *show_open_dialog(char *path, const char *ext);
+extern char *show_save_dialog(char *path, const char *ext);
 
 #endif /* _APP_H_ */

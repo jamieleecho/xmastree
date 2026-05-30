@@ -105,6 +105,11 @@ cmoc_os9/lib/*.o
 cmoc_os9/cgfx/*.o
 cmoc_os9/cgfx/*.a
 
+# mvkit build artifacts
+mvkit/*.a
+mvkit/*.o
+mvkit/src/*.o
+
 # xmastree and convenience files
 /*.dsk
 *.tmp

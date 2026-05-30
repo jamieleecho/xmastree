@@ -34,14 +34,13 @@ error_code Flush(void);
 long _gs_pos(path_id path);
 int getstr(int path, const char *title, char *s, int n, int column, int row, int fg, int bg);
 
-/* True if `s` ends with ".<ext>". */
+/* True if `s` ends with `ext`, which includes its leading dot (e.g. ".xmt"). */
 static int app_has_ext(const char *s, const char *ext)
 {
     int slen = strlen(s);
     int elen = strlen(ext);
 
-    return ((slen > elen) && (s[slen - elen - 1] == '.') &&
-            (strcmp(s + slen - elen, ext) == 0));
+    return ((slen >= elen) && (strcmp(s + slen - elen, ext) == 0));
 }
 
 /* True if `name` can be opened as a directory (the cheap way to tell, since an
@@ -56,8 +55,9 @@ static int app_is_dir(const char *name)
     return 1;
 }
 
-/* If `ext` is non-NULL and `s` does not already end with ".<ext>", append it,
-   provided ".<ext>" and the NUL still fit in a buffer of `size` bytes. */
+/* If `ext` is non-NULL/non-empty and `s` does not already end with it, append
+   `ext` (which includes its dot, e.g. ".xmt"), provided `ext` and the NUL still
+   fit in a buffer of `size` bytes. */
 static void app_append_ext(char *s, int size, const char *ext)
 {
     int slen, elen;
@@ -66,10 +66,9 @@ static void app_append_ext(char *s, int size, const char *ext)
         return;
     slen = strlen(s);
     elen = strlen(ext);
-    if (slen + elen + 2 > size)
-        return;                         /* '.' + ext + NUL would not fit */
-    s[slen] = '.';
-    strcpy(s + slen + 1, ext);
+    if (slen + elen + 1 > size)
+        return;                         /* ext + NUL would not fit */
+    strcpy(s + slen, ext);
 }
 
 static void trim(char *s) {

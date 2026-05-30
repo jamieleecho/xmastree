@@ -10,9 +10,9 @@
  * chosen filename, or NULL if cancelled.
  *
  * `allow_new` adds a "[new file]" entry that prompts for a name (use it for
- * Save, not Open) and makes the chosen name get ".<ext>" appended if missing.
- * `ext` is an optional extension without the dot (e.g. "xmt", NULL for none);
- * when set, the listing shows only *.<ext> files plus directories.
+ * Save, not Open) and makes the chosen name get `ext` appended if missing.
+ * `ext` is an optional extension including its leading dot (e.g. ".xmt", NULL
+ * for none); when set, the listing shows only matching files plus directories.
  */
 char *app_file_dialog(path_id path, const char *title, const char *confirm_label,
                       int allow_new, const char *ext,
