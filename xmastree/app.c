@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include "app.h"
-#include "file_dialog.h"
+#include <mvkit/mv_file_dialog.h>
 
 
 #define KEY_SIG  11  /* signal number for key interrupts */
@@ -296,11 +296,11 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType event_type
 }
 
 
-/* app_file_dialog()'s box footprint (incl. WT_DBOX border), for centering. */
+/* mv_file_dialog()'s box footprint (incl. WT_DBOX border), for centering. */
 #define FILEDIALOG_WIDTH  24
 #define FILEDIALOG_HEIGHT 14
 
-/* Center app_file_dialog() on screen and copy the chosen name into `path`.
+/* Center mv_file_dialog() on screen and copy the chosen name into `path`.
    Returns `path` on confirm, NULL on cancel. The browser starts in the CWD;
    `path` is an output buffer only. `allow_new` adds the "[new file]" entry.
    `ext` is the document extension including its dot (e.g. ".xmt"), or NULL.
@@ -325,7 +325,7 @@ static char *app_file_dialog_centered(const char *title, const char *confirm_lab
         }
     }
 
-    result = app_file_dialog(OUTPATH, title, confirm_label, allow_new, ext,
+    result = mv_file_dialog(OUTPATH, title, confirm_label, allow_new, ext,
                              sx, sy, FOREGROUND_COLOR, BACKGROUND_COLOR);
 
     if (result) {
