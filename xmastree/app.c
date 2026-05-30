@@ -303,18 +303,13 @@ MessageBoxResult show_message_box(const char *message, MessageBoxType event_type
 /* Center app_file_dialog() on screen and copy the chosen name into `path`.
    Returns `path` on confirm, NULL on cancel. The browser starts in the CWD;
    `path` is an output buffer only. `allow_new` adds the "[new file]" entry.
-   `ext` is the document extension (NULL for none); a leading dot is stripped
-   since the file browser wants it dotless (e.g. "xmt", not ".xmt").
+   `ext` is the document extension including its dot (e.g. ".xmt"), or NULL.
    On confirm the CWD is left at the chosen file's directory; on cancel the
    dialog restores the starting CWD. */
 static char *app_file_dialog_centered(const char *title, const char *confirm_label,
                                       int allow_new, const char *ext, char *path) {
     int sx, sy;
     char *result;
-
-    if (ext && *ext == '.') {
-        ext++;
-    }
 
     if (_cgfx_gs_scsz(OUTPATH, &sx, &sy)) {
         sx = 0;
