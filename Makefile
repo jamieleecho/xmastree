@@ -123,12 +123,12 @@ ${CMOC_OS9_UNITTEST_DIR}: libc libcgfx
 
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
-	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} ${CMOC_OS9_DIR}
+	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD}
 	@rm -f ${MVKIT_LIB} ${MVKIT_DIR}/src/*.o
 
 ## Remove everything clean removes, plus the Python virtualenv and caches
 real-clean: clean
-	@rm -rf .venv **/*~ **/__pycache__
+	@rm -rf .venv **/*~ **/__pycache__ ${CMOC_OS9_DIR}
 
 ## Show this help message
 help:
