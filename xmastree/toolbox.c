@@ -4,7 +4,7 @@
 #include <cgfx.h>
 
 #include "app.h"
-#include "image.h"
+#include <mvkit/mv_image.h>
 #include "toolbox.h"
 
 
@@ -109,7 +109,7 @@ void tool_box_refresh(ToolBox *toolbox){
             int y = (yy * TOOLBOX_BUTTON_HEIGHT) + toolbox->y;
             _cgfx_setdptr(OUTPATH, x, y);
             _cgfx_rbox(OUTPATH, TOOLBOX_BUTTON_WIDTH, TOOLBOX_BUTTON_HEIGHT);
-            image_draw_image(toolbox->image_ids[item], x + 1, y + 1);
+            mv_image_draw(toolbox->image_ids[item], x + 1, y + 1);
         }
     }
 

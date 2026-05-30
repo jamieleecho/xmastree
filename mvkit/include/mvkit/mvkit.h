@@ -16,7 +16,9 @@
  *   mv_app            (NSApplication)
  */
 
+#include "mvkit/mv_defs.h"
 #include "mvkit/mv_version.h"
 #include "mvkit/mv_undo_manager.h"
+#include "mvkit/mv_image.h"
 
 #endif /* _MVKIT_H */

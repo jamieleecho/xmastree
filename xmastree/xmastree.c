@@ -3,7 +3,7 @@
 
 #include "app.h"
 #include "document.h"
-#include "image.h"
+#include <mvkit/mv_image.h>
 
 #include "toolbox.h"
 #include "tree.h"
@@ -213,28 +213,28 @@ static void xmastree_action(UiEvent *event) {
 static void xmastree_pre_init() {
     _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
     app_init(palette, sizeof(palette)/sizeof(palette[0]));
-    image_init("xmastree");
+    mv_image_init("xmastree");
 
-    image_load_image_resource("1m.i09", 2);
-    image_load_image_resource("1.i09", 3);
-    image_load_image_resource("2m.i09", 4);
-    image_load_image_resource("2.i09", 5);
-    image_load_image_resource("3m.i09", 6);
-    image_load_image_resource("3.i09", 7);
-    image_load_image_resource("4m.i09", 8);
-    image_load_image_resource("4.i09", 9);
-    image_load_image_resource("5m.i09", 10);
-    image_load_image_resource("5.i09", 11);
-    image_load_image_resource("6m.i09", 12);
-    image_load_image_resource("6.i09", 13);
-    image_load_image_resource("7m.i09", 14);
-    image_load_image_resource("7.i09", 15);
-    image_load_image_resource("8m.i09", 16);
-    image_load_image_resource("8.i09", 17);
-    image_load_image_resource("9m.i09", 18);
-    image_load_image_resource("9.i09", 19);
-    image_load_image_resource("10m.i09", 20);
-    image_load_image_resource("10.i09", 21);
+    mv_image_load_resource("1m.i09", 2);
+    mv_image_load_resource("1.i09", 3);
+    mv_image_load_resource("2m.i09", 4);
+    mv_image_load_resource("2.i09", 5);
+    mv_image_load_resource("3m.i09", 6);
+    mv_image_load_resource("3.i09", 7);
+    mv_image_load_resource("4m.i09", 8);
+    mv_image_load_resource("4.i09", 9);
+    mv_image_load_resource("5m.i09", 10);
+    mv_image_load_resource("5.i09", 11);
+    mv_image_load_resource("6m.i09", 12);
+    mv_image_load_resource("6.i09", 13);
+    mv_image_load_resource("7m.i09", 14);
+    mv_image_load_resource("7.i09", 15);
+    mv_image_load_resource("8m.i09", 16);
+    mv_image_load_resource("8.i09", 17);
+    mv_image_load_resource("9m.i09", 18);
+    mv_image_load_resource("9.i09", 19);
+    mv_image_load_resource("10m.i09", 20);
+    mv_image_load_resource("10.i09", 21);
     Flush();
 
     tree_init(&tree);

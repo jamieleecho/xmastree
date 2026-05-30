@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "image.h"
+#include <mvkit/mv_image.h>
 
 #include "tree_view.h"
 
@@ -23,9 +23,9 @@ void tree_view_init(TreeView *view, Tree *tree, int item_id, const int *image_id
 
 static void tree_view_draw_item(int x, int y, int image_id) {
     _cgfx_lset(OUTPATH, LOG_AND);
-    image_draw_image(image_id - 1, x, y);
+    mv_image_draw(image_id - 1, x, y);
     _cgfx_lset(OUTPATH, LOG_XOR);
-    image_draw_image(image_id, x, y);
+    mv_image_draw(image_id, x, y);
     _cgfx_lset(OUTPATH, LOG_NONE);
 }
 

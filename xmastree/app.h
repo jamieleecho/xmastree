@@ -4,15 +4,15 @@
 #include <stdlib.h>
 #include <cgfx.h>
 #include "stdbool.h"
+#include <mvkit/mv_defs.h>
 
-#define INPATH 0
-#define OUTPATH 1
-#define APP_PATH_MAX 44  /* char array for path length */
+/* Aliases for MVKit foundational constants, kept until app itself migrates
+   into MVKit. Flush() is declared by <mvkit/mv_defs.h>. */
+#define INPATH MV_INPATH
+#define OUTPATH MV_OUTPATH
+#define APP_PATH_MAX MV_PATH_MAX
 
 #define MN_HELP 30
-
-
-error_code Flush(void);
 
 typedef enum {
     UiEventType_KeyPress,
