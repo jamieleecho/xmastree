@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "mouse.h"
-
 #include "app.h"
 #include "file_dialog.h"
 
@@ -58,10 +56,10 @@ static void run_event_loop(UiEvent *event) {
     while(true) {
         sigcode = 0;
         do {
-            cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+            _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
             do {
                 sigcode = 0;
-                cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
+                _cgfx_ss_mssig(OUTPATH, MOUSE_SIG);
             }
             while (first && sigcode);
             first = false;
