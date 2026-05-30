@@ -88,6 +88,14 @@ already consumes cgfx.
    test. Builds run in the `coco-dev` Docker image (cmoc / OS-9 tools live only
    there — see repo memory `build_toolchain`).
 3. **One concern per commit** so each step is reviewable and revertable.
+4. **Memory-frugal link granularity:** `lwlink` pulls static-archive members at
+   *object-file* granularity — there is no function-level dead-code elimination.
+   If `a()` and `b()` share a `.c`, referencing `a` drags `b` (and everything it
+   calls) into the binary. So **split functions that are not always needed
+   together into separate `.c` files**, one translation unit per independently
+   usable feature, mirroring cmoc_os9's libc (e.g. `minmax.c` = `min`+`max`).
+   Exception: functions that share file-scope `static` state are inherently one
+   unit and must stay together (e.g. the run loop's signal/mouse statics).
 
 ## Phases
 
@@ -116,6 +124,20 @@ Order chosen so each step compiles against already-moved dependencies:
 Each step: relocate `.c`/`.h` into `mvkit/`, rename symbols to `mv_`/`MV`,
 update xmastree's includes (or switch it to the umbrella `<mvkit/mvkit.h>`),
 rebuild green, commit.
+
+While migrating, **split each module along link-granularity lines** (guardrail 4):
+one `.c` per independently usable feature so apps don't pay for what they don't
+call. Candidate splits in the current code:
+- `app` -> run loop + menubar (shares the signal/mouse statics) | message box |
+  open/save dialog wrappers. An app using the run loop should not drag in the
+  alert or file-dialog code if it never calls them.
+- `image` -> load | draw | free, if apps commonly need a subset.
+- `document` -> keep the cohesive `Document` core together, but new/open/save/
+  revert/undo are split candidates if they pull in heavy dependencies.
+
+A single public header per module (e.g. `mv_app.h`) can still front several
+`.c` files — the header declares the API; the file split is purely about which
+object members the linker can omit.
 
 ### Phase 3 — (stretch) `toolbox` as MVKit's first View
 Generalize the 10-item hardcode into a reusable view/control. This is design
