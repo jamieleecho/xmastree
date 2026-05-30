@@ -28,7 +28,9 @@ MAME_COMMAND := $(MAME) $(EMULATED_SYSTEM) $(MAME_FLAGS)
 
 CC := cmoc
 CMOC_OS9_DIR := cmoc_os9
-CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
+MVKIT_DIR := mvkit
+MVKIT_LIB := ${MVKIT_DIR}/libmvkit.a
+CFLAGS := --os9 -I${MVKIT_DIR}/include -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 CMOC_OS9_UTILS_DIR := ${CMOC_OS9_DIR}/utils
@@ -47,7 +49,7 @@ IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 
-.PHONY: all clean help install-pre-commit libc libcgfx real-clean run
+.PHONY: all clean help install-pre-commit libc libcgfx libmvkit real-clean run
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
@@ -75,8 +77,8 @@ ${TARGET_DSK}: ${BASEIMAGE} ${TARGET} ${TARGET_ICON} ${TARGET_AIF} ${TARGET_IMAG
 ${BUILD}:
 	mkdir -p ${BUILD}
 
-${TARGET}: ${CFILES} | ${BUILD} libc libcgfx
-	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lc -lcgfx
+${TARGET}: ${CFILES} | ${BUILD} libc libcgfx libmvkit
+	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -L${MVKIT_DIR} -lmvkit -lc -lcgfx
 
 ${TARGET_ICON}: ${SOURCE_ICON} | ${BUILD}
 	png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
@@ -107,6 +109,10 @@ libc: cmoc_os9
 libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
+## Build the MVKit framework library (libmvkit)
+libmvkit: cmoc_os9
+	$(MAKE) -C ${MVKIT_DIR} all
+
 ## Build the utils
 ${CMOC_OS9_UTILS_DIR}: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_UTILS_DIR} all
@@ -118,6 +124,7 @@ ${CMOC_OS9_UNITTEST_DIR}: libc libcgfx
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
 	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD} ${CMOC_OS9_DIR}
+	@rm -f ${MVKIT_LIB} ${MVKIT_DIR}/src/*.o
 
 ## Remove everything clean removes, plus the Python virtualenv and caches
 real-clean: clean
