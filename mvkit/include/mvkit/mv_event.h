@@ -3,33 +3,37 @@
 
 #include <cgfx.h>   /* MSRET */
 
-/*
+/**
  * @file
- * Input events delivered to views and the application. Kept in its own
- * foundational header so lower-level pieces (e.g. mv_view) can use events
- * without depending on the application module.
+ * @brief Input events delivered to views and the application.
+ *
+ * Kept in its own foundational header so lower-level pieces (e.g. mv_view) can
+ * use events without depending on the application module.
  */
 
-/** Which kind of input an MVUiEvent carries. */
+/** @brief Which kind of input an #MVUiEvent carries. */
 typedef enum {
-    MVUiEventType_KeyPress,
-    MVUiEventType_MouseClick
+    MVUiEventType_KeyPress,    /**< a key was pressed (see #MVKeyEvent) */
+    MVUiEventType_MouseClick   /**< the mouse was clicked (see the cgfx MSRET) */
 } MVUiEventType;
 
-/** Payload of a key-press event: the character read from the keyboard. */
+/** @brief Payload of a key-press event: the character read from the keyboard. */
 typedef struct {
-    char character;
+    char character;   /**< the key character */
 } MVKeyEvent;
 
-/** A UI event delivered to a view or the application action callback.
-   `event_type` selects the active member of `info`: a MVKeyEvent for key
-   presses, or the cgfx MSRET mouse record for clicks. */
+/**
+ * @brief A UI event delivered to a view or the application action callback.
+ *
+ * @c event_type selects the active member of @c info: a #MVKeyEvent for key
+ * presses, or the cgfx MSRET mouse record for clicks.
+ */
 typedef struct {
-    MVUiEventType event_type;
+    MVUiEventType event_type;   /**< which member of @c info is valid */
     union {
-        MVKeyEvent key;
-        MSRET mouse;
-    } info;
+        MVKeyEvent key;    /**< valid when event_type == MVUiEventType_KeyPress */
+        MSRET mouse;       /**< valid when event_type == MVUiEventType_MouseClick */
+    } info;   /**< the event payload, selected by @c event_type */
 } MVUiEvent;
 
 #endif /* _MVKIT_MV_EVENT_H */

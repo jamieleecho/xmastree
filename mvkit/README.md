@@ -31,6 +31,18 @@ make            # builds libmvkit.a
 
 Apps link it with `-Imvkit/include -Lmvkit -lmvkit`, alongside `-lc -lcgfx`.
 
+## API documentation
+
+The public headers are annotated for [Doxygen](https://www.doxygen.nl/). From
+this directory:
+
+```
+doxygen Doxyfile        # generates HTML into docs/ (gitignored)
+```
+
+The `Doxyfile` sets `WARN_IF_UNDOCUMENTED`/`WARN_NO_PARAMDOC`, so a clean run
+doubles as a check that every public function, macro, and type is documented.
+
 ## Modules
 
 | Module           | AppKit analog              | Notes |

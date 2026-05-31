@@ -4,15 +4,32 @@
 #include <cgfx.h>   /* path_id */
 
 /**
- * MVKit's Save/Open file browser, cloned from cmoc_os9's cgfx MVFName() and
- * customized with confirm + Cancel buttons. `confirm_label` is the text on the
- * confirm button (e.g. "Open" or "Save"); a Cancel button is always shown.
- * Returns a pointer to the chosen filename, or NULL if cancelled.
+ * @file
+ * @brief MVKit's Save/Open file browser.
  *
- * `allow_new` adds a "[new file]" entry that prompts for a name (use it for
- * Save, not Open) and makes the chosen name get `ext` appended if missing.
- * `ext` is an optional extension including its leading dot (e.g. ".xmt", NULL
- * for none); when set, the listing shows only matching files plus directories.
+ * Cloned from cmoc_os9's cgfx MVFName() and customized with confirm + Cancel
+ * buttons.
+ */
+
+/**
+ * @brief Show a modal file browser and return the chosen filename.
+ *
+ * A Cancel button is always shown. When @p allow_new is set, a "[new file]"
+ * entry prompts for a name (use it for Save, not Open) and the chosen name
+ * gets @p ext appended if missing. When @p ext is set, the listing shows only
+ * matching files plus directories.
+ *
+ * @param path          open cgfx path for drawing.
+ * @param title         dialog title.
+ * @param confirm_label text on the confirm button (e.g. "Open" or "Save").
+ * @param allow_new     nonzero to offer a "[new file]" entry (Save behaviour).
+ * @param ext           extension including its leading dot (e.g. ".xmt"), or
+ *                      NULL for none / list all files.
+ * @param column        column of the dialog's top-left corner.
+ * @param row           row of the dialog's top-left corner.
+ * @param fg            foreground palette register.
+ * @param bg            background palette register.
+ * @return a pointer to the chosen filename, or NULL if cancelled.
  */
 char *mv_file_dialog(path_id path, const char *title, const char *confirm_label,
                      int allow_new, const char *ext,

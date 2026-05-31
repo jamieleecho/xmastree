@@ -3,18 +3,23 @@
 
 /**
  * @file
- * MVKit -- an opinionated framework for building Multi-Vue applications on the
+ * @brief MVKit umbrella header -- include <mvkit/mvkit.h> for the whole API.
+ *
+ * MVKit is an opinionated framework for building Multi-Vue applications on the
  * Tandy Color Computer 3 under NitrOS-9, loosely inspired by Apple's AppKit.
  *
- * This is the umbrella header: include <mvkit/mvkit.h> to pull in the whole
- * public API. Modules are added here as they are migrated out of the xmastree
- * example app (see PLAN.md, Phase 2):
- *
- *   mv_undo_manager   (NSUndoManager)
- *   mv_image          (NSImage)
- *   mv_file_dialog    (NSOpenPanel / NSSavePanel)
- *   mv_document       (NSDocument)
- *   mv_app            (NSApplication)
+ * Modules (AppKit analog in parentheses):
+ *   - mv_defs, mv_version          -- foundational constants / version
+ *   - mv_event                     -- input events (key / mouse)
+ *   - mv_theme                     -- palette / window-chrome theme
+ *   - mv_menu                      -- menu-bar / window-descriptor DSL
+ *   - mv_undo_manager  (NSUndoManager)
+ *   - mv_image         (NSImage)
+ *   - mv_file_dialog   (NSOpenPanel / NSSavePanel)
+ *   - mv_app           (NSApplication)
+ *   - mv_document      (NSDocument)
+ *   - mv_view          (NSView core)
+ *   - mv_image_grid    (NSMatrix-ish image-button grid)
  */
 
 #include "mvkit/mv_defs.h"
