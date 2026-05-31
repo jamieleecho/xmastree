@@ -507,10 +507,54 @@ mv_menu_item_set_enabled(file_items, FileIndex_Revert, mv_document_can_revert(&d
 `counter` to disk, Open it back, Revert to undo unsaved changes. The undo item
 recorded above isn't used yet — the next stage adds an Undo menu that does.
 
-## The rest of the guide
+## Undo
 
-One stage remains, building on this one:
+Stage 6 already recorded *how to reverse* every change — the `MVUndoItem` it
+passed to `mv_document_make_change`. This stage spends that. The example,
+[`guide/07-undo`](guide/07-undo), is the counter document plus an **Edit ▸ Undo**
+menu; the only additions are that menu, an `undo_action`, and one line in
+`refresh_menus`.
 
-1. **Undo** — recording reversible changes with the document's undo manager.
+An undo item is a function plus an argument — "to reverse this change, call
+`undo_function(object)`":
 
-Each stage links to its example app and to the relevant API docs.
+```c
+static void counter_undo_increment(void *object) { ((Counter *)object)->count -= 1; }
+...
+MVUndoItem undo = { counter_undo_increment, &counter };
+counter.count += 1;
+mv_document_make_change(&doc, &undo);   /* do the change; record its inverse */
+```
+
+`mv_document_undo(&doc)` pops the most recent change and runs its
+`undo_function`, returning whether anything was undone:
+
+```c
+static void undo_action(MSRET *msinfo, int menuid, int itemno) {
+    if (mv_document_undo(&doc)) {
+        show();
+    }
+}
+```
+
+The document's undo manager is bounded (the oldest change is dropped past
+`MV_UNDO_MANAGER_MAX_UNDOS`) and it *is* the dirty-tracker: it counts changes
+since the last save, so undoing back to the saved point clears "modified" again.
+Enable the menu item only when there's something to undo:
+
+```c
+mv_menu_item_set_enabled(edit_items, EditIndex_Undo, mv_document_can_undo(&doc));
+```
+
+`make -C mvkit/guide/07-undo run`: Increment a few times, then Undo to walk the
+count back — watch the `[modified]`/`[saved]` marker flip as you cross the last
+save point.
+
+## Where to go next
+
+That's the tour: a windowed app, menus and actions, themes and palettes, the
+image grid, dialogs, a document, and undo — each example building on the last.
+From here, the [API reference](https://jamieleecho.github.io/xmastree/) documents
+every public function and macro, and the [`xmastree`](../xmastree) app shows the
+whole framework working together in something larger than a guide example. Copy
+the example whose shape is closest to what you're building and grow it.
