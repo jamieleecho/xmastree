@@ -1,7 +1,7 @@
 #ifndef _DOCUMENT_H
 #define _DOCUMENT_H
 
-#include "app.h"
+#include <mvkit/mv_app.h>
 #include <mvkit/mv_undo_manager.h>
 
 typedef struct {
@@ -12,7 +12,7 @@ typedef struct {
     int file_backed;
     const char *default_path;
     const char *extension;
-    char path[APP_PATH_MAX];
+    char path[MV_PATH_MAX];
     MVUndoManager undo_manager;
 } Document;
 

@@ -47,7 +47,7 @@ void document_init(Document *doc,
     doc->default_path = default_path;
     doc->extension = extension;
     strncpy(doc->path, path ? path : default_path, sizeof(doc->path));
-    doc->path[APP_PATH_MAX - 1] = 0;
+    doc->path[MV_PATH_MAX - 1] = 0;
     if (path) {
         document_revert(doc);
     }
@@ -62,10 +62,10 @@ bool document_new(Document *doc) {
     }
 
     if (document_is_dirty(doc)) {
-        if (show_message_box("Save before starting\r\na new document?", MessageBoxType_YesNo) ==
-             MessageBoxResult_Yes) {
+        if (mv_app_show_message_box("Save before starting\r\na new document?", MVMessageBoxType_YesNo) ==
+             MVMessageBoxResult_Yes) {
             if (document_save(doc)) {
-                show_message_box("New aborted.", MessageBoxType_Info);
+                mv_app_show_message_box("New aborted.", MVMessageBoxType_Info);
                 return false;
             }
         }
@@ -75,15 +75,15 @@ bool document_new(Document *doc) {
 
     if (err) {
         sprintf(message, "Failed to create\r\ndocument.\r\nError = %d", err);
-        show_message_box(message, MessageBoxType_Error);
+        mv_app_show_message_box(message, MVMessageBoxType_Error);
         return false;
     }
     strncpy(doc->path, doc->default_path, sizeof(doc->path));
-    doc->path[APP_PATH_MAX - 1] = 0;
+    doc->path[MV_PATH_MAX - 1] = 0;
     doc_ensure_extension(doc);
     doc->file_backed = false;
     mv_undo_manager_reset(&(doc->undo_manager));
-    app_refresh_menubar();
+    mv_app_refresh_menubar();
     return true;
 }
 
@@ -94,28 +94,28 @@ bool document_open(Document *doc) {
     }
 
     if (document_is_dirty(doc)) {
-        if (show_message_box("Save before opening\r\na new document?", MessageBoxType_YesNo) ==
-             MessageBoxResult_Yes) {
+        if (mv_app_show_message_box("Save before opening\r\na new document?", MVMessageBoxType_YesNo) ==
+             MVMessageBoxResult_Yes) {
             if (document_save(doc)) {
-                show_message_box("Open aborted.", MessageBoxType_Info);
+                mv_app_show_message_box("Open aborted.", MVMessageBoxType_Info);
                 return false;
             }
         }
     }
 
-    if (!show_open_dialog(doc->path, doc->extension)) {
+    if (!mv_app_show_open_dialog(doc->path, doc->extension)) {
         return false;
     }
 
     doc_ensure_extension(doc);
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
+    _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_SLP);
     Flush();
     int err = doc->open_model(doc->model, doc->path);
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
+    _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_ARR);
     Flush();
     if (err) {
         sprintf(message, "Failed to load document.\r\nError = %d", err);
-        show_message_box(message, MessageBoxType_Error);
+        mv_app_show_message_box(message, MVMessageBoxType_Error);
         doc->file_backed = false;
         return true;
     }
@@ -127,7 +127,7 @@ bool document_open(Document *doc) {
 void document_opened(Document *doc) {
     doc->file_backed = true;
     mv_undo_manager_reset(&(doc->undo_manager));
-    app_refresh_menubar();
+    mv_app_refresh_menubar();
 }
 
 
@@ -138,25 +138,25 @@ static error_code document_save_internal(Document *doc, bool force_overwrite) {
         int fd = open(doc->path, FAP_READ);
         if (fd >= 0) {
             close(fd);
-            if (show_message_box("Overwrite existing\r\nfile?", MessageBoxType_YesNo) == MessageBoxResult_No) {
+            if (mv_app_show_message_box("Overwrite existing\r\nfile?", MVMessageBoxType_YesNo) == MVMessageBoxResult_No) {
                 return 0;
             }
         }
     }
 
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
+    _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_SLP);
     Flush();
     int err = doc->save_model(doc->model, doc->path);
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_ARR);
+    _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_ARR);
     Flush();
     if (err) {
         sprintf(message, "Failed to save document.\r\nError = %d", err);
-        show_message_box(message, MessageBoxType_Error);
+        mv_app_show_message_box(message, MVMessageBoxType_Error);
         return err;
     }
     doc->file_backed = true;
     mv_undo_manager_reset_undo_marker(&(doc->undo_manager));
-    app_refresh_menubar();
+    mv_app_refresh_menubar();
     return 0;
 }
 
@@ -167,20 +167,20 @@ void document_revert(Document *doc) {
     }
 
     if (document_is_dirty(doc)) {
-        char oldpath[APP_PATH_MAX];
+        char oldpath[MV_PATH_MAX];
         strncpy(oldpath, doc->path, sizeof(oldpath));
-        oldpath[APP_PATH_MAX - 1] = 0;
-        if (show_message_box("Save before reverting\r\ndocument?", MessageBoxType_YesNo) ==
-             MessageBoxResult_Yes) {
+        oldpath[MV_PATH_MAX - 1] = 0;
+        if (mv_app_show_message_box("Save before reverting\r\ndocument?", MVMessageBoxType_YesNo) ==
+             MVMessageBoxResult_Yes) {
             if (document_save_internal(doc, true)) {
                 strcpy(doc->path, oldpath);
-                show_message_box("Revert aborted.", MessageBoxType_Info);
+                mv_app_show_message_box("Revert aborted.", MVMessageBoxType_Info);
                 return;
             }
         }
         strcpy(doc->path, oldpath);
         mv_undo_manager_reset(&(doc->undo_manager));
-        app_refresh_menubar();
+        mv_app_refresh_menubar();
     }
 }
 
@@ -190,7 +190,7 @@ error_code document_save_as(Document *doc) {
         return 0;
     }
 
-    if (!show_save_dialog(doc->path, doc->extension)) {
+    if (!mv_app_show_save_dialog(doc->path, doc->extension)) {
         return 0;
     }
 
@@ -213,7 +213,7 @@ error_code document_save(Document *doc) {
 
 void document_make_change(Document *doc, const MVUndoItem *undo_item) {
     if (mv_undo_manager_all_undone(&(doc->undo_manager))) {
-        app_refresh_menubar();
+        mv_app_refresh_menubar();
     }
     mv_undo_manager_push_undo(&(doc->undo_manager), undo_item);
 }
@@ -256,7 +256,7 @@ bool document_undo(Document *doc) {
     }
     int val = mv_undo_manager_undo(&(doc->undo_manager));
     if (val || mv_undo_manager_all_undone(&(doc->undo_manager))) {
-        app_refresh_menubar();
+        mv_app_refresh_menubar();
     }
     return val;
 }

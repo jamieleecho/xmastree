@@ -22,16 +22,16 @@ void tree_view_init(TreeView *view, Tree *tree, int item_id, const int *image_id
 
 
 static void tree_view_draw_item(int x, int y, int image_id) {
-    _cgfx_lset(OUTPATH, LOG_AND);
+    _cgfx_lset(MV_OUTPATH, LOG_AND);
     mv_image_draw(image_id - 1, x, y);
-    _cgfx_lset(OUTPATH, LOG_XOR);
+    _cgfx_lset(MV_OUTPATH, LOG_XOR);
     mv_image_draw(image_id, x, y);
-    _cgfx_lset(OUTPATH, LOG_NONE);
+    _cgfx_lset(MV_OUTPATH, LOG_NONE);
 }
 
 
-bool tree_view_handle_event(TreeView *view, UiEvent *event) {
-    if (event->event_type != UiEventType_MouseClick) {
+bool tree_view_handle_event(TreeView *view, MVUiEvent *event) {
+    if (event->event_type != MVUiEventType_MouseClick) {
         return false;
     }
 
@@ -51,10 +51,10 @@ bool tree_view_handle_event(TreeView *view, UiEvent *event) {
 
 
 void tree_view_refresh(const TreeView *view) {
-    _cgfx_lset(OUTPATH, LOG_NONE);
-    _cgfx_fcolor(OUTPATH, TREE_VIEW_BACKGROUND_COLOR);
-    _cgfx_setdptr(OUTPATH, view->x, view->y);
-    _cgfx_rbar(OUTPATH, view->width - 1, view->height - 1);
+    _cgfx_lset(MV_OUTPATH, LOG_NONE);
+    _cgfx_fcolor(MV_OUTPATH, TREE_VIEW_BACKGROUND_COLOR);
+    _cgfx_setdptr(MV_OUTPATH, view->x, view->y);
+    _cgfx_rbar(MV_OUTPATH, view->width - 1, view->height - 1);
     Flush();
 
     for(int ii = 0; ii < view->tree->num_items; ++ii) {

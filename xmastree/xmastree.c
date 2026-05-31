@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "app.h"
+#include <mvkit/mv_app.h>
 #include "document.h"
 #include <mvkit/mv_image.h>
 
@@ -17,6 +17,8 @@ static const int palette[] = {
 };
 
 #define XMAS_BACKGROUND 0
+
+#define MN_HELP 30  /* app-chosen Help menu id (not a cgfx constant) */
 
 static Tree tree;
 static Document xmastree_doc;
@@ -132,7 +134,7 @@ static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void about_action(MSRET *msinfo, int menuid, int itemno) {
-    show_message_box("xmastree v" APP_VERSION "\r\nBuild xmas trees!", MessageBoxType_Info);
+    mv_app_show_message_box("xmastree v" APP_VERSION "\r\nBuild xmas trees!", MVMessageBoxType_Info);
 }
 
 
@@ -143,7 +145,7 @@ static void undo_action(MSRET *msinfo, int menuid, int itemno) {
 }
 
 
-static MenuItemAction menu_actions[] = {
+static MVMenuItemAction menu_actions[] = {
     {MN_CLOS, 1, exit_action},
     {MN_FILE, 1, new_action},
     {MN_FILE, 3, open_action},
@@ -159,7 +161,7 @@ static MenuItemAction menu_actions[] = {
 static ToolBox toolbox;
 
 
-static int xmastree_handle_key_event(UiEvent *event) {
+static int xmastree_handle_key_event(MVUiEvent *event) {
     int item = event->info.key.character - '1';
     if ((item >= -1) && (item <= 8)) {
         if (item == -1) {
@@ -180,7 +182,7 @@ static int image_ids[TOOLBOX_NUM_ITEMS] = {
 };
 
 
-static int xmastree_handle_click_event(UiEvent *event) {
+static int xmastree_handle_click_event(MVUiEvent *event) {
     int x = event->info.mouse.pt_wrx;
     int y = event->info.mouse.pt_wry;
 
@@ -197,13 +199,13 @@ static int xmastree_handle_click_event(UiEvent *event) {
 }
 
 
-static void xmastree_action(UiEvent *event) {
+static void xmastree_action(MVUiEvent *event) {
     switch(event->event_type) {
-        case UiEventType_KeyPress:
+        case MVUiEventType_KeyPress:
             xmastree_handle_key_event(event);
             break;
 
-        case UiEventType_MouseClick:
+        case MVUiEventType_MouseClick:
             xmastree_handle_click_event(event);
             break;
     }
@@ -211,8 +213,8 @@ static void xmastree_action(UiEvent *event) {
 
 
 static void xmastree_pre_init() {
-    _cgfx_setgc(OUTPATH, GRP_PTR, PTR_SLP);
-    app_init(palette, sizeof(palette)/sizeof(palette[0]));
+    _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_SLP);
+    mv_app_init(palette, sizeof(palette)/sizeof(palette[0]));
     mv_image_init("xmastree");
 
     mv_image_load_resource("1m.i09", 2);
@@ -257,8 +259,8 @@ static void xmastree_toolbox_item_selected(ToolBox *toolbox) {
 
 
 static void xmastree_init(void) {
-    _cgfx_bcolor(OUTPATH, XMAS_BACKGROUND);
-    _cgfx_clear(OUTPATH);
+    _cgfx_bcolor(MV_OUTPATH, XMAS_BACKGROUND);
+    _cgfx_clear(MV_OUTPATH);
 
     tool_box_init(&toolbox, 4, 4, image_ids, xmastree_toolbox_item_selected);
     tree_view_init(&tree_view, &tree, tool_box_item(&toolbox), image_ids);
@@ -286,7 +288,7 @@ int main(int argc, char **argv) {
         document_opened(&xmastree_doc);
     }
 
-    run_application(&mywindow, xmastree_init, menu_actions,
+    mv_app_run(&mywindow, xmastree_init, menu_actions,
                     xmastree_refresh_menus_action, xmastree_action);
 
     return 0;
