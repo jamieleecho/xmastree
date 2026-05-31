@@ -342,13 +342,61 @@ mv_image_draw(2, 8, 8);                    /* blit at (8, 8) */
 `make -C mvkit/guide/03-palette run` opens the window with the converted image
 drawn on a black background.
 
+## The image grid
+
+`MVImageGrid` is a grid of single-select image buttons — MVKit's first **view**
+(it embeds an `MVView`). The example is in [`guide/04-grid`](guide/04-grid): four
+buttons in a 2-column grid.
+
+```c
+#define NUM_BUTTONS 4
+#define COLUMNS     2
+
+static MVImageGrid grid;
+static int image_ids[NUM_BUTTONS] = { 2, 3, 4, 5 };   /* image buffer per button */
+
+static void grid_selected(MVImageGrid *g) {
+    printf("Selected button %d\n", mv_image_grid_selected(g));
+    Flush();
+}
+
+/* pre_init: load one image (stage 3) into each buffer */
+mv_image_load_resource("btn1.i09", image_ids[0]);   /* ... btn2..btn4 */
+
+/* init: lay out and draw the grid */
+mv_image_grid_init(&grid, 8, 8, NUM_BUTTONS, COLUMNS, image_ids, grid_selected);
+
+/* application_action: route content-area clicks to the grid */
+static void grid_action(MVUiEvent *event) {
+    if (event->event_type == MVUiEventType_MouseClick) {
+        mv_view_dispatch_click(&grid.view, event);
+    }
+}
+```
+
+How it fits together:
+
+- **Images** — `image_ids[i]` is the image buffer holding button *i*'s picture
+  (loaded with `mv_image_load_resource`). The grid blits each into its cell.
+- **Layout** — `mv_image_grid_init(grid, x, y, num_items, columns, image_ids,
+  on_select)` arranges the buttons (default 24×24 cells) and draws them
+  immediately; the selected item gets an XOR highlight.
+- **Clicks** — the grid is an `MVView`, so an app routes content clicks to it:
+  `mv_view_dispatch_click(&grid.view, event)` hit-tests, updates the selection,
+  and fires `on_select`. (There's no automatic view hierarchy yet — you keep
+  your views and dispatch to them; that's what `application_action` is for.)
+- **Selection** — `mv_image_grid_selected(grid)` reads the current index;
+  `mv_image_grid_select(grid, i)` sets it programmatically (e.g. a key shortcut).
+
+`make -C mvkit/guide/04-grid run`, then click a button — its index prints and
+the highlight moves.
+
 ## The rest of the guide
 
 The remaining stages each add one capability, building on the last:
 
-1. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
-2. **Dialogs** — the built-in message boxes and the file open/save browsers.
-3. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-4. **Undo** — recording reversible changes with the document's undo manager.
+1. **Dialogs** — the built-in message boxes and the file open/save browsers.
+2. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+3. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
