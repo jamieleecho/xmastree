@@ -24,11 +24,11 @@ open/save/undo, image views, modal dialogs — in plain C.
 
 - **Opinionated, so you don't have to decide.** MVKit picks one good way to do
   the common things: a run loop with lifecycle callbacks
-  ([`mv_app_run`](mv_app.h)), `NSDocument`-style file handling
-  ([`mv_document`](mv_document.h)), a minimal view protocol ([`mv_view`](mv_view.h))
-  with a ready-made image-button grid ([`mv_image_grid`](mv_image_grid.h)),
+  (`mv_app_run()`), `NSDocument`-style file handling
+  (`mv_document.h`), a minimal view protocol (`mv_view.h`)
+  with a ready-made image-button grid (`mv_image_grid.h`),
   built-in modal dialogs, and a palette/theme model
-  ([`mv_theme`](mv_theme.h)) that keeps the system chrome looking right.
+  (`mv_theme.h`) that keeps the system chrome looking right.
 
 - **Modern tools, retro target.** You write C (compiled with
   [cmoc](http://sarrazip.com/dev/cmoc.html)) and draw art as PNGs; the toolchain
