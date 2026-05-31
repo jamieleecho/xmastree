@@ -33,19 +33,12 @@ Apps link it with `-Imvkit/include -Lmvkit -lmvkit`, alongside `-lc -lcgfx`.
 
 ## API documentation
 
-The public headers are annotated for [Doxygen](https://www.doxygen.nl/). From
-this directory:
+The public headers are annotated for [Doxygen](https://www.doxygen.nl/), which
+ships in the coco-dev image (>= 0.83) alongside cmoc. From this directory inside
+the container:
 
 ```
 make docs        # generates HTML into docs/ (gitignored)
-```
-
-Doxygen is not part of the cmoc toolchain, so `make docs` runs it from a Docker
-image by default (no install needed; run it on the host, where Docker is
-available). With Doxygen installed natively, use it directly instead:
-
-```
-make docs DOXYGEN=doxygen
 ```
 
 The `Doxyfile` sets `WARN_IF_UNDOCUMENTED`/`WARN_NO_PARAMDOC`, so a clean run
