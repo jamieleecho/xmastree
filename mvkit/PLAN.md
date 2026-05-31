@@ -163,7 +163,7 @@ a `refresh_menus_action`, an event dispatcher, and a `main()` that wires them
 together and handles `argc`/`argv`. Goal: collapse this so the common case is
 near-zero boilerplate and `main()` is a single `mv_app_run(...)` call.
 
-Planned pieces (final API shape TBD — see open questions):
+Status: **implemented.** Planned pieces (see resolutions at the end):
 
 1. **`pre_init(argc, argv)` folded into `mv_app_run`.** Every app has a pre-init
    step (palette, images, model, and *optionally opening a document from
@@ -198,17 +198,18 @@ int main(int argc, char **argv) {
 }
 ```
 
-Open questions for this phase:
-- **`mv_app_run` shape:** 8 positional args, or an `MVAppConfig` struct passed by
-  pointer (`mv_app_run(argc, argv, &config)`)? A struct pairs naturally with the
-  no-op defaults and resolves the long-standing config-struct question below, but
-  depends on how well cmoc handles designated initializers.
-- **Macro shape/name:** single `mv_set_menus(...)` vs an `MV_MENU(...)` +
-  `MV_WINDOW(...)` pair; confirm cmoc accepts the initializer macros.
-- **`mv_menu_none` feasibility:** does cgfx accept a window with `num_menus == 0`
-  / a NULL menu pointer, or does it need a stub menu?
-- **Arg validation:** the app's `pre_init` owns it (e.g. xmastree's `argc > 2`
-  check); MVKit may offer a small helper but shouldn't impose a policy.
+Resolutions:
+- **`mv_app_run` shape:** positional args + no-op defaults (chosen). cmoc has
+  **no designated initializers**, which weakened the config-struct case; revisit
+  `MVAppConfig` only if the arg list grows unwieldy.
+- **Macros:** shipped `MV_MENU(...)` (a menus[] row) + `mv_set_menus(...)`
+  (window from a menu array) + `mv_menu_none(...)` (no-menu window). cmoc accepts
+  the initializer macros.
+- **`mv_menu_none`:** declares `num_menus == 0` with a NULL menu pointer; the
+  minimal app compiles and links, but the zero-menu window is not yet runtime-
+  verified (no menu-less example app exists yet — verify when one does).
+- **Arg validation:** the app's `pre_init` owns it (xmastree's `argc > 2` check
+  moved there); MVKit imposes no policy.
 
 ### Phase 5 — (stretch) `toolbox` as MVKit's first View
 Generalize the 10-item hardcode into a reusable view/control. This is design
