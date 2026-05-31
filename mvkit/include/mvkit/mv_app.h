@@ -31,6 +31,21 @@ typedef struct {
 } MVMenuItemAction;
 
 /**
+ * @brief Terminating sentinel row for a #MVMenuItemAction table.
+ *
+ * Expands to a catch-all row (@c menuid < 0) whose action is
+ * mv_app_menu_action_nop, so unhandled selections are ignored. Use it as the
+ * last entry instead of writing your own no-op:
+ * @code
+ * static const MVMenuItemAction menu_actions[] = {
+ *     {MN_HELP, 1, about_action},
+ *     MV_MENU_ACTION_END
+ * };
+ * @endcode
+ */
+#define MV_MENU_ACTION_END  { -1, -1, mv_app_menu_action_nop }
+
+/**
  * @brief Style of a message box, selecting which buttons are shown.
  *
  * Info/Warning/Error show a lone OK; OkCancel and YesNo show two buttons.
@@ -199,6 +214,9 @@ extern void mv_app_refresh_menus_action_nop(void);
 /** @brief No-op default application_action handler.
  *  @param event unused. */
 extern void mv_app_event_nop(MVUiEvent *event);
+/** @brief No-op default menu action handler.
+ *  @param msinfo unused. @param menuid unused. @param itemno unused. */
+extern void mv_app_menu_action_nop(MSRET *msinfo, int menuid, int itemno);
 /** @brief A sentinel-only menu dispatch table (every selection is ignored). */
 extern const MVMenuItemAction mv_app_menu_actions_nop[];
 

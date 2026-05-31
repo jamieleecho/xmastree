@@ -36,12 +36,9 @@ static void about_action(MSRET *msinfo, int menuid, int itemno) {
                             MVMessageBoxType_Info);
 }
 
-static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
-}
-
 static const MVMenuItemAction menu_actions[] = {
     {MN_HELP, 1, about_action},   /* Help item 1 ("About...") */
-    {-1, -1, unknown_action},     /* catch-all sentinel */
+    MV_MENU_ACTION_END            /* catch-all sentinel */
 };
 
 int main(int argc, char **argv) {

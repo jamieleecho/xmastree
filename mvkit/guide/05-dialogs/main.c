@@ -53,14 +53,11 @@ static void save_action(MSRET *msinfo, int menuid, int itemno) {
     Flush();
 }
 
-static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
-}
-
 static const MVMenuItemAction menu_actions[] = {
     {MN_DIALOGS, 1, message_action},
     {MN_DIALOGS, 2, open_action},
     {MN_DIALOGS, 3, save_action},
-    {-1, -1, unknown_action},
+    MV_MENU_ACTION_END
 };
 
 int main(int argc, char **argv) {
