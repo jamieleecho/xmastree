@@ -61,7 +61,6 @@ After Multi Vue is loaded:
 
 * Unix-like system (tested with MacOS Tahoe)
 * Typical Unix tools such as `make` and `git`
-* Python 3.9 or later and [uv](https://docs.astral.sh/uv/) 0.9 or later
 * [Docker 29.1 or later](https://docs.docker.com/desktop/)
 * [coco-dev](https://github.com/jamieleecho/coco-dev) - this is installed by the Makefile
 * [Visual Studio Code](https://code.visualstudio.com/download) recommended
@@ -98,18 +97,13 @@ If you have your MAME installed in `~/Applications/mame` and your roms in
 * `make all` -- build the xmastree.os9 file.
 * `make clean` -- clean out the folder.
 * `make help` -- Show this help message.
-* `make install-pre-commit` -- install pre-commit hooks.
-* `make real-clean` -- clean out the folder including the virtual Python environment.
+* `make real-clean` -- clean out the folder including the cmoc_os9 checkout.
 * `make run` -- Run the disk image in the MAME CoCo 3 emulator
 
 ### Using Visual Studio Code
 
-This repo includes Python utilities for manipulating images. The repo includes
-Visual Studio Code settings so that the unit tests for these utilities can be run without
-any additionl configuration effort after the virtual enviornment is installed via
-`make install-pre-commit`.
-
-You can also use this with Visual Studio Code Dev Containers. See [these documents](https://code.visualstudio.com/docs/devcontainers/containers) for more information.
+This repo includes a Visual Studio Code Dev Container that provides the full
+build toolchain (the `coco-dev` image). See [these documents](https://code.visualstudio.com/docs/devcontainers/containers) for more information.
 
 ## Acknowledgements
 

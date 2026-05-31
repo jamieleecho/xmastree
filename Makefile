@@ -51,7 +51,7 @@ IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 
-.PHONY: all clean help install-pre-commit libc libcgfx libmvkit minimal real-clean run run-minimal
+.PHONY: all clean help libc libcgfx libmvkit minimal real-clean run run-minimal
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
@@ -159,9 +159,9 @@ clean:
 	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD}
 	@rm -f ${MVKIT_LIB} ${MVKIT_DIR}/src/*.o
 
-## Remove everything clean removes, plus the Python virtualenv and caches
+## Remove everything clean removes, plus the cmoc_os9 checkout
 real-clean: clean
-	@rm -rf .venv **/*~ **/__pycache__ ${CMOC_OS9_DIR}
+	@rm -rf **/*~ ${CMOC_OS9_DIR}
 
 ## Show this help message
 help:
@@ -175,14 +175,6 @@ help:
 		doc = ""; next; \
 	} \
 	{ doc = "" }' $(MAKEFILE_LIST)
-
-.venv:
-	uv venv .venv
-
-## Install and configure the pre-commit Git hook
-install-pre-commit: .venv
-	uv pip install pre-commit
-	uv run pre-commit install
 
 ## Run the disk image in the MAME CoCo 3 emulator
 run: ${TARGET_DSK}
