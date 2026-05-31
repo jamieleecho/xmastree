@@ -10,7 +10,7 @@ The OS-9 / NitrOS-9 CoCo3 window manager (`cowin`) draws **all** window chrome
 itself, from a **hardcoded color table** — see
 `nitros9/level2/coco3/modules/cowin.asm`:
 
-```
+```markdown
 * Color table for 3D look stuff & others
 * This should now match VIEW's color table (darkest to lightest for predictable
 * brightness). Any color scheme following that rule shouldn't look bad.
@@ -41,9 +41,9 @@ when *it* draws a dialog or a control) is ordinary palette use on registers
 4–15, plus a couple of register-selection knobs.
 
 > Experiments that produced "green chrome" were simply whatever RGB happened to
-> sit in registers 0–3 at the time. xmastree's own palette, for the record, is
-> **not** a dark→light ramp (its register 1 is white), so its chrome renders
-> with a scrambled brightness order. That is left as-is — see *Non-goals*.
+> sit in registers 0–3 at the time. xmastree's palette originally had register 1
+> = white, scrambling the ramp; it has since been reordered to
+> black / dark-grey / light-grey / white so its chrome renders correctly.
 
 ## The rule MVTheme enforces
 
@@ -129,16 +129,17 @@ correctness story. Provide `mv_theme_chrome_ordered()` for a development-time
 assert; do not spend runtime cost enforcing it in release builds (RAM/cycles are
 scarce). Document the rule loudly at the struct and in `mv_theme_default`.
 
-## Non-goals / deferred
+## Status / deferred
 
-- **No change to xmastree.** Its palette doesn't follow the 0–3 ramp (register 1
-  is white), so its chrome is non-standard; that's acceptable for the example
-  and out of scope here. A future pass could give it `mv_theme_default` (or a
-  themed ramp) to demonstrate correct chrome.
+- **The chrome-ramp contract is already in effect for xmastree** (done ahead of
+  the `MVTheme` API): its palette registers 0–3 were reordered to
+  black / dark-grey / light-grey / white, `MV_IMAGE_GRID_DEFAULT_FG` was set to
+  the lightest (reg 3), and its AIF uses fg=reg 0 / bg=reg 3. What remains
+  unbuilt is the `MVTheme` struct/API itself (`mv_app_set_theme`,
+  `mv_theme_default`, …) — this doc is still design-only.
 - **AIF colors.** The launcher's AIF carries the window's default fg/bg
-  registers; an MVKit-generated AIF should pick registers consistent with the
-  theme (e.g. fg=`chrome_darkest` reg 0, bg=`chrome_lightest` reg 3). Wiring the
-  theme to AIF generation is a separate item.
+  registers (xmastree now uses fg=`chrome_darkest` reg 0 / bg=`chrome_lightest`
+  reg 3). Wiring the theme to AIF *generation* is a separate item.
 - **Per-element chrome colors** are impossible (hardcoded), so not attempted.
 
 ## Open questions

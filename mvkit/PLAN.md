@@ -19,6 +19,12 @@ near-verbatim copy rather than a second refactor.
 
 ## Scope
 
+> Historical note: this section captures the *original* scope. It has since been
+> exceeded — `toolbox` was promoted into MVKit as `mv_image_grid` (Phase 5, with
+> the `mv_view` protocol), and a foundational `mv_event` header was added. So
+> `toolbox`/`stdbool.h` no longer live in the example app. See the phase sections
+> below for what actually shipped.
+
 ### In MVKit (the framework)
 
 | Current module  | MVKit module        | AppKit analog            | Notes |
