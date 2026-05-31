@@ -77,9 +77,9 @@ This is the part that takes the most setup. You need:
   runs on the *host* (it needs a display), not in the Docker image. Real CoCo 3
   hardware (512 KB+, an 80-track drive, a mouse) works too.
 
-- **`make` and `git`** on the host, and **Python 3.9+ with
-  [uv](https://docs.astral.sh/uv/)** (used by the image-conversion utilities and
-  the pre-commit hooks).
+- **`make` and `git`** on the host, to drive the build and fetch dependencies.
+  Everything else (the compiler, image converters, disk tools) runs inside the
+  `coco-dev` image, so you need no host Python toolchain.
 
 The good news: once Docker is installed and you can run the `coco-dev` image,
 everything else is fetched and built by `make`.
