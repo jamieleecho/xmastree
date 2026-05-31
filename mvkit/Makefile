@@ -64,10 +64,10 @@ install: all
 
 ## Remove the headers and library installed by `install`
 uninstall:
-	rm -rf ${DESTDIR}${PREFIX}/include/mvkit
-	rm -f ${DESTDIR}${PREFIX}/include/stdbool.h
-	rm -f ${DESTDIR}${PREFIX}/lib/${LIB}
-	rm -f ${DESTDIR}${PREFIX}/app.mk
+	@rm -rf ${DESTDIR}${PREFIX}/include/mvkit
+	@rm -f ${DESTDIR}${PREFIX}/include/stdbool.h
+	@rm -f ${DESTDIR}${PREFIX}/lib/${LIB}
+	@rm -f ${DESTDIR}${PREFIX}/app.mk
 
 ## Generate the HTML API documentation into docs/ (uses Doxygen; see DOXYGEN)
 docs:
