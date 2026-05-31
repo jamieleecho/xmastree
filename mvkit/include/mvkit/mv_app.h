@@ -119,7 +119,12 @@ extern void mv_app_event_nop(MVUiEvent *event);
 extern const MVMenuItemAction mv_app_menu_actions_nop[];
 
 
-/* Default window geometry used by the menu/window macros below. */
+/* Absolute minimum window size the window manager allows; a window's declared
+   minimum must not go below these. */
+#define MV_WINDOW_WIDTH_FLOOR   10
+#define MV_WINDOW_HEIGHT_FLOOR  5
+
+/* Default minimum window size, used by the no-suffix window macros below. */
 #define MV_WINDOW_MIN_WIDTH  40
 #define MV_WINDOW_MIN_HEIGHT 24
 #define MV_WINDOW_SYNC       0xC0C0
@@ -164,22 +169,30 @@ extern const MVMenuItemAction mv_app_menu_actions_nop[];
     { (title), (menu_id), (width), sizeof(items) / sizeof((items)[0]), \
       MN_ENBL, {0, 0}, (items) }
 
-/* Declare a window descriptor `var` titled `title`, driven by the static
-   MNDSCR array `menus`. Fills in the menu count and default geometry. */
+/* Declare a window descriptor `var` titled `title`, driven by the static MNDSCR
+   array `menus`. mv_set_menus uses the default minimum window size;
+   mv_set_menus_sized takes an explicit minimum `width` x `height` -- no smaller
+   than MV_WINDOW_WIDTH_FLOOR x MV_WINDOW_HEIGHT_FLOOR. */
 #define mv_set_menus(var, title, menus) \
+    mv_set_menus_sized(var, title, menus, MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT)
+#define mv_set_menus_sized(var, title, menus, width, height) \
     static WNDSCR var = { \
         (title), \
         sizeof(menus) / sizeof((menus)[0]), \
-        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
+        (width), (height), MV_WINDOW_SYNC, \
         {0, 0, 0, 0, 0, 0, 0}, \
         (menus) \
     }
 
-/* Declare a window descriptor `var` titled `title` with no menu bar. */
+/* Declare a window descriptor `var` titled `title` with no menu bar.
+   mv_menu_none uses the default minimum window size; mv_menu_none_sized takes an
+   explicit minimum `width` x `height` (see the floors above). */
 #define mv_menu_none(var, title) \
+    mv_menu_none_sized(var, title, MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT)
+#define mv_menu_none_sized(var, title, width, height) \
     static WNDSCR var = { \
         (title), 0, \
-        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
+        (width), (height), MV_WINDOW_SYNC, \
         {0, 0, 0, 0, 0, 0, 0}, \
         (MNDSCR *)0 \
     }
