@@ -155,6 +155,12 @@ int mv_app_run(int argc, char **argv, WNDSCR *mywindow,
 
             /* unhandled menu */
             if (menu_actions[ii].menuid < 0) {
+                if (menuid == MN_CLOS) {
+                    /* Default close-box behavior: quit. An app that wants to
+                       intercept the close (e.g. to prompt to save) supplies its
+                       own MN_CLOS entry, which matches above and pre-empts this. */
+                    exit(0);
+                }
                 menu_actions[ii].action(&event.info.mouse, menuid, itemno);
             }
 

@@ -76,7 +76,9 @@ extern void mv_app_init(const int *palette, size_t num_colors);
                              argc/argv; do palette/image/model setup here, and
                              open a document named on the command line if wanted
      init                  - run once after the window is set up
-     menu_actions          - menu dispatch table (see MVMenuItemAction)
+     menu_actions          - menu dispatch table (see MVMenuItemAction). The
+                             window close box quits the app by default; supply
+                             an MN_CLOS entry to intercept it (e.g. save first)
      refresh_menus_action  - run before redrawing the menu bar; update item
                              enable/disable state here
      application_action    - called with each key press and content-area mouse

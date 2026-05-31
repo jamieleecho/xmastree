@@ -205,9 +205,13 @@ Resolutions:
 - **Macros:** shipped `MV_MENU(...)` (a menus[] row) + `mv_set_menus(...)`
   (window from a menu array) + `mv_menu_none(...)` (no-menu window). cmoc accepts
   the initializer macros.
-- **`mv_menu_none`:** declares `num_menus == 0` with a NULL menu pointer; the
-  minimal app compiles and links, but the zero-menu window is not yet runtime-
-  verified (no menu-less example app exists yet — verify when one does).
+- **`mv_menu_none`:** declares `num_menus == 0` with a NULL menu pointer.
+  Runtime-verified via the `examples/minimal` app (a framed, menu-less window
+  draws and its close box works).
+- **Default close-to-quit:** `mv_app_run` quits on the window close box
+  (`MN_CLOS`) by default, so even an all-no-op app can be dismissed. An app
+  pre-empts it by supplying its own `MN_CLOS` entry (e.g. xmastree's
+  save-before-close).
 - **Arg validation:** the app's `pre_init` owns it (xmastree's `argc > 2` check
   moved there); MVKit imposes no policy.
 
