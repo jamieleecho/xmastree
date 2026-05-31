@@ -14,8 +14,8 @@
 
 
 static char sigcode = 0;
-void sighandler(int signal) {
-    sigcode = signal;
+static void sighandler(int signal) {
+    sigcode = (char)signal;
 }
 
 
@@ -55,7 +55,7 @@ static void run_event_loop(MVUiEvent *event) {
 }
 
 
-void echo_sw(path_id path, char on) {
+static void echo_sw(path_id path, char on) {
     struct sgbuf options;
     _gs_opt(path, &options);
     options.sg_echo = on;

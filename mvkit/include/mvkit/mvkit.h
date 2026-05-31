@@ -18,6 +18,7 @@
  */
 
 #include "mvkit/mv_defs.h"
+#include "mvkit/mv_event.h"
 #include "mvkit/mv_version.h"
 #include "mvkit/mv_undo_manager.h"
 #include "mvkit/mv_image.h"

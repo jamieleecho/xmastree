@@ -14,9 +14,9 @@
 /** Initialize the image subsystem for the calling process and associate it with
    `app_name` (used to locate resources under /dd/SYS/<app_name>/; the string is
    borrowed, not copied, so it must outlive use). Frees any existing buffers.
-   Call once before any other mv_image function. Exits the process on failure to
-   obtain the process id. */
-extern void mv_image_init(const char *app_name);
+   Call once before any other mv_image function. Returns 0 on success, or an
+   error code if the process id could not be obtained. */
+extern error_code mv_image_init(const char *app_name);
 
 /** Load the OS-9 image file at `path` into get/put buffer `buffer_number`. */
 extern error_code mv_image_load(const char *path, int buffer_number);
