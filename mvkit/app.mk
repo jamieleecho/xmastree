@@ -125,4 +125,4 @@ run: $(DSK)
 
 ## Remove the build directory
 clean:
-	rm -rf $(BUILD)
+	@rm -rf $(BUILD)
