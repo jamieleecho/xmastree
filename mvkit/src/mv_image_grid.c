@@ -23,39 +23,35 @@ static void image_grid_clear(MVImageGrid *grid) {
 }
 
 
-/* XOR-toggle the highlight rectangle over the selected item. */
-static void image_grid_toggle_selection(MVImageGrid *grid) {
+/* Draw one button: its outline box, then the image on top. The selected
+   button's box is fg_color (the selection indicator); the others are bg_color
+   (invisible). Because the image is blitted over the box, the picture keeps its
+   true colors -- selection is shown by the surrounding outline, not by
+   recoloring the image (as an XOR highlight would). */
+static void image_grid_draw_item(MVImageGrid *grid, int item) {
     int bw = button_width(grid);
     int bh = button_height(grid);
-    int item = grid->selected;
-    int x = grid->view.x + (item % grid->columns) * bw + 1;
-    int y = grid->view.y + (item / grid->columns) * bh + 1;
-    _cgfx_lset(MV_OUTPATH, LOG_XOR);
-    _cgfx_fcolor(MV_OUTPATH, grid->fg_color);
+    int x = grid->view.x + (item % grid->columns) * bw;
+    int y = grid->view.y + (item / grid->columns) * bh;
+    _cgfx_lset(MV_OUTPATH, LOG_NONE);
+    _cgfx_fcolor(MV_OUTPATH, item == grid->selected ? grid->fg_color : grid->bg_color);
     _cgfx_setdptr(MV_OUTPATH, x, y);
-    _cgfx_rbar(MV_OUTPATH, bw - 2, bh - 2);
-    Flush();
+    _cgfx_rbox(MV_OUTPATH, bw, bh);
+    mv_image_draw(grid->image_ids[item], x + 1, y + 1);
 }
 
 
 static void image_grid_draw(MVView *view) {
     MVImageGrid *grid = (MVImageGrid *)view;
-    int bw = button_width(grid);
-    int bh = button_height(grid);
 
     image_grid_clear(grid);
     if (!view->is_visible) {
         return;
     }
-    _cgfx_fcolor(MV_OUTPATH, grid->fg_color);
     for (int item = 0; item < grid->num_items; ++item) {
-        int x = view->x + (item % grid->columns) * bw;
-        int y = view->y + (item / grid->columns) * bh;
-        _cgfx_setdptr(MV_OUTPATH, x, y);
-        _cgfx_rbox(MV_OUTPATH, bw, bh);
-        mv_image_draw(grid->image_ids[item], x + 1, y + 1);
+        image_grid_draw_item(grid, item);
     }
-    image_grid_toggle_selection(grid);
+    Flush();
 }
 
 
@@ -111,15 +107,19 @@ int mv_image_grid_selected(const MVImageGrid *grid) {
 
 
 bool mv_image_grid_select(MVImageGrid *grid, int item) {
+    int previous;
+
     if ((item < 0) || (item >= grid->num_items)) {
         return false;
     }
     if (item == grid->selected) {
         return true;
     }
-    image_grid_toggle_selection(grid);   /* un-highlight the old item */
+    previous = grid->selected;
     grid->selected = item;
-    image_grid_toggle_selection(grid);   /* highlight the new item */
+    image_grid_draw_item(grid, previous);   /* redraw the now-unselected button */
+    image_grid_draw_item(grid, item);       /* redraw the newly-selected button */
+    Flush();
     if (grid->item_selected) {
         grid->item_selected(grid);
     }
