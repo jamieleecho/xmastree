@@ -30,7 +30,9 @@ CC := cmoc
 CMOC_OS9_DIR := cmoc_os9
 MVKIT_DIR := mvkit
 MVKIT_LIB := ${MVKIT_DIR}/libmvkit.a
-CFLAGS := --os9 -I${MVKIT_DIR}/include -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
+# MVKit needs no -I here: `libmvkit` installs it into cmoc's shared include dir,
+# which cmoc auto-searches. cmoc_os9's libc/cgfx are still used in place via -I.
+CFLAGS := --os9 -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/include
 CMOC_OS9_LIBC_DIR := ${CMOC_OS9_DIR}/lib
 CMOC_OS9_CGFX_DIR := ${CMOC_OS9_DIR}/cgfx
 CMOC_OS9_UTILS_DIR := ${CMOC_OS9_DIR}/utils
@@ -78,7 +80,7 @@ ${BUILD}:
 	mkdir -p ${BUILD}
 
 ${TARGET}: ${CFILES} | ${BUILD} libc libcgfx libmvkit
-	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -L${MVKIT_DIR} -lmvkit -lc -lcgfx
+	$(CC) $(CFLAGS) -o $@ ${CFILES} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lmvkit -lc -lcgfx
 
 ${TARGET_ICON}: ${SOURCE_ICON} | ${BUILD}
 	png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
@@ -109,9 +111,9 @@ libc: cmoc_os9
 libcgfx: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_CGFX_DIR} all
 
-## Build the MVKit framework library (libmvkit)
+## Build and install the MVKit framework library into cmoc's shared dir
 libmvkit: cmoc_os9
-	$(MAKE) -C ${MVKIT_DIR} all
+	$(MAKE) -C ${MVKIT_DIR} install
 
 # Minimal MVKit example app (examples/minimal) + a bootable disk to test it.
 MINIMAL_SRC := examples/minimal/minimal.c
@@ -124,7 +126,7 @@ MINIMAL_DSK := ${BUILD}/minimal.os9
 minimal: ${MINIMAL_DSK}
 
 ${MINIMAL_BIN}: ${MINIMAL_SRC} | ${BUILD} libc libcgfx libmvkit
-	$(CC) $(CFLAGS) -o $@ ${MINIMAL_SRC} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -L${MVKIT_DIR} -lmvkit -lc -lcgfx
+	$(CC) $(CFLAGS) -o $@ ${MINIMAL_SRC} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -lmvkit -lc -lcgfx
 
 ${MINIMAL_ICON}: ${SOURCE_ICON} ${DEFAULT_PALETTE} | ${BUILD}
 	png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@

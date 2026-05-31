@@ -3,13 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <mvkit/mv_app.h>
-#include <mvkit/mv_document.h>
-#include <mvkit/mv_image.h>
-#include <mvkit/mv_menu.h>
-#include <mvkit/mv_theme.h>
+#include <mvkit/mvkit.h>
 
-#include <mvkit/mv_image_grid.h>
 #include "tree.h"
 #include "tree_view.h"
 #include "version.h"

@@ -24,9 +24,21 @@ on the host. From this directory inside the container:
 
 ```
 make            # builds libmvkit.a
+make install    # installs the headers + libmvkit.a into PREFIX (default:
+                # /usr/local/share/cmoc, cmoc's shared dir)
 ```
 
-Apps link it with `-Imvkit/include -Lmvkit -lmvkit`, alongside `-lc -lcgfx`.
+cmoc auto-searches `PREFIX/include` and `PREFIX/lib`, so once installed an app
+just does:
+
+```c
+#include <mvkit/mvkit.h>
+```
+
+and links with `-lmvkit -lc -lcgfx` — no `-I`/`-L` needed for MVKit. (Override
+`PREFIX`, and set `DESTDIR`, for staged or packaged installs; `make uninstall`
+reverses it.) To build against the source tree without installing, pass
+`-Imvkit/include -Lmvkit` instead.
 
 ## API documentation
 
