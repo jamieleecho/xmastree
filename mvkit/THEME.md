@@ -54,15 +54,14 @@ MVTheme makes this hard to get wrong by *naming* the four chrome slots (you
 can't accidentally treat register 1 as "bright white") and by offering a
 validity check.
 
-## Proposed API
+## API (implemented)
 
 `mvkit/include/mvkit/mv_theme.h`:
 
 ```c
 typedef union {
-    byte raw_registers[16];
-
-    typedef struct theme {
+    byte raw[16];                /* all 16 registers, flat (for the load loop) */
+    struct {
       /* ===== Window-chrome ramp: palette registers 0-3 =====
         The OS-9 window manager hardcodes these for ALL chrome (menu bar,
         dropdowns, WT_DBOX dialog border, shadows, scrollbars, 3D edges). You
@@ -75,17 +74,17 @@ typedef union {
 
       /* ===== Content palette: registers 4-15 (cgfx colno), app's to define ===== */
       byte content[12];
-    } theme;
+    } ramp;
 } MVTheme;
 
 /* ===== Roles for MVKit-drawn UI (palette register indices 0-15) =====
     These pick WHICH registers MVKit uses when it draws its own widgets, so a
-    theme can keep MVKit UI consistent with the chrome. */
-#define mv_theme_dialog_fg 0
-#define mv_theme_dialog_bg 3
-#define mv_theme_control_fg 3
-#define mv_theme_control_bg 0
-#define mv_theme_window_border 0
+    theme can keep MVKit UI consistent with the chrome. Fixed, so macros. */
+#define MV_THEME_DIALOG_FG     0
+#define MV_THEME_DIALOG_BG     3
+#define MV_THEME_CONTROL_FG    3
+#define MV_THEME_CONTROL_BG    0
+#define MV_THEME_WINDOW_BORDER 0
 
 /* The canonical Multi-Vue look: black / dark-grey / light-grey / white ramp. */
 extern const MVTheme mv_theme_default;
@@ -104,15 +103,24 @@ extern bool mv_theme_chrome_ordered(const MVTheme *theme);
 
 Notes:
 
-- **cmoc has no designated initializers**, so a theme literal is positional. The
-  named struct fields are what carry the 0–3 guidance; field order is the ramp.
-- `mv_app_set_theme` replaces today's `mv_app_init(palette, num_colors)` as the
-  app's one palette call. `mv_app_init` can remain as a thin, lower-level form
-  (set palette only) or be folded in — TBD during implementation.
-- MVKit widgets stop hardcoding colors: `mv_app_message_box` / the dialogs read
-  `dialog_fg/bg` (today `MV_APP_FOREGROUND_COLOR 0` / `..._BACKGROUND_COLOR 3`),
-  and `MVImageGrid` reads `control_fg/bg` (today its `MV_IMAGE_GRID_DEFAULT_FG 1`
-  / `..._BG 0`). Those `#define`s become the defaults inside `mv_theme_default`.
+- **cmoc has no C11 anonymous union members.** A bare anonymous `struct { … }`
+  inside the union compiles but its fields are *not* injected into the union
+  scope (`theme.chrome_darkest` fails to resolve), so the named slots live under
+  a `.ramp` member: `theme.ramp.chrome_darkest`. The union is exactly 16 bytes,
+  so `theme.raw[i]` aliases the matching ramp field — verified with a
+  `sizeof(MVTheme) == 16` compile-time assert during implementation.
+- **cmoc has no designated initializers**, so a theme literal is positional and
+  initializes the union's first member, `raw[16]`; the ramp fields alias it:
+  `static const MVTheme t = { { 0x00, 0x07, 0x38, 0x3f, /* …12 content… */ } };`.
+- `mv_app_set_theme(&theme)` is the app's one palette call; it loads all 16
+  registers via `_cgfx_palette`. `mv_app_init(palette, num_colors)` remains as
+  the lower-level `int`-array form (not removed).
+- MVKit widgets no longer hardcode colors: `mv_app_message_box` / the dialogs
+  read `MV_THEME_DIALOG_FG`/`_BG` (via `MV_APP_FOREGROUND_COLOR`/`_BACKGROUND`,
+  now aliases), and `MVImageGrid` reads `MV_THEME_CONTROL_FG`/`_BG` (via
+  `MV_IMAGE_GRID_DEFAULT_FG`/`_BG`, now aliases). The role macros are the single
+  source of truth. (Macros are `UPPER_CASE` to match MVKit convention; the
+  earlier proposal used lowercase.)
 
 ## Theming in practice
 
@@ -135,21 +143,36 @@ scarce). Document the rule loudly at the struct and in `mv_theme_default`.
 
 ## Status / deferred
 
-- **The chrome-ramp contract is already in effect for xmastree** (done ahead of
-  the `MVTheme` API): its palette registers 0–3 were reordered to
-  black / dark-grey / light-grey / white, `MV_IMAGE_GRID_DEFAULT_FG` was set to
-  the lightest (reg 3), and its AIF uses fg=reg 0 / bg=reg 3. What remains
-  unbuilt is the `MVTheme` struct/API itself (`mv_app_set_theme`,
-  `mv_theme_default`, …) — this doc is still design-only.
+- **Implemented.** `mv_theme.h` defines `MVTheme`, the `MV_THEME_*` role macros,
+  `mv_theme_default`, `mv_app_set_theme`, and `mv_theme_chrome_ordered`. Each
+  function lives in its own translation unit (`mv_theme_default.c`,
+  `mv_app_set_theme.c`, `mv_theme_chrome_ordered.c`) per the link-granularity
+  rule. The dialog and grid color `#define`s now alias the role macros, and
+  xmastree installs its colors via `mv_app_set_theme(&theme)` instead of a bare
+  `int palette[]` — built and linked green.
+- **The chrome-ramp contract was already in effect for xmastree** (done ahead of
+  the `MVTheme` API): its palette registers 0–3 are
+  black / dark-grey / light-grey / white, `MV_IMAGE_GRID_DEFAULT_FG` is the
+  lightest (reg 3), and its AIF uses fg=reg 0 / bg=reg 3.
 - **AIF colors.** The launcher's AIF carries the window's default fg/bg
   registers (xmastree now uses fg=`chrome_darkest` reg 0 / bg=`chrome_lightest`
   reg 3). Wiring the theme to AIF *generation* is a separate item.
 - **Per-element chrome colors** are impossible (hardcoded), so not attempted.
 
+## Resolved during implementation
+
+- **`mv_app_set_theme` layers over `mv_app_init`** rather than replacing it: it
+  loads the 16 `byte` registers from a theme; `mv_app_init` stays as the
+  lower-level `int`-array form.
+- **`content[12]` lives inside `MVTheme`.** Keeping all 16 registers in one
+  union is what makes the `raw[16]` flat-load path (and its 16-byte aliasing)
+  work; a separately-passed content array would lose that.
+- **`mv_theme_default` is in its own `.o`** (`mv_theme_default.c`), so apps that
+  define their own theme don't link the default's data.
+
 ## Open questions
 
-- Does `mv_app_set_theme` subsume `mv_app_init`, or layer over it?
-- Is `content[12]` the right shape, or should content stay a caller-owned array
-  passed separately (keeping `MVTheme` purely about roles + the ramp)?
-- Should `mv_theme_default` live in its own `.o` so apps that define their own
-  theme don't link it (link-granularity guardrail)?
+- Wiring the theme to AIF *generation* (the launcher's default window fg/bg) is
+  still a separate, unbuilt item — see "AIF colors" above.
+- `mv_theme_chrome_ordered` is provided but not yet *called* anywhere; a
+  debug-build assert in `mv_app_set_theme` could use it.
