@@ -57,7 +57,8 @@ BASEIMAGE    ?=
 # MAME, for `make run` on the host (not in the container).
 MAME_DIR     ?= ~/Applications/mame
 MAME         ?= $(MAME_DIR)/mame
-MAME_FLAGS   ?= -window -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd
+MAME_FLAGS   ?= -speed 4 -window -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd \
+                -autoboot_delay 3 -autoboot_command 'dos\n'
 
 # ---- derived ----------------------------------------------------------------
 BIN     := $(BUILD)/$(APP)
