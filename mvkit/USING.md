@@ -429,11 +429,88 @@ which copies extra files onto the disk), so the Open browser has a `.txt` to
 list. `make -C mvkit/guide/05-dialogs run`, then pick from the Dialogs menu;
 each choice prints its result to the window.
 
+## Documents
+
+`mv_document` wraps your data model with the standard file lifecycle — New /
+Open / Save / Save As / Revert — plus dirty tracking and the prompts that guard
+against throwing away unsaved work (loosely after `NSDocument`). The example is
+in [`guide/06-document`](guide/06-document): the model is a single integer
+counter, and a **Count ▸ Increment** item changes it.
+
+### Your model and three callbacks
+
+A document is your model plus three callbacks that act on it for a path; each
+returns 0 on success or an error code, and any may be `NULL` to disable that
+operation:
+
+```c
+typedef struct { int count; } Counter;
+static Counter counter;
+static MVDocument doc;
+
+static int counter_new (void *m, const char *path) { ((Counter *)m)->count = 0; return 0; }
+static int counter_open(void *m, const char *path) { /* read the file into *m  */ }
+static int counter_save(void *m, const char *path) { /* write *m to the file   */ }
+
+mv_document_init(&doc, NULL, "counter", ".cnt", &counter,
+                 counter_new, counter_open, counter_save);
+```
+
+`mv_document_init(doc, path, default_path, extension, model, new, open, save)`
+ties it together. Pass a `path` to open a file immediately; pass `NULL` to start
+a new, unsaved document at `default_path`. (`open`/`save` use the same low-level
+`open`/`read`/`write`/`creat`/`close` calls any OS-9 C program does — see the
+example.)
+
+### Driving it from the menu
+
+The File-menu items map straight onto the API; each returns whether the model
+changed so you can redraw:
+
+| Menu item   | Call                       | What it does |
+|-------------|----------------------------|--------------|
+| New         | `mv_document_new(&doc)`    | empty model (prompts to save if dirty) |
+| Open…       | `mv_document_open(&doc)`   | Open dialog, then load |
+| Save        | `mv_document_save(&doc)`   | save to the current path (or Save As if untitled) |
+| Save As…    | `mv_document_save_as(&doc)`| Save dialog, then write |
+| Revert      | `mv_document_revert(&doc)` | reload from disk, discarding changes |
+
+For a document named on the command line, load it yourself and call
+`mv_document_opened(&doc)` to mark it file-backed:
+
+```c
+if (argc == 2) { counter_open(&counter, argv[1]); mv_document_opened(&doc); }
+```
+
+### Dirty tracking and changes
+
+Record every model change with `mv_document_make_change` — it marks the document
+dirty and remembers how to undo the change:
+
+```c
+counter.count += 1;
+MVUndoItem undo = { counter_undo_increment, &counter };
+mv_document_make_change(&doc, &undo);
+```
+
+`mv_document_is_dirty(&doc)` then reports unsaved work; New/Open/Revert/close use
+it to prompt before discarding. The `mv_document_can_*` queries say which
+operations are currently available — drive the menu's enabled state from them in
+your `refresh_menus` callback:
+
+```c
+mv_menu_item_set_enabled(file_items, FileIndex_Save,   mv_document_is_dirty(&doc));
+mv_menu_item_set_enabled(file_items, FileIndex_Revert, mv_document_can_revert(&doc));
+```
+
+`make -C mvkit/guide/06-document run`: Increment to dirty it, Save to write
+`counter` to disk, Open it back, Revert to undo unsaved changes. The undo item
+recorded above isn't used yet — the next stage adds an Undo menu that does.
+
 ## The rest of the guide
 
-The remaining stages each add one capability, building on the last:
+One stage remains, building on this one:
 
-1. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-2. **Undo** — recording reversible changes with the document's undo manager.
+1. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
