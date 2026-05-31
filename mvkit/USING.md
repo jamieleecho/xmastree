@@ -113,21 +113,89 @@ and it links with `-lmvkit -lc -lcgfx`. The next stages turn that into a real
 windowed app — and introduce `app.mk`, the small reusable Makefile that reduces
 each app's build to a few lines.
 
+## A simple app
+
+The smallest real MVKit app opens a window and runs. The complete example is in
+[`examples/guide/01-hello`](../examples/guide/01-hello).
+
+`main.c`:
+
+```c
+#include <stdio.h>
+#include <unistd.h>          /* sleep */
+
+#include <mvkit/mvkit.h>
+
+mv_menu_none(hello_window, "hello");
+
+static void hello_init(void) {
+    printf("Loading...\n");
+    Flush();
+    sleep(3);
+    printf("Loaded.\n");
+    Flush();
+}
+
+int main(int argc, char **argv) {
+    return mv_app_run(argc, argv, &hello_window,
+        mv_app_pre_init_nop, hello_init, mv_app_menu_actions_nop,
+        mv_app_refresh_menus_action_nop, mv_app_event_nop);
+}
+```
+
+What's going on:
+
+- **`mv_menu_none(hello_window, "hello")`** declares the window descriptor: a
+  framed window titled *hello* with no menu bar. (The next stage adds menus.)
+- **`mv_app_run(...)`** opens the window and runs the event loop until the user
+  closes the window — the close box quits by default. It takes the process
+  arguments, the window, and five callbacks; here all but `init` are the
+  framework's built-in no-ops (`mv_app_*_nop`), so you fill in only what you use.
+- **`init`** runs once, just after the window is set up. Text written to stdout
+  lands in the window, so this prints `Loading...`, sleeps three seconds, then
+  prints `Loaded.` — showing that `init` finishes before the event loop begins.
+  `Flush()` pushes buffered drawing to the screen. The earlier **`pre_init`**
+  callback (a no-op here) runs *before* the window exists; it's where palette and
+  resource setup belong (later stages).
+
+The Makefile is three lines:
+
+```make
+APP  := hello
+SRCS := main.c
+include ../guide.mk
+```
+
+`guide.mk` points `app.mk` at this repo's vendored cmoc_os9 and base disk. A
+standalone app outside this repo would instead just
+`include /usr/local/share/cmoc/app.mk` (installed by `make install`), set
+`BASEIMAGE` to its NitrOS-9 disk, and go. From those two variables `app.mk`
+compiles and links the program, builds the icon, generates the Multi-Vue
+launcher AIF, and assembles a bootable disk image.
+
+Build it inside the coco-dev image; run it with MAME on the host:
+
+```sh
+make            # -> build/hello.os9
+make run        # launch it in MAME
+```
+
+Launched from the Multi-Vue desktop, the window prints `Loading...`, pauses,
+then `Loaded.`.
+
 ## The rest of the guide
 
 The remaining stages each add one capability, building on the last:
 
-1. **A simple app** — open a window and use the lifecycle callbacks
-   (`pre_init` / `init`): print a loading message, pause, then a loaded message.
-2. **A menu and an action** — add a `Help ▸ About…` menu item that opens a
+1. **A menu and an action** — add a `Help ▸ About…` menu item that opens a
    message box, plus the app icon and launcher (`app-icon.png`, `aif`) so it
    appears on the Multi-Vue desktop.
-3. **Window types, colors, and palettes** — framed vs. scrollable windows, the
+2. **Window types, colors, and palettes** — framed vs. scrollable windows, the
    window-chrome color ramp, and converting PNG art into loadable OS-9 images
    via `app-palette.txt`.
-4. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
-5. **Dialogs** — the built-in message boxes and the file open/save browsers.
-6. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-7. **Undo** — recording reversible changes with the document's undo manager.
+3. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
+4. **Dialogs** — the built-in message boxes and the file open/save browsers.
+5. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+6. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
