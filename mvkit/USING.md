@@ -139,6 +139,8 @@ make -C mvkit/guide/01-hello run      # launch it in MAME (on the host)
 The smallest real MVKit app opens a window and runs. The complete example is in
 [`guide/01-hello`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/01-hello).
 
+![01-hello — a framed window printing Loaded.](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/01-hello/screenshot.png)
+
 `main.c`:
 
 ```c
@@ -209,6 +211,8 @@ then `Loaded.`.
 Stage 1's window had no menu bar. This stage adds a **Help** menu with an
 **About…** item that opens a message box. The example is in
 [`guide/02-menu`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/02-menu).
+
+![02-menu — choosing Help ▸ About… opens a message box](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/02-menu/screenshot.png)
 
 `main.c`:
 
@@ -286,6 +290,8 @@ and the window close box quits the app.
 This stage installs a color palette and draws an image that was converted from a
 PNG at build time. The example is in [`guide/03-palette`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/03-palette).
 
+![03-palette — an image converted from a PNG, drawn in the window](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/03-palette/screenshot.png)
+
 ### Window types
 
 `mv_app_run(...)` opens a plain **framed** window (cgfx `WT_FWIN`). For one with
@@ -347,6 +353,8 @@ drawn on a black background.
 (it embeds an `MVView`). The example is in [`guide/04-grid`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/04-grid): four
 buttons in a 2-column grid.
 
+![04-grid — a 2×2 grid of shape buttons, the selected one outlined](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/04-grid/screenshot.png)
+
 ```c
 #define NUM_BUTTONS 4
 #define COLUMNS     2
@@ -397,6 +405,8 @@ MVKit's modal dialogs: a message box and the file open/save browsers. The
 example is in [`guide/05-dialogs`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/05-dialogs) — a "Dialogs" menu whose
 items open each one and report the result.
 
+![05-dialogs — the file Open browser, with hello.txt listed](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/05-dialogs/screenshot.png)
+
 ### Message box
 
 ```c
@@ -436,6 +446,8 @@ Open / Save / Save As / Revert — plus dirty tracking and the prompts that guar
 against throwing away unsaved work (loosely after `NSDocument`). The example is
 in [`guide/06-document`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/06-document): the model is a single integer
 counter, and a **Count ▸ Increment** item changes it.
+
+![06-document — the counter document showing its count and modified state](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/06-document/screenshot.png)
 
 ### Your model and three callbacks
 
@@ -514,6 +526,8 @@ passed to `mv_document_make_change`. This stage spends that. The example,
 [`guide/07-undo`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/07-undo), is the counter document plus an **Edit ▸ Undo**
 menu; the only additions are that menu, an `undo_action`, and one line in
 `refresh_menus`.
+
+![07-undo — the counter document with an Edit ▸ Undo menu](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/07-undo/screenshot.png)
 
 An undo item is a function plus an argument — "to reverse this change, call
 `undo_function(object)`":
