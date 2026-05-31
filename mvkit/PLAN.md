@@ -156,11 +156,65 @@ reads as a documented framework before it grows or is upstreamed. Comments live
 on the header declarations (the public contract); implementation files keep only
 internal notes. No behavior change, so the build stays byte-identical.
 
-### Phase 4 — (stretch) `toolbox` as MVKit's first View
+### Phase 4 — Clean up app initialization
+Today an app hand-writes a lot of wonky boilerplate: the `MIDSCR`/`MNDSCR` menu
+tables, a verbose `WNDSCR mywindow = {…}` initializer, a `pre_init`, an `init`,
+a `refresh_menus_action`, an event dispatcher, and a `main()` that wires them
+together and handles `argc`/`argv`. Goal: collapse this so the common case is
+near-zero boilerplate and `main()` is a single `mv_app_run(...)` call.
+
+Planned pieces (final API shape TBD — see open questions):
+
+1. **`pre_init(argc, argv)` folded into `mv_app_run`.** Every app has a pre-init
+   step (palette, images, model, and *optionally opening a document from
+   `argv`*). Give it the signature `void pre_init(int argc, char **argv)` and
+   have `mv_app_run` call it first, before window setup. `mv_app_run` returns
+   `int` (the process exit code). Result: `main` collapses to
+   `return mv_app_run(argc, argv, &window, pre_init, init, menu_actions,
+   refresh_menus_action, event);` — the per-app `argc` checks and the
+   "open the file named on the command line" logic move into the app's
+   `pre_init`.
+
+2. **Default no-op handlers** shipped by MVKit so a minimal app fills unused
+   slots explicitly (clearer than `NULL`):
+   `mv_app_pre_init_nop`, `mv_app_init_nop`, `mv_app_refresh_menus_action_nop`,
+   `mv_app_event_nop`, and `mv_app_menu_actions_nop` (a sentinel-only action
+   table). Keep `NULL` tolerated too, so both styles work.
+
+3. **Menu/window boilerplate macros + `mv_menu_none`.** Replace the
+   `WNDSCR`/`MNDSCR` hand-rolling with macros (working name `mv_set_menus`):
+   one to declare a window from a menu array (filling the num-menus count and
+   the default width/height/sync/reserved fields), and likely an `MV_MENU(...)`
+   helper for each menu-table row. `mv_menu_none` gives a window with no menu
+   bar for the trivial case.
+
+The payoff — a do-nothing app becomes a few lines:
+```c
+mv_set_menus(window, "hello", mv_menu_none);
+int main(int argc, char **argv) {
+    return mv_app_run(argc, argv, &window,
+        mv_app_pre_init_nop, mv_app_init_nop, mv_app_menu_actions_nop,
+        mv_app_refresh_menus_action_nop, mv_app_event_nop);
+}
+```
+
+Open questions for this phase:
+- **`mv_app_run` shape:** 8 positional args, or an `MVAppConfig` struct passed by
+  pointer (`mv_app_run(argc, argv, &config)`)? A struct pairs naturally with the
+  no-op defaults and resolves the long-standing config-struct question below, but
+  depends on how well cmoc handles designated initializers.
+- **Macro shape/name:** single `mv_set_menus(...)` vs an `MV_MENU(...)` +
+  `MV_WINDOW(...)` pair; confirm cmoc accepts the initializer macros.
+- **`mv_menu_none` feasibility:** does cgfx accept a window with `num_menus == 0`
+  / a NULL menu pointer, or does it need a stub menu?
+- **Arg validation:** the app's `pre_init` owns it (e.g. xmastree's `argc > 2`
+  check); MVKit may offer a small helper but shouldn't impose a policy.
+
+### Phase 5 — (stretch) `toolbox` as MVKit's first View
 Generalize the 10-item hardcode into a reusable view/control. This is design
 work, not a lift — keep it out of the critical path until Phase 2 lands.
 
-### Phase 5 — Upstream prep
+### Phase 6 — Upstream prep
 Align `mvkit/Makefile` and layout with cmoc_os9's lib conventions; add tests
 under cmoc_os9's `unittest/` harness. Then the directory copies up cleanly.
 
@@ -185,7 +239,8 @@ prefixes to match.
 
 ## Open questions for later
 
-- Does `app_init` grow into an `MVAppConfig` struct (name, extension, palette,
-  fg/bg colors) instead of positional params? Likely yes once `image_init`'s
-  `app_name` and the dialog extension all want to live in one place.
-- Toolbox generalization shape (Phase 3): item count, layout, and selection model.
+- Whether `mv_app_run` takes an `MVAppConfig` struct (window, callbacks, and
+  possibly name/palette/extension/colors) instead of positional params — now
+  folded into **Phase 4** (app-init cleanup).
+- Toolbox generalization shape (now **Phase 5**): item count, layout, and
+  selection model.
