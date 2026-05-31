@@ -97,6 +97,16 @@ already consumes cgfx.
    Exception: functions that share file-scope `static` state are inherently one
    unit and must stay together (e.g. the run loop's signal/mouse statics).
 
+   **Norm (as of the module-split pass):** default to *one public function per
+   `.c`*. Group only trivial, always-co-used helpers (e.g. a cluster of
+   one-line capability queries). When several functions share a helper or a
+   `static`, externalize the shared piece through a private `src/`-only header
+   (`mv_<module>_internal.h`) and give it its own `.c` so callers that don't
+   need it don't link it — rather than bundling it with one caller. Worked
+   examples: `mv_undo_manager` (7 files), `mv_document` (12 files, with
+   `mv_document_internal.h`). Modules whose functions all share `static` state
+   stay whole: `mv_image`, `mv_file_dialog`, `mv_app_run`.
+
 ## Phases
 
 ### Phase 0 — Build the seam (no logic moves)
