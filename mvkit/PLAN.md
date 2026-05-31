@@ -214,6 +214,11 @@ Resolutions:
   save-before-close).
 - **Arg validation:** the app's `pre_init` owns it (xmastree's `argc > 2` check
   moved there); MVKit imposes no policy.
+- **Window type:** the real entry is `mv_app_run_typed(window_type, ...)`;
+  `mv_app_run` (WT_FWIN) and `mv_app_run_with_scrollbars` (WT_FSWIN) are
+  zero-cost *macros* over it (not wrapper functions, which would leave a stack
+  frame parked for the whole run since the loop never returns). Call sites are
+  unchanged, so adding the option broke nothing.
 
 ### Phase 5 — (stretch) `toolbox` as MVKit's first View
 Generalize the 10-item hardcode into a reusable view/control. This is design

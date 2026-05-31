@@ -71,12 +71,12 @@ void mv_app_refresh_menubar(void) {
 }
 
 
-int mv_app_run(int argc, char **argv, WNDSCR *mywindow,
-               void (*pre_init)(int argc, char **argv),
-               void (*init)(void),
-               const MVMenuItemAction *menu_actions,
-               void (*refresh_menus_action)(void),
-               void (*application_action)(MVUiEvent *event)) {
+int mv_app_run_typed(int window_type, int argc, char **argv, WNDSCR *mywindow,
+                     void (*pre_init)(int argc, char **argv),
+                     void (*init)(void),
+                     const MVMenuItemAction *menu_actions,
+                     void (*refresh_menus_action)(void),
+                     void (*application_action)(MVUiEvent *event)) {
     int itemno, menuid, ii;
     MVMenuItemAction const * menu_item_action;
     MVUiEvent event;
@@ -94,7 +94,7 @@ int mv_app_run(int argc, char **argv, WNDSCR *mywindow,
     _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_ARR);
     _cgfx_ss_mouse(MV_OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
 
-    int err = _cgfx_ss_wnset(0, WT_FWIN, mywindow);
+    int err = _cgfx_ss_wnset(0, window_type, mywindow);
     if (init) {
         init();
     }

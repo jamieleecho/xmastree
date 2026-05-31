@@ -70,8 +70,11 @@ extern void mv_app_init(const int *palette, size_t num_colors);
 
 /** Open `mywindow`, enter the main event loop, and run until the program exits
    (in practice this does not return; the int return type lets main() be a
-   single `return mv_app_run(...);`). Callbacks may be NULL, or pass the
-   mv_app_*_nop defaults below. In order:
+   single `return mv_app_run(...);`). Prefer the mv_app_run / mv_app_run_with_
+   scrollbars macros below, which bake in the window type; call this directly
+   only to pass another cgfx window type. `window_type` is a cgfx WT_ value
+   (WT_FWIN = framed window, WT_FSWIN = framed window with scrollbars).
+   Callbacks may be NULL, or pass the mv_app_*_nop defaults below. In order:
      pre_init              - run first, before window setup, with the process
                              argc/argv; do palette/image/model setup here, and
                              open a document named on the command line if wanted
@@ -83,7 +86,8 @@ extern void mv_app_init(const int *palette, size_t num_colors);
                              enable/disable state here
      application_action    - called with each key press and content-area mouse
                              click for the app to handle */
-extern int mv_app_run(
+extern int mv_app_run_typed(
+    int window_type,
     int argc, char **argv,
     WNDSCR *mywindow,
     void (*pre_init)(int argc, char **argv),
@@ -92,6 +96,19 @@ extern int mv_app_run(
     void (*refresh_menus_action)(void),
     void (*application_action)(MVUiEvent *event)
 );
+
+/* Run an app in a plain framed window (WT_FWIN). Zero-cost convenience over
+   mv_app_run_typed() -- a macro, so there is no wrapper stack frame (which,
+   since mv_app_run_typed never returns, would otherwise persist for the whole
+   run). */
+#define mv_app_run(argc, argv, window, pre_init, init, menu_actions, refresh_menus_action, application_action) \
+    mv_app_run_typed(WT_FWIN, (argc), (argv), (window), (pre_init), (init), \
+                     (menu_actions), (refresh_menus_action), (application_action))
+
+/* Run an app in a framed window with scrollbars (WT_FSWIN). */
+#define mv_app_run_with_scrollbars(argc, argv, window, pre_init, init, menu_actions, refresh_menus_action, application_action) \
+    mv_app_run_typed(WT_FSWIN, (argc), (argv), (window), (pre_init), (init), \
+                     (menu_actions), (refresh_menus_action), (application_action))
 
 /** Request that the menu bar be rebuilt before the next event is processed
    (triggers another call to the run loop's refresh_menus_action). Call after
