@@ -113,6 +113,27 @@ and it links with `-lmvkit -lc -lcgfx`. The next stages turn that into a real
 windowed app — and introduce `app.mk`, the small reusable Makefile that reduces
 each app's build to a few lines.
 
+## Building the examples
+
+Each stage's app lives under `examples/guide/`. From the repo root, inside the
+coco-dev environment:
+
+```sh
+make                 # one-time: fetch + build cmoc_os9 and install MVKit
+make mvkit-guide     # build every examples/guide/NN-* app
+```
+
+The first `make` clones/builds cmoc_os9 and installs MVKit (what the examples
+link against); `make mvkit-guide` then builds each example into its own
+`build/<name>.os9`. To build or run a single example:
+
+```sh
+make -C examples/guide/01-hello          # -> build/hello.os9
+make -C examples/guide/01-hello run      # launch it in MAME (on the host)
+```
+
+(MAME runs on the host, not in the container, since it needs a display.)
+
 ## A simple app
 
 The smallest real MVKit app opens a window and runs. The complete example is in

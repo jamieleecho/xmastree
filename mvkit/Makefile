@@ -40,7 +40,10 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_view.o src/mv_image_grid.o \
         src/mv_theme_default.o src/mv_app_set_theme.o src/mv_theme_chrome_ordered.o
 
-.PHONY: all clean docs help install uninstall
+.PHONY: all clean docs guide help install uninstall
+
+# The Using-MVKit guide example apps (examples/guide/NN-*).
+GUIDE_EXAMPLES := $(wildcard ../examples/guide/[0-9]*)
 
 ## Build the MVKit static library (default target)
 all: ${LIB}
@@ -69,6 +72,12 @@ uninstall:
 ## Generate the HTML API documentation into docs/ (uses Doxygen; see DOXYGEN)
 docs:
 	${DOXYGEN} Doxyfile
+
+## Build the Using MVKit guide example apps (examples/guide/NN-*)
+# Needs cmoc_os9 and an installed MVKit; from a clean tree run the top-level
+# `make mvkit-guide`, which builds those first.
+guide:
+	@for d in ${GUIDE_EXAMPLES}; do echo "==> $$d"; ${MAKE} -C $$d || exit 1; done
 
 ## Remove build artifacts and generated docs
 clean:
