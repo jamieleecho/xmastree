@@ -23,7 +23,7 @@ MAME_DIR := ~/Applications/mame
 MAME_ROM_PATH := $(MAME_DIR)/roms
 EMULATED_SYSTEM := coco3
 MAME := $(MAME_DIR)/mame
-MAME_FLAGS := -speed 4 -window -cfg_directory ${ASSETS}/mame-cfgs -rompath $(MAME_ROM_PATH) -ext:fdc:wd17xx:0 525qd
+MAME_FLAGS := -speed 4 -window -cfg_directory ${ASSETS}/mame-cfgs -rompath $(MAME_ROM_PATH) -ext:fdc:wd17xx:0 525qd -autoboot_delay 3 -autoboot_command 'dos\n'
 MAME_COMMAND := $(MAME) $(EMULATED_SYSTEM) $(MAME_FLAGS)
 
 CC := cmoc
@@ -115,7 +115,7 @@ libcgfx: cmoc_os9
 libmvkit: cmoc_os9
 	$(MAKE) -C ${MVKIT_DIR} install
 
-## Build the Using MVKit guide example apps (examples/guide/)
+## Build the Using MVKit guide example apps (mvkit/guide/)
 mvkit-guide: libc libcgfx libmvkit
 	$(MAKE) -C ${MVKIT_DIR} guide
 

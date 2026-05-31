@@ -20,6 +20,12 @@ SRCS         ?= $(wildcard *.c)
 ASSETS       ?= assets
 BUILD        ?= build
 
+# OS-9 short name for the launcher files (aif.<SHORT> / icon.<SHORT>). Multi-Vue
+# requires that extension be at most 3 letters; the executable keeps the full
+# APP name. Defaults to the first three letters of APP -- override for a nicer
+# short name (e.g. SHORT := xmt).
+SHORT        ?= $(shell printf '%.3s' '$(APP)')
+
 # Launcher: an icon PNG plus an AIF generated from the geometry/colors below.
 APP_ICON     ?= $(ASSETS)/app-icon.png
 ICON_PALETTE ?= $(ASSETS)/default-palette.txt
@@ -51,12 +57,13 @@ BASEIMAGE    ?=
 # MAME, for `make run` on the host (not in the container).
 MAME_DIR     ?= ~/Applications/mame
 MAME         ?= $(MAME_DIR)/mame
-MAME_FLAGS   ?= -window -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd
+MAME_FLAGS   ?= -speed 4 -window -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd \
+                -autoboot_delay 3 -autoboot_command 'dos\n'
 
 # ---- derived ----------------------------------------------------------------
 BIN     := $(BUILD)/$(APP)
-ICON    := $(BUILD)/icon.$(APP)
-AIF     := $(BUILD)/aif.$(APP)
+ICON    := $(BUILD)/icon.$(SHORT)
+AIF     := $(BUILD)/aif.$(SHORT)
 DSK     := $(BUILD)/$(APP).os9
 IMGDIR  := $(BUILD)/images
 SYSDIR  := SYS/$(APP)
@@ -85,7 +92,7 @@ $(ICON): $(APP_ICON) $(ICON_PALETTE) | $(BUILD)
 # Generate the Multi-Vue launcher AIF (CR line endings) from the variables.
 $(AIF): | $(BUILD)
 	@printf '%s\n\nICONS/icon.%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
-		'$(APP)' '$(APP)' '$(WIN_X)' '$(WIN_Y)' '$(WIN_W)' '$(WIN_H)' '$(WIN_FG)' '$(WIN_BG)' > $@.tmp
+		'$(APP)' '$(SHORT)' '$(WIN_X)' '$(WIN_Y)' '$(WIN_W)' '$(WIN_H)' '$(WIN_FG)' '$(WIN_BG)' > $@.tmp
 	@unix2mac -q -n $@.tmp $@
 	@rm -f $@.tmp
 
@@ -102,10 +109,10 @@ $(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS)
 	@os9 makdir $@,$(SYSDIR)
 	@os9 copy $(BIN) $@,CMDS/$(APP)
 	@$(ATTR_EXEC) $@,CMDS/$(APP)
-	@os9 copy $(ICON) $@,CMDS/ICONS/icon.$(APP)
-	@$(ATTR_EXEC) $@,CMDS/ICONS/icon.$(APP)
-	@os9 copy $(AIF) $@,aif.$(APP)
-	@$(ATTR_DATA) $@,aif.$(APP)
+	@os9 copy $(ICON) $@,CMDS/ICONS/icon.$(SHORT)
+	@$(ATTR_EXEC) $@,CMDS/ICONS/icon.$(SHORT)
+	@os9 copy $(AIF) $@,aif.$(SHORT)
+	@$(ATTR_DATA) $@,aif.$(SHORT)
 	@for img in $(IMGS); do \
 		os9 copy $$img $@,$(SYSDIR)/$$(basename $$img); \
 		$(ATTR_DATA) $@,$(SYSDIR)/$$(basename $$img); \

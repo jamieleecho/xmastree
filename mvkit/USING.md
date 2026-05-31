@@ -4,7 +4,7 @@ A step-by-step guide to building Multi-Vue applications for the Tandy Color
 Computer 3 with MVKit.
 
 > This guide is built up in stages. Each stage has a complete, runnable example
-> under [`examples/guide/`](../examples/guide) that you can build, run, and diff
+> under [`guide/`](guide) that you can build, run, and diff
 > against the next. This first part covers the *why*, the requirements, and
 > installation; the app-building stages follow.
 
@@ -115,12 +115,12 @@ each app's build to a few lines.
 
 ## Building the examples
 
-Each stage's app lives under `examples/guide/`. From the repo root, inside the
-coco-dev environment:
+Each stage's app lives under `mvkit/guide/`. From the repo root, inside
+the coco-dev environment:
 
 ```sh
 make                 # one-time: fetch + build cmoc_os9 and install MVKit
-make mvkit-guide     # build every examples/guide/NN-* app
+make mvkit-guide     # build every mvkit/guide/NN-* app
 ```
 
 The first `make` clones/builds cmoc_os9 and installs MVKit (what the examples
@@ -128,8 +128,8 @@ link against); `make mvkit-guide` then builds each example into its own
 `build/<name>.os9`. To build or run a single example:
 
 ```sh
-make -C examples/guide/01-hello          # -> build/hello.os9
-make -C examples/guide/01-hello run      # launch it in MAME (on the host)
+make -C mvkit/guide/01-hello          # -> build/hello.os9
+make -C mvkit/guide/01-hello run      # launch it in MAME (on the host)
 ```
 
 (MAME runs on the host, not in the container, since it needs a display.)
@@ -137,7 +137,7 @@ make -C examples/guide/01-hello run      # launch it in MAME (on the host)
 ## A simple app
 
 The smallest real MVKit app opens a window and runs. The complete example is in
-[`examples/guide/01-hello`](../examples/guide/01-hello).
+[`guide/01-hello`](guide/01-hello).
 
 `main.c`:
 

@@ -42,8 +42,8 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
 
 .PHONY: all clean docs guide help install uninstall
 
-# The Using-MVKit guide example apps (examples/guide/NN-*).
-GUIDE_EXAMPLES := $(wildcard ../examples/guide/[0-9]*)
+# The Using-MVKit guide example apps (mvkit/guide/NN-*).
+GUIDE_EXAMPLES := $(wildcard guide/[0-9]*)
 
 ## Build the MVKit static library (default target)
 all: ${LIB}
@@ -73,7 +73,7 @@ uninstall:
 docs:
 	${DOXYGEN} Doxyfile
 
-## Build the Using MVKit guide example apps (examples/guide/NN-*)
+## Build the Using MVKit guide example apps (mvkit/guide/NN-*)
 # Needs cmoc_os9 and an installed MVKit; from a clean tree run the top-level
 # `make mvkit-guide`, which builds those first.
 guide:
