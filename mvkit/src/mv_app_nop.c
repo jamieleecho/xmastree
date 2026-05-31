@@ -19,18 +19,14 @@ void mv_app_refresh_menus_action_nop(void) {
 
 
 void mv_app_event_nop(MVUiEvent *event) {
-    (void)event;
 }
 
 
-static void mv_app_menu_action_nop(MSRET *msinfo, int menuid, int itemno) {
-    (void)msinfo;
-    (void)menuid;
-    (void)itemno;
+void mv_app_menu_action_nop(MSRET *msinfo, int menuid, int itemno) {
 }
 
 /* Sentinel-only dispatch table: the menuid < 0 entry is the catch-all, so
    every menu selection is handled by the no-op. */
 const MVMenuItemAction mv_app_menu_actions_nop[] = {
-    { -1, -1, mv_app_menu_action_nop }
+    MV_MENU_ACTION_END
 };

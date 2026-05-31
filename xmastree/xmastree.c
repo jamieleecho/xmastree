@@ -112,10 +112,6 @@ static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
 }
 
 
-static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
-}
-
-
 static void about_action(MSRET *msinfo, int menuid, int itemno) {
     mv_app_show_message_box("xmastree v" APP_VERSION "\r\nBuild xmas trees!", MVMessageBoxType_Info);
 }
@@ -137,7 +133,7 @@ static MVMenuItemAction menu_actions[] = {
     {MN_FILE, 7, exit_action},
     {MN_HELP, 1, about_action},
     {MN_EDIT, 1, undo_action},
-    {-1, -1, unknown_action}
+    MV_MENU_ACTION_END
 };
 
 

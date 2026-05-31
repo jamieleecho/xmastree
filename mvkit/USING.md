@@ -239,12 +239,9 @@ static void about_action(MSRET *msinfo, int menuid, int itemno) {
                             MVMessageBoxType_Info);
 }
 
-static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
-}
-
 static const MVMenuItemAction menu_actions[] = {
     {MN_HELP, 1, about_action},   /* Help item 1 ("About...") */
-    {-1, -1, unknown_action},     /* catch-all sentinel */
+    MV_MENU_ACTION_END            /* catch-all: ignore everything else */
 };
 
 int main(int argc, char **argv) {
@@ -266,8 +263,10 @@ Handling the selection:
 
 - `menu_actions[]` is a dispatch table of `MVMenuItemAction` rows. When the user
   picks Help ▸ About… (menu `MN_HELP`, item `1`), `mv_app_run` calls
-  `about_action`; the trailing `{-1, -1, ...}` row catches anything without its
-  own entry.
+  `about_action`; the trailing catch-all row matches anything without its own
+  entry. `MV_MENU_ACTION_END` is that row — a sentinel using the framework's
+  built-in no-op handler, so you write no stub of your own. (Put a real
+  `{-1, -1, handler}` there instead if you want to act on unhandled items.)
 - `about_action` opens a modal box with `mv_app_show_message_box(message, type)`.
   `MVMessageBoxType_Info` shows a lone **OK**; embed `\r\n` to wrap the message
   onto more lines. (The full set of dialogs comes in a later stage.)
