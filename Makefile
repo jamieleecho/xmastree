@@ -130,7 +130,7 @@ ${CMOC_OS9_UNITTEST_DIR}: libc libcgfx
 ## Remove build artifacts and the cmoc_os9 checkout
 clean:
 	@rm -rf ${TARGET} ${TARGET_DSK}* cfg build *.egg-info dist ${BUILD}
-	@rm -f ${MVKIT_LIB} ${MVKIT_DIR}/src/*.o
+	@$(MAKE) -C ${MVKIT_DIR} clean
 
 ## Remove everything clean removes, plus the cmoc_os9 checkout
 real-clean: clean
