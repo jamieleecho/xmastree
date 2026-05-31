@@ -20,6 +20,7 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_undo_manager_all_undone.o src/mv_undo_manager_reset_undo_marker.o \
         src/mv_undo_manager_reset.o \
         src/mv_app_init.o src/mv_app_run.o src/mv_app_message_box.o src/mv_app_dialog.o \
+        src/mv_app_nop.o \
         src/mv_document_ensure_extension.o src/mv_document_save_internal.o \
         src/mv_document_init.o src/mv_document_new.o src/mv_document_open.o \
         src/mv_document_opened.o src/mv_document_revert.o src/mv_document_save_as.o \

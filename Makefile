@@ -49,7 +49,7 @@ IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 
-.PHONY: all clean help install-pre-commit libc libcgfx libmvkit real-clean run
+.PHONY: all clean help install-pre-commit libc libcgfx libmvkit minimal real-clean run run-minimal
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
@@ -113,6 +113,37 @@ libcgfx: cmoc_os9
 libmvkit: cmoc_os9
 	$(MAKE) -C ${MVKIT_DIR} all
 
+# Minimal MVKit example app (examples/minimal) + a bootable disk to test it.
+MINIMAL_SRC := examples/minimal/minimal.c
+MINIMAL_BIN := ${BUILD}/minimal
+MINIMAL_ICON := ${BUILD}/icon.min
+MINIMAL_AIF := ${BUILD}/aif.min
+MINIMAL_DSK := ${BUILD}/minimal.os9
+
+## Build the minimal MVKit example disk image (build/minimal.os9)
+minimal: ${MINIMAL_DSK}
+
+${MINIMAL_BIN}: ${MINIMAL_SRC} | ${BUILD} libc libcgfx libmvkit
+	$(CC) $(CFLAGS) -o $@ ${MINIMAL_SRC} -L${CMOC_OS9_LIBC_DIR} -L${CMOC_OS9_CGFX_DIR} -L${MVKIT_DIR} -lmvkit -lc -lcgfx
+
+${MINIMAL_ICON}: ${SOURCE_ICON} ${DEFAULT_PALETTE} | ${BUILD}
+	png-to-mvicon ${SOURCE_ICON} ${DEFAULT_PALETTE} $@
+
+${MINIMAL_AIF}: ${ASSETS}/aif.min | ${BUILD}
+	@dos2unix -q -n ${ASSETS}/aif.min $@
+	@unix2mac -q $@
+
+${MINIMAL_DSK}: ${BASEIMAGE} ${MINIMAL_BIN} ${MINIMAL_ICON} ${MINIMAL_AIF}
+	echo "Creating minimal disk image $@"
+	@cp ${BASEIMAGE} $@
+	@${IMGTOOL_MAKDIR} $@,CMDS/ICONS
+	@${IMGTOOL_COPY} ${MINIMAL_BIN} $@,CMDS/minimal
+	@${IMGTOOL_ATTR_EX} $@,CMDS/minimal
+	@${IMGTOOL_COPY} ${MINIMAL_ICON} $@,CMDS/ICONS/icon.min
+	@${IMGTOOL_ATTR_EX} $@,CMDS/ICONS/icon.min
+	@${IMGTOOL_COPY} ${MINIMAL_AIF} $@,aif.min
+	@${IMGTOOL_ATTR_RO} $@,aif.min
+
 ## Build the utils
 ${CMOC_OS9_UTILS_DIR}: cmoc_os9
 	$(MAKE) -C ${CMOC_OS9_UTILS_DIR} all
@@ -154,3 +185,7 @@ install-pre-commit: .venv
 ## Run the disk image in the MAME CoCo 3 emulator
 run: ${TARGET_DSK}
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
+
+## Run the minimal example disk image in the MAME CoCo 3 emulator
+run-minimal: ${MINIMAL_DSK}
+	$(MAME_COMMAND) -flop1 ${MINIMAL_DSK}

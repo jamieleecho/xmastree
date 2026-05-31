@@ -1,4 +1,5 @@
 #include <cgfx.h>
+#include <signal.h>
 #include <unistd.h>   /* read, sleep */
 
 #include "mvkit/mv_app.h"
@@ -13,25 +14,8 @@
 
 
 static char sigcode = 0;
-asm void sighandler(void) {
-    asm {
-        stb ,u
-        rti
-    }
-}
-
-
-void
-intercept()
-{
-    asm
-    {
-        pshs    u
-        leax    sighandler
-        leau    sigcode
-        os9     F$Icpt
-        puls    u
-    }
+void sighandler(int signal) {
+    sigcode = signal;
 }
 
 
@@ -87,16 +71,22 @@ void mv_app_refresh_menubar(void) {
 }
 
 
-void mv_app_run(WNDSCR *mywindow, void (*init)(void),
-                const MVMenuItemAction *menu_actions,
-                void (*refresh_menus_action)(void),
-                void (*application_action)(MVUiEvent *event)) {
-    int local_sig, itemno, menuid, ii;
+int mv_app_run_typed(int window_type, int argc, char **argv, WNDSCR *mywindow,
+                     void (*pre_init)(int argc, char **argv),
+                     void (*init)(void),
+                     const MVMenuItemAction *menu_actions,
+                     void (*refresh_menus_action)(void),
+                     void (*application_action)(MVUiEvent *event)) {
+    int itemno, menuid, ii;
     MVMenuItemAction const * menu_item_action;
     MVUiEvent event;
 
+    if (pre_init) {
+        pre_init(argc, argv);
+    }
+
     echo_sw(MV_OUTPATH, 0);
-    intercept();
+    intercept(sighandler);
 
     _cgfx_curoff(MV_OUTPATH);
     _cgfx_tcharsw(MV_OUTPATH, false);
@@ -104,7 +94,7 @@ void mv_app_run(WNDSCR *mywindow, void (*init)(void),
     _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_ARR);
     _cgfx_ss_mouse(MV_OUTPATH, MOUSE_UPDATE_PERIOD, MOUSE_TIMEOUT_PERIOD, MOUSE_FOLLOW);
 
-    int err = _cgfx_ss_wnset(0, WT_FWIN, mywindow);
+    int err = _cgfx_ss_wnset(0, window_type, mywindow);
     if (init) {
         init();
     }
@@ -149,6 +139,12 @@ void mv_app_run(WNDSCR *mywindow, void (*init)(void),
 
             /* unhandled menu */
             if (menu_actions[ii].menuid < 0) {
+                if (menuid == MN_CLOS) {
+                    /* Default close-box behavior: quit. An app that wants to
+                       intercept the close (e.g. to prompt to save) supplies its
+                       own MN_CLOS entry, which matches above and pre-empts this. */
+                    exit(0);
+                }
                 menu_actions[ii].action(&event.info.mouse, menuid, itemno);
             }
 
@@ -162,4 +158,6 @@ void mv_app_run(WNDSCR *mywindow, void (*init)(void),
             }
         }
     }
+
+    return 0;   /* not reached: the event loop runs until the process exits */
 }
