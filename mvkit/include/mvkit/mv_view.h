@@ -2,7 +2,7 @@
 #define _MVKIT_MV_VIEW_H
 
 #include <stdbool.h>
-#include <mvkit/mv_app.h>   /* MVUiEvent */
+#include <mvkit/mv_event.h>   /* MVUiEvent */
 
 /*
  * MVView is MVKit's minimal view protocol -- loosely NSView's core: a frame, a

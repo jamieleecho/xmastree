@@ -1,7 +1,6 @@
 #include <cgfx.h>
 #include <fcntl.h>
 #include <os.h>
-#include <stdlib.h>   /* exit */
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -14,13 +13,14 @@ static char buffer[MV_PATH_MAX];
 static int pid;
 
 
-void mv_image_init(const char *app_name) {
+error_code mv_image_init(const char *app_name) {
+    error_code err;
     my_app_name = app_name;
-    int err = _os_getpid(&pid);
+    err = _os_getpid(&pid);
     if (err) {
-        exit(err);
+        return err;
     }
-    mv_image_free_all_buffers();
+    return mv_image_free_all_buffers();
 }
 
 

@@ -5,6 +5,7 @@
 #include <cgfx.h>     /* WNDSCR, MSRET */
 #include <stdbool.h>
 #include <mvkit/mv_defs.h>
+#include <mvkit/mv_event.h>   /* MVUiEvent */
 
 /**
  * @file
@@ -12,28 +13,6 @@
  * dispatch, and the built-in modal dialogs (message box, file open/save).
  * Loosely analogous to AppKit's NSApplication.
  */
-
-/** Which kind of input an MVUiEvent carries. */
-typedef enum {
-    MVUiEventType_KeyPress,
-    MVUiEventType_MouseClick
-} MVUiEventType;
-
-/** Payload of a key-press event: the character read from the keyboard. */
-typedef struct {
-    char character;
-} MVKeyEvent;
-
-/** A UI event delivered to the application action callback. `event_type` selects
-   the active member of `info`: a MVKeyEvent for key presses, or the cgfx MSRET
-   mouse record for clicks. */
-typedef struct {
-    MVUiEventType event_type;
-    union {
-        MVKeyEvent key;
-        MSRET mouse;
-    } info;
-} MVUiEvent;
 
 /** One row of the menu dispatch table passed to mv_app_run(): when the menu item
    (`menuid`, `itemno`) is chosen, `action` is called with the originating mouse
