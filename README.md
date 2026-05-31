@@ -100,6 +100,13 @@ If you have your MAME installed in `~/Applications/mame` and your roms in
 * `make real-clean` -- clean out the folder including the cmoc_os9 checkout.
 * `make run` -- Run the disk image in the MAME CoCo 3 emulator
 
+### Code style
+
+`.pre-commit-config.yaml` defines a trailing-whitespace check that CI enforces
+on every pull request. To run it locally, install
+[pre-commit](https://pre-commit.com/) (e.g. `pipx install pre-commit`) and run
+`pre-commit install` once; it will then run on each commit.
+
 ### Using Visual Studio Code
 
 This repo includes a Visual Studio Code Dev Container that provides the full

@@ -23,3 +23,15 @@ jobs:
       - name: Build guide examples
         run: |
           make mvkit-guide
+
+  # Language-agnostic hooks (.pre-commit-config.yaml); runs on a plain Python
+  # runner, independent of the coco-dev toolchain.
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: pre-commit/action@v3.0.1
