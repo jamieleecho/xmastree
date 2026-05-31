@@ -1,0 +1,54 @@
+name: Build API Docs
+
+on:
+  # Manual run from the Actions tab.
+  workflow_dispatch:
+  # Auto-refresh when the documented sources (or this workflow) change on main.
+  push:
+    branches:
+      - main
+    paths:
+      - 'mvkit/**'
+      - '.github/workflows/docs.yml'
+
+# Permissions the deploy job needs to publish to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one Pages deployment at a time; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    name: Build MVKit API docs
+    runs-on: ubuntu-latest
+    container: jamieleecho/coco-dev:latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Build docs
+        run: |
+          make -C mvkit docs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: mvkit/docs/html
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

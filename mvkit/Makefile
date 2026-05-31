@@ -12,12 +12,10 @@ CFLAGS := --os9 -Iinclude -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/inclu
 
 LIB := libmvkit.a
 
-# Doxygen generates the HTML API docs (see Doxyfile). It is not part of the cmoc
-# toolchain and is in neither the coco-dev image nor, usually, the host, so by
-# default `make docs` runs Doxygen from a Docker image -- no install needed; run
-# it on the host, where Docker is available. Override for a native install:
-#   make docs DOXYGEN=doxygen
-DOXYGEN ?= docker run --rm -v "$(CURDIR)":/work -w /work hrektts/doxygen:latest doxygen
+# Doxygen generates the HTML API docs (see Doxyfile). It ships in the coco-dev
+# image (>= 0.83), alongside the cmoc toolchain, so `make docs` just runs it.
+# Override to point at a different binary if needed: make docs DOXYGEN=/path/doxygen
+DOXYGEN ?= doxygen
 
 # Object modules that make up the library. Modules are added here as they are
 # migrated out of xmastree (see PLAN.md, Phase 2).
