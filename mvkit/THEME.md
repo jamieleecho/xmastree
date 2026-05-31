@@ -59,29 +59,33 @@ validity check.
 `mvkit/include/mvkit/mv_theme.h`:
 
 ```c
-typedef struct {
-    /* ===== Window-chrome ramp: palette registers 0-3 =====
-       The OS-9 window manager hardcodes these for ALL chrome (menu bar,
-       dropdowns, WT_DBOX dialog border, shadows, scrollbars, 3D edges). You
-       choose only their RGB; the register assignment is fixed. The four values
-       are cgfx color numbers (colno) and MUST run darkest -> lightest. */
-    int chrome_darkest;   /* register 0  -- e.g. black; window/content base */
-    int chrome_dark;      /* register 1  -- e.g. dark grey; shadows, dialog border */
-    int chrome_light;     /* register 2  -- e.g. light grey; menu bar, bars */
-    int chrome_lightest;  /* register 3  -- e.g. white; 3D highlights, text */
+typedef union {
+    byte raw_registers[16];
 
-    /* ===== Content palette: registers 4-15 (cgfx colno), app's to define ===== */
-    int content[12];
+    typedef struct theme {
+      /* ===== Window-chrome ramp: palette registers 0-3 =====
+        The OS-9 window manager hardcodes these for ALL chrome (menu bar,
+        dropdowns, WT_DBOX dialog border, shadows, scrollbars, 3D edges). You
+        choose only their RGB; the register assignment is fixed. The four values
+        are cgfx color numbers (colno) and MUST run darkest -> lightest. */
+      byte chrome_darkest;   /* register 0  -- e.g. black; window/content base */
+      byte chrome_dark;      /* register 1  -- e.g. dark grey; shadows, dialog border */
+      byte chrome_light;     /* register 2  -- e.g. light grey; menu bar, bars */
+      byte chrome_lightest;  /* register 3  -- e.g. white; 3D highlights, text */
 
-    /* ===== Roles for MVKit-drawn UI (palette register indices 0-15) =====
-       These pick WHICH registers MVKit uses when it draws its own widgets, so a
-       theme can keep MVKit UI consistent with the chrome. */
-    int dialog_fg;        /* message-box / dialog interior text   (default 0) */
-    int dialog_bg;        /* message-box / dialog interior fill    (default 3) */
-    int control_fg;       /* MVImageGrid border / highlight        (default 3) */
-    int control_bg;       /* MVImageGrid background                 (default 0) */
-    int window_border;    /* frame border register, _cgfx_border    (default 0) */
+      /* ===== Content palette: registers 4-15 (cgfx colno), app's to define ===== */
+      byte content[12];
+    } theme;
 } MVTheme;
+
+/* ===== Roles for MVKit-drawn UI (palette register indices 0-15) =====
+    These pick WHICH registers MVKit uses when it draws its own widgets, so a
+    theme can keep MVKit UI consistent with the chrome. */
+#define mv_theme_dialog_fg 0
+#define mv_theme_dialog_bg 3
+#define mv_theme_control_fg 3
+#define mv_theme_control_bg 0
+#define mv_theme_window_border 0
 
 /* The canonical Multi-Vue look: black / dark-grey / light-grey / white ramp. */
 extern const MVTheme mv_theme_default;
