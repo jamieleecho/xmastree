@@ -7,7 +7,9 @@
 #define MV_IMAGE_GRID_ITEM_WIDTH  24
 #define MV_IMAGE_GRID_ITEM_HEIGHT 24
 #define MV_IMAGE_GRID_ITEM_BORDER 1
-#define MV_IMAGE_GRID_DEFAULT_FG  1
+/* Foreground = lightest chrome register (white), background = darkest (black),
+   per the reg 0-3 chrome ramp -- maximum contrast for the button borders. */
+#define MV_IMAGE_GRID_DEFAULT_FG  3
 #define MV_IMAGE_GRID_DEFAULT_BG  0
 
 /*
