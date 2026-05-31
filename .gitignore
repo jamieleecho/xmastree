@@ -6,6 +6,12 @@ node_modules
 *.so
 .DS_Store
 
+# Python virtualenv (recreate with `make install-pre-commit`)
+.venv/
+
+# Claude Code per-user settings (shared .claude/settings.json may be committed)
+.claude/settings.local.json
+
 # misc
 .DS_Store
 .env.local

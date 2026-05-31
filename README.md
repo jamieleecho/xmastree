@@ -2,6 +2,9 @@
 
 xmastree is a Multi Vue program for designing Christmas trees.
 
+It is also the example app for **MVKit**, a small, AppKit-inspired application
+framework for Multi-Vue extracted from this project — see [mvkit/](mvkit/).
+
 ## Using xmastree
 
 ### Running on MAME
@@ -13,7 +16,7 @@ To use xmastree on MAME, you need:
 You can launch MAME with a command like:
 
 ```bash
-~/Applications/mame/mame coco3 -cfg_directory assets/mame-cfgs -window -rompath ~/Applications/mame/roms -ext:fdc:wd17xx:0 525qd -flop1 build/xmastree.dsk
+~/Applications/mame/mame coco3 -cfg_directory assets/mame-cfgs -window -rompath ~/Applications/mame/roms -ext:fdc:wd17xx:0 525qd -flop1 build/xmastree.os9
 ```
 
 Substitue `~/Applications/mame/mame` and `~/Applications/mame/roms` for your MAME
@@ -38,11 +41,11 @@ To run on real hardware you need:
 * An 80 track disk drive connected to drive 0
 * Tandy High-Resolution Joystick Interface plugged into the left joystick port
 * A mouse plugged into the High-Resolution Joystick interface
-* A mechanism to transfer `build/xmastree.dsk` to an 80 track disk
+* A mechanism to transfer `build/xmastree.os9` to an 80 track disk
 
 To use `xmastree` on a real CoCo 3.
 
-1. First transfer `build/xmastree.dsk` to an 80 track disk.
+1. First transfer `build/xmastree.os9` to an 80 track disk.
 2. Turn on the CoCo 3 and all of its peripherals.
 3. Insert the disk into drive 0.
 4. Enter `DOS` on the CoCo 3.
@@ -74,10 +77,10 @@ cd xmastree
 make
 ```
 
-This should successfully create `build/xmastree.dsk` which you can verify by:
+This should successfully create `build/xmastree.os9` which you can verify by:
 
 ```bash
-ls build/xmastree.dsk
+ls build/xmastree.os9
 ```
 
 Now let's start another terminal window - we will call this the `local terminal window`.
@@ -92,7 +95,7 @@ If you have your MAME installed in `~/Applications/mame` and your roms in
 
 ### Useful make commands
 
-* `make all` -- build the xmastree.dsk file.
+* `make all` -- build the xmastree.os9 file.
 * `make clean` -- clean out the folder.
 * `make help` -- Show this help message.
 * `make install-pre-commit` -- install pre-commit hooks.
