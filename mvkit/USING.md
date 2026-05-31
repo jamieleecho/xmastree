@@ -137,7 +137,7 @@ make -C mvkit/guide/01-hello run      # launch it in MAME (on the host)
 ## A simple app
 
 The smallest real MVKit app opens a window and runs. The complete example is in
-[`guide/01-hello`](guide/01-hello).
+[`guide/01-hello`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/01-hello).
 
 `main.c`:
 
@@ -208,7 +208,7 @@ then `Loaded.`.
 
 Stage 1's window had no menu bar. This stage adds a **Help** menu with an
 **About…** item that opens a message box. The example is in
-[`guide/02-menu`](guide/02-menu).
+[`guide/02-menu`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/02-menu).
 
 `main.c`:
 
@@ -284,7 +284,7 @@ and the window close box quits the app.
 ## Window types, colors, and palettes
 
 This stage installs a color palette and draws an image that was converted from a
-PNG at build time. The example is in [`guide/03-palette`](guide/03-palette).
+PNG at build time. The example is in [`guide/03-palette`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/03-palette).
 
 ### Window types
 
@@ -344,7 +344,7 @@ drawn on a black background.
 ## The image grid
 
 `MVImageGrid` is a grid of single-select image buttons — MVKit's first **view**
-(it embeds an `MVView`). The example is in [`guide/04-grid`](guide/04-grid): four
+(it embeds an `MVView`). The example is in [`guide/04-grid`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/04-grid): four
 buttons in a 2-column grid.
 
 ```c
@@ -394,7 +394,7 @@ the highlight moves.
 ## Dialogs
 
 MVKit's modal dialogs: a message box and the file open/save browsers. The
-example is in [`guide/05-dialogs`](guide/05-dialogs) — a "Dialogs" menu whose
+example is in [`guide/05-dialogs`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/05-dialogs) — a "Dialogs" menu whose
 items open each one and report the result.
 
 ### Message box
@@ -434,7 +434,7 @@ each choice prints its result to the window.
 `mv_document` wraps your data model with the standard file lifecycle — New /
 Open / Save / Save As / Revert — plus dirty tracking and the prompts that guard
 against throwing away unsaved work (loosely after `NSDocument`). The example is
-in [`guide/06-document`](guide/06-document): the model is a single integer
+in [`guide/06-document`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/06-document): the model is a single integer
 counter, and a **Count ▸ Increment** item changes it.
 
 ### Your model and three callbacks
@@ -511,7 +511,7 @@ recorded above isn't used yet — the next stage adds an Undo menu that does.
 
 Stage 6 already recorded *how to reverse* every change — the `MVUndoItem` it
 passed to `mv_document_make_change`. This stage spends that. The example,
-[`guide/07-undo`](guide/07-undo), is the counter document plus an **Edit ▸ Undo**
+[`guide/07-undo`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/07-undo), is the counter document plus an **Edit ▸ Undo**
 menu; the only additions are that menu, an `undo_action`, and one line in
 `refresh_menus`.
 
@@ -555,6 +555,6 @@ save point.
 That's the tour: a windowed app, menus and actions, themes and palettes, the
 image grid, dialogs, a document, and undo — each example building on the last.
 From here, the [API reference](https://jamieleecho.github.io/xmastree/) documents
-every public function and macro, and the [`xmastree`](../xmastree) app shows the
+every public function and macro, and the [`xmastree`](https://github.com/jamieleecho/xmastree/tree/main/xmastree) app shows the
 whole framework working together in something larger than a guide example. Copy
 the example whose shape is closest to what you're building and grow it.
