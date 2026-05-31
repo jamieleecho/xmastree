@@ -23,21 +23,32 @@ static void image_grid_clear(MVImageGrid *grid) {
 }
 
 
-/* Draw one button: its outline box, then the image on top. The selected
-   button's box is fg_color (the selection indicator); the others are bg_color
-   (invisible). Because the image is blitted over the box, the picture keeps its
-   true colors -- selection is shown by the surrounding outline, not by
-   recoloring the image (as an XOR highlight would). */
-static void image_grid_draw_item(MVImageGrid *grid, int item) {
+static void image_grid_draw_image(MVImageGrid *grid, int item) {
+    int bw = button_width(grid);
+    int bh = button_height(grid);
+    int x = grid->view.x + (item % grid->columns) * bw;
+    int y = grid->view.y + (item / grid->columns) * bh;
+    mv_image_draw(grid->image_ids[item], x + 1, y + 1);
+}
+
+
+/* Draw item's border in fg_color: a 1px box around every button (the separator
+   outline), plus a second box one pixel in for the selected item, giving it a
+   thick highlight. Borders are drawn over the images, so they're always visible;
+   the image (true colors) shows inside. */
+static void image_grid_draw_border(MVImageGrid *grid, int item, bool thick) {
     int bw = button_width(grid);
     int bh = button_height(grid);
     int x = grid->view.x + (item % grid->columns) * bw;
     int y = grid->view.y + (item / grid->columns) * bh;
     _cgfx_lset(MV_OUTPATH, LOG_NONE);
-    _cgfx_fcolor(MV_OUTPATH, item == grid->selected ? grid->fg_color : grid->bg_color);
+    _cgfx_fcolor(MV_OUTPATH, grid->fg_color);
     _cgfx_setdptr(MV_OUTPATH, x, y);
     _cgfx_rbox(MV_OUTPATH, bw, bh);
-    mv_image_draw(grid->image_ids[item], x + 1, y + 1);
+    if (thick) {
+        _cgfx_setdptr(MV_OUTPATH, x + 1, y + 1);
+        _cgfx_rbox(MV_OUTPATH, bw - 2, bh - 2);
+    }
 }
 
 
@@ -48,9 +59,13 @@ static void image_grid_draw(MVView *view) {
     if (!view->is_visible) {
         return;
     }
-    for (int item = 0; item < grid->num_items; ++item) {
-        image_grid_draw_item(grid, item);
+    for (int item = 0; item < grid->num_items; ++item) {   /* all images first */
+        image_grid_draw_image(grid, item);
     }
+    for (int item = 0; item < grid->num_items; ++item) {   /* then the thin borders */
+        image_grid_draw_border(grid, item, false);
+    }
+    image_grid_draw_border(grid, grid->selected, true);    /* thick border on selected */
     Flush();
 }
 
@@ -117,8 +132,9 @@ bool mv_image_grid_select(MVImageGrid *grid, int item) {
     }
     previous = grid->selected;
     grid->selected = item;
-    image_grid_draw_item(grid, previous);   /* redraw the now-unselected button */
-    image_grid_draw_item(grid, item);       /* redraw the newly-selected button */
+    image_grid_draw_image(grid, previous);          /* redraw old selection's image */
+    image_grid_draw_border(grid, previous, false);  /* ...with its thin border */
+    image_grid_draw_border(grid, item, true);       /* thick border on the new selection */
     Flush();
     if (grid->item_selected) {
         grid->item_selected(grid);

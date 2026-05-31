@@ -25,9 +25,9 @@
  *
  * The generalized form of xmastree's tool palette. It conforms to #MVView
  * (embedded first), so an app dispatches clicks to it via
- * mv_view_dispatch_click() and draws it via mv_view_draw(). The selected item
- * is highlighted with an outline box in fg_color (drawn around the image, so
- * the image keeps its true colors).
+ * mv_view_dispatch_click() and draws it via mv_view_draw(). Every button gets a
+ * thin fg_color outline; the selected item gets a thick one. Borders are drawn
+ * over the images, so the pictures keep their true colors.
  */
 typedef struct MVImageGrid {
     MVView view;          /**< base; frame is computed from the layout in init */
