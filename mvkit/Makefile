@@ -57,12 +57,14 @@ install: all
 	cp include/mvkit/*.h ${DESTDIR}${PREFIX}/include/mvkit/
 	cp include/stdbool.h ${DESTDIR}${PREFIX}/include/
 	cp ${LIB} ${DESTDIR}${PREFIX}/lib/
+	cp app.mk ${DESTDIR}${PREFIX}/
 
 ## Remove the headers and library installed by `install`
 uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/include/mvkit
 	rm -f ${DESTDIR}${PREFIX}/include/stdbool.h
 	rm -f ${DESTDIR}${PREFIX}/lib/${LIB}
+	rm -f ${DESTDIR}${PREFIX}/app.mk
 
 ## Generate the HTML API documentation into docs/ (uses Doxygen; see DOXYGEN)
 docs:
