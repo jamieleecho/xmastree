@@ -116,6 +116,9 @@ mvkit/*.a
 mvkit/*.o
 mvkit/src/*.o
 
+# mvkit generated API docs (doxygen OUTPUT_DIRECTORY)
+mvkit/docs/
+
 # xmastree and convenience files
 /*.dsk
 *.tmp

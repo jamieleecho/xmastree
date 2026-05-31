@@ -4,21 +4,29 @@
 #include <mvkit/mv_view.h>
 #include <mvkit/mv_theme.h>
 
-/* Default item geometry and colors used by mv_image_grid_init(). */
+/**
+ * @file
+ * @brief MVImageGrid -- a grid of single-select image buttons (an MVView).
+ */
+
+/** @brief Default image width inside each button, in pixels. */
 #define MV_IMAGE_GRID_ITEM_WIDTH  24
+/** @brief Default image height inside each button, in pixels. */
 #define MV_IMAGE_GRID_ITEM_HEIGHT 24
+/** @brief Border thickness drawn around each button, in pixels. */
 #define MV_IMAGE_GRID_ITEM_BORDER 1
-/* Colors come from the theme's control role: foreground = lightest chrome
-   register (white), background = darkest (black) -- maximum contrast for the
-   button borders, consistent with the reg 0-3 chrome ramp. */
+/** @brief Default button border / highlight color (the theme's control fg). */
 #define MV_IMAGE_GRID_DEFAULT_FG  MV_THEME_CONTROL_FG
+/** @brief Default button background color (the theme's control bg). */
 #define MV_IMAGE_GRID_DEFAULT_BG  MV_THEME_CONTROL_BG
 
-/*
- * MVImageGrid is a grid of single-select image buttons -- the generalized form
- * of xmastree's tool palette. It conforms to MVView (embedded first), so an app
- * dispatches clicks to it via mv_view_dispatch_click() and draws it via
- * mv_view_draw(). The selected item is highlighted with an XOR rectangle.
+/**
+ * @brief A grid of single-select image buttons.
+ *
+ * The generalized form of xmastree's tool palette. It conforms to #MVView
+ * (embedded first), so an app dispatches clicks to it via
+ * mv_view_dispatch_click() and draws it via mv_view_draw(). The selected item
+ * is highlighted with an XOR rectangle.
  */
 typedef struct MVImageGrid {
     MVView view;          /**< base; frame is computed from the layout in init */
@@ -33,24 +41,49 @@ typedef struct MVImageGrid {
     void (*item_selected)(struct MVImageGrid *self);  /**< called on selection change (may be NULL) */
 } MVImageGrid;
 
-/** Initialize a grid at (x, y) with `num_items` buttons laid out `columns` wide,
-   drawing `image_ids[0..num_items)`. `item_selected` (may be NULL) is called
-   when the selection changes. Item size defaults to 24x24 and colors to fg 1 /
-   bg 0 (set the fields afterward to override colors); the view frame is computed
-   from the layout. Draws the grid immediately. */
+/**
+ * @brief Initialize a grid and draw it immediately.
+ *
+ * Item size defaults to #MV_IMAGE_GRID_ITEM_WIDTH x #MV_IMAGE_GRID_ITEM_HEIGHT
+ * and colors to #MV_IMAGE_GRID_DEFAULT_FG / #MV_IMAGE_GRID_DEFAULT_BG (set the
+ * fields afterward to override); the view frame is computed from the layout.
+ *
+ * @param grid          the grid to initialize.
+ * @param x             left edge, screen coords.
+ * @param y             top edge, screen coords.
+ * @param num_items     number of buttons.
+ * @param columns       buttons per row.
+ * @param image_ids     num_items image-buffer ids (borrowed; must outlive the grid).
+ * @param item_selected called when the selection changes (may be NULL).
+ */
 extern void mv_image_grid_init(MVImageGrid *grid, int x, int y,
                                int num_items, int columns,
                                const int *image_ids,
                                void (*item_selected)(MVImageGrid *self));
 
-/** Index of the currently selected item. */
+/**
+ * @brief Index of the currently selected item.
+ * @param grid the grid.
+ * @return the 0-based selected index.
+ */
 extern int mv_image_grid_selected(const MVImageGrid *grid);
 
-/** Select item `item` (0-based). No-op if already selected; returns false if
-   `item` is out of range. Updates the highlight and fires item_selected. */
+/**
+ * @brief Select an item (0-based), update the highlight, and fire item_selected.
+ *
+ * No-op if @p item is already selected.
+ *
+ * @param grid the grid.
+ * @param item the 0-based item index to select.
+ * @return false if @p item is out of range, true otherwise.
+ */
 extern bool mv_image_grid_select(MVImageGrid *grid, int item);
 
-/** Show or hide the grid (and redraw). */
+/**
+ * @brief Show or hide the grid (and redraw).
+ * @param grid       the grid.
+ * @param is_visible true to show, false to hide.
+ */
 extern void mv_image_grid_set_visible(MVImageGrid *grid, bool is_visible);
 
 #endif /* _MVKIT_MV_IMAGE_GRID_H */

@@ -12,6 +12,13 @@ CFLAGS := --os9 -Iinclude -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/inclu
 
 LIB := libmvkit.a
 
+# Doxygen generates the HTML API docs (see Doxyfile). It is not part of the cmoc
+# toolchain and is in neither the coco-dev image nor, usually, the host, so by
+# default `make docs` runs Doxygen from a Docker image -- no install needed; run
+# it on the host, where Docker is available. Override for a native install:
+#   make docs DOXYGEN=doxygen
+DOXYGEN ?= docker run --rm -v "$(CURDIR)":/work -w /work hrektts/doxygen:latest doxygen
+
 # Object modules that make up the library. Modules are added here as they are
 # migrated out of xmastree (see PLAN.md, Phase 2).
 MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
@@ -29,7 +36,7 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_view.o src/mv_image_grid.o \
         src/mv_theme_default.o src/mv_app_set_theme.o src/mv_theme_chrome_ordered.o
 
-.PHONY: all clean help
+.PHONY: all clean docs help
 
 ## Build the MVKit static library (default target)
 all: ${LIB}
@@ -40,9 +47,14 @@ ${LIB}: ${MODS}
 src/%.o: src/%.c
 	${CC} ${CFLAGS} -c -o $@ $<
 
-## Remove build artifacts
+## Generate the HTML API documentation into docs/ (uses Doxygen; see DOXYGEN)
+docs:
+	${DOXYGEN} Doxyfile
+
+## Remove build artifacts and generated docs
 clean:
 	@rm -f src/*.o ${LIB}
+	@rm -rf docs
 
 ## Show this help message
 help:
