@@ -2,15 +2,17 @@
 #define _MVKIT_MV_IMAGE_GRID_H
 
 #include <mvkit/mv_view.h>
+#include <mvkit/mv_theme.h>
 
 /* Default item geometry and colors used by mv_image_grid_init(). */
 #define MV_IMAGE_GRID_ITEM_WIDTH  24
 #define MV_IMAGE_GRID_ITEM_HEIGHT 24
 #define MV_IMAGE_GRID_ITEM_BORDER 1
-/* Foreground = lightest chrome register (white), background = darkest (black),
-   per the reg 0-3 chrome ramp -- maximum contrast for the button borders. */
-#define MV_IMAGE_GRID_DEFAULT_FG  3
-#define MV_IMAGE_GRID_DEFAULT_BG  0
+/* Colors come from the theme's control role: foreground = lightest chrome
+   register (white), background = darkest (black) -- maximum contrast for the
+   button borders, consistent with the reg 0-3 chrome ramp. */
+#define MV_IMAGE_GRID_DEFAULT_FG  MV_THEME_CONTROL_FG
+#define MV_IMAGE_GRID_DEFAULT_BG  MV_THEME_CONTROL_BG
 
 /*
  * MVImageGrid is a grid of single-select image buttons -- the generalized form

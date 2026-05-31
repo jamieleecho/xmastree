@@ -4,6 +4,7 @@
 #include <mvkit/mv_app.h>
 #include <mvkit/mv_document.h>
 #include <mvkit/mv_image.h>
+#include <mvkit/mv_theme.h>
 
 #include <mvkit/mv_image_grid.h>
 #include "tree.h"
@@ -11,13 +12,15 @@
 #include "version.h"
 
 
-static const int palette[] = {
-    /* Registers 0-3 are the OS-9 window-chrome ramp: darkest -> lightest
-       (black, dark grey, light grey, white). cowin hardcodes these for the
-       menu bar, dropdowns, dialog borders, shadows and scrollbars. */
+/* xmastree's theme. Registers 0-3 are the OS-9 window-chrome ramp: darkest ->
+   lightest (black, dark grey, light grey, white), which cowin hardcodes for the
+   menu bar, dropdowns, dialog borders, shadows and scrollbars. Registers 4-15
+   are the tree/ornament colors. The MVTheme union initializes raw[]; the named
+   ramp.* fields alias it. */
+static const MVTheme theme = { {
     0x00, 0x07, 0x38, 0x3f, 0x04, 0x05, 0x06, 0x10,
     0x36, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x01, 0x02
-};
+} };
 
 #define XMAS_BACKGROUND 0
 
@@ -196,7 +199,7 @@ static void xmastree_pre_init(int argc, char **argv) {
     }
 
     _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_SLP);
-    mv_app_init(palette, sizeof(palette)/sizeof(palette[0]));
+    mv_app_set_theme(&theme);
     mv_image_init("xmastree");
 
     mv_image_load_resource("1m.i09", 2);
