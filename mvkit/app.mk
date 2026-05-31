@@ -26,20 +26,37 @@ BUILD        ?= build
 # short name (e.g. SHORT := xmt).
 SHORT        ?= $(shell printf '%.3s' '$(APP)')
 
-# Launcher: an icon PNG plus an AIF generated from the geometry/colors below.
+# Launcher: an icon PNG plus an AIF generated from the fields below. gshell
+# reads the AIF's six numbers in this order: data-area size, screen type,
+# minimum window width, minimum window height, background, foreground.
 APP_ICON     ?= $(ASSETS)/app-icon.png
 ICON_PALETTE ?= $(ASSETS)/default-palette.txt
-WIN_X        ?= 64
-WIN_Y        ?= 8
+# Program data-area size, in 256-byte pages.
+MEM_SIZE     ?= 64
+# cgfx screen type: 5=1bpp, 6/7=2bpp, 8=4bpp. Sets both the screen color depth
+# and the image bit depth (BPP, below).
+SCREEN_TYPE  ?= 8
+# Minimum window size.
 WIN_W        ?= 40
 WIN_H        ?= 25
-WIN_FG       ?= 0          # default window foreground palette register
-WIN_BG       ?= 3          # default window background palette register
+# Window palette registers.
+WIN_BG       ?= 0
+WIN_FG       ?= 3
 
 # Image assets: PNGs in IMAGES_DIR become .i09 files under SYS/$(APP) on the
-# disk (load them at run time with mv_image_load_resource()).
+# disk (load them at run time with mv_image_load_resource()). They are converted
+# at the bit depth the screen type implies -- they must match, or the images
+# render with the wrong colors.
 APP_PALETTE  ?= $(ASSETS)/app-palette.txt
 IMAGES_DIR   ?= $(ASSETS)/sys-images
+BPP_5 := 1
+BPP_6 := 2
+BPP_7 := 2
+BPP_8 := 4
+BPP := $(BPP_$(SCREEN_TYPE))
+ifeq ($(BPP),)
+$(error SCREEN_TYPE=$(SCREEN_TYPE) is invalid: use 5 (1bpp), 6 or 7 (2bpp), or 8 (4bpp))
+endif
 
 # Extra files to copy verbatim to the disk root (e.g. sample documents).
 DATA_FILES   ?=
@@ -95,15 +112,15 @@ $(ICON): $(APP_ICON) $(ICON_PALETTE) | $(BUILD)
 # Generate the Multi-Vue launcher AIF (CR line endings) from the variables.
 $(AIF): | $(BUILD)
 	@printf '%s\n\nICONS/icon.%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
-		'$(APP)' '$(SHORT)' '$(WIN_X)' '$(WIN_Y)' '$(WIN_W)' '$(WIN_H)' '$(WIN_FG)' '$(WIN_BG)' > $@.tmp
+		'$(APP)' '$(SHORT)' '$(MEM_SIZE)' '$(SCREEN_TYPE)' '$(WIN_W)' '$(WIN_H)' '$(WIN_BG)' '$(WIN_FG)' > $@.tmp
 	@unix2mac -q -n $@.tmp $@
 	@rm -f $@.tmp
 
 $(IMGDIR)/%.i09: $(IMAGES_DIR)/%.png $(APP_PALETTE) | $(IMGDIR)
-	png-to-os9-image $< $(APP_PALETTE) $@
+	png-to-os9-image --bits-per-pixel=$(BPP) $< $(APP_PALETTE) $@
 
 $(IMGDIR)/%m.i09: $(IMAGES_DIR)/%.png $(APP_PALETTE) | $(IMGDIR)
-	png-to-os9-image --mask-index=0 $< $(APP_PALETTE) $@
+	png-to-os9-image --mask-index=0 --bits-per-pixel=$(BPP) $< $(APP_PALETTE) $@
 
 $(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS) $(DATA_FILES)
 	@test -n "$(BASEIMAGE)" || { echo "set BASEIMAGE := <nitros9 base .os9 disk>"; exit 1; }

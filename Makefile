@@ -92,11 +92,14 @@ ${TARGET_AIF}: ${SOURCE_AIF} | ${BUILD}
 ${TARGET_IMAGES_DIR}:
 	mkdir -p ${TARGET_IMAGES_DIR}
 
+# Image bit depth must match the screen type in assets/aif.xmt (8 => 4 bpp).
+IMAGE_BPP := 4
+
 ${TARGET_IMAGES_DIR}/%.i09: ${SYS_IMAGES_DIR}/%.png ${APP_PALLETTE} | ${TARGET_IMAGES_DIR}
-	png-to-os9-image $< ${APP_PALLETTE} $@
+	png-to-os9-image --bits-per-pixel=${IMAGE_BPP} $< ${APP_PALLETTE} $@
 
 ${TARGET_IMAGES_DIR}/%m.i09: ${SYS_IMAGES_DIR}/%.png | ${TARGET_IMAGES_DIR}
-	png-to-os9-image --mask-index=0 $< ${APP_PALLETTE} $@
+	png-to-os9-image --mask-index=0 --bits-per-pixel=${IMAGE_BPP} $< ${APP_PALLETTE} $@
 
 cmoc_os9:
 	git clone https://github.com/nitros9project/cmoc_os9.git && \
