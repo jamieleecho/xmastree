@@ -12,6 +12,12 @@ CFLAGS := --os9 -Iinclude -I${CMOC_OS9_DIR}/include -I${CMOC_OS9_DIR}/cgfx/inclu
 
 LIB := libmvkit.a
 
+# Install location. cmoc auto-searches PREFIX/include and PREFIX/lib, so an app
+# that links an installed MVKit needs no -I/-L for it -- just `-lmvkit` and
+# `#include <mvkit/mvkit.h>`. Override PREFIX (and DESTDIR for staged/packaged
+# installs) as needed.
+PREFIX ?= /usr/local/share/cmoc
+
 # Doxygen generates the HTML API docs (see Doxyfile). It ships in the coco-dev
 # image (>= 0.83), alongside the cmoc toolchain, so `make docs` just runs it.
 # Override to point at a different binary if needed: make docs DOXYGEN=/path/doxygen
@@ -34,7 +40,7 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_view.o src/mv_image_grid.o \
         src/mv_theme_default.o src/mv_app_set_theme.o src/mv_theme_chrome_ordered.o
 
-.PHONY: all clean docs help
+.PHONY: all clean docs help install uninstall
 
 ## Build the MVKit static library (default target)
 all: ${LIB}
@@ -44,6 +50,19 @@ ${LIB}: ${MODS}
 
 src/%.o: src/%.c
 	${CC} ${CFLAGS} -c -o $@ $<
+
+## Install headers and the library into PREFIX (cmoc's shared dir by default)
+install: all
+	mkdir -p ${DESTDIR}${PREFIX}/include/mvkit ${DESTDIR}${PREFIX}/lib
+	cp include/mvkit/*.h ${DESTDIR}${PREFIX}/include/mvkit/
+	cp include/stdbool.h ${DESTDIR}${PREFIX}/include/
+	cp ${LIB} ${DESTDIR}${PREFIX}/lib/
+
+## Remove the headers and library installed by `install`
+uninstall:
+	rm -rf ${DESTDIR}${PREFIX}/include/mvkit
+	rm -f ${DESTDIR}${PREFIX}/include/stdbool.h
+	rm -f ${DESTDIR}${PREFIX}/lib/${LIB}
 
 ## Generate the HTML API documentation into docs/ (uses Doxygen; see DOXYGEN)
 docs:

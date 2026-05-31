@@ -22,17 +22,17 @@
  *   - mv_image_grid    (NSMatrix-ish image-button grid)
  */
 
-#include "mvkit/mv_defs.h"
-#include "mvkit/mv_event.h"
-#include "mvkit/mv_version.h"
-#include "mvkit/mv_theme.h"
-#include "mvkit/mv_menu.h"
-#include "mvkit/mv_undo_manager.h"
-#include "mvkit/mv_image.h"
-#include "mvkit/mv_file_dialog.h"
-#include "mvkit/mv_app.h"
-#include "mvkit/mv_document.h"
-#include "mvkit/mv_view.h"
-#include "mvkit/mv_image_grid.h"
+#include <mvkit/mv_defs.h>
+#include <mvkit/mv_event.h>
+#include <mvkit/mv_version.h>
+#include <mvkit/mv_theme.h>
+#include <mvkit/mv_menu.h>
+#include <mvkit/mv_undo_manager.h>
+#include <mvkit/mv_image.h>
+#include <mvkit/mv_file_dialog.h>
+#include <mvkit/mv_app.h>
+#include <mvkit/mv_document.h>
+#include <mvkit/mv_view.h>
+#include <mvkit/mv_image_grid.h>
 
 #endif /* _MVKIT_H */
