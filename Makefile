@@ -51,7 +51,7 @@ IMGTOOL_ATTR_EX := os9 attr -q -e -pe -r -pe -npw
 IMGTOOL_ATTR_RO := os9 attr -q -r -ne -npe -npw
 
 
-.PHONY: all clean help libc libcgfx libmvkit minimal real-clean run run-minimal
+.PHONY: all clean help libc libcgfx libmvkit minimal mvkit-guide real-clean run run-minimal
 
 ## Build the OS-9 disk image (default target)
 all: ${TARGET_DSK}
@@ -114,6 +114,10 @@ libcgfx: cmoc_os9
 ## Build and install the MVKit framework library into cmoc's shared dir
 libmvkit: cmoc_os9
 	$(MAKE) -C ${MVKIT_DIR} install
+
+## Build the Using MVKit guide example apps (examples/guide/)
+mvkit-guide: libc libcgfx libmvkit
+	$(MAKE) -C ${MVKIT_DIR} guide
 
 # Minimal MVKit example app (examples/minimal) + a bootable disk to test it.
 MINIMAL_SRC := examples/minimal/minimal.c
