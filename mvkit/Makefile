@@ -42,8 +42,8 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
 
 .PHONY: all clean docs guide help install uninstall
 
-# The Using-MVKit guide example apps (examples/guide/NN-*).
-GUIDE_EXAMPLES := $(wildcard ../examples/guide/[0-9]*)
+# The Using-MVKit guide example apps (mvkit/examples/guide/NN-*).
+GUIDE_EXAMPLES := $(wildcard examples/guide/[0-9]*)
 
 ## Build the MVKit static library (default target)
 all: ${LIB}

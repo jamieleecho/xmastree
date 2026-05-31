@@ -19,7 +19,7 @@ jobs:
           make
 
       # `make` above clones/builds cmoc_os9 and installs MVKit; mvkit-guide then
-      # builds every examples/guide/NN-* app via mvkit/app.mk.
+      # builds every mvkit/examples/guide/NN-* app via mvkit/app.mk.
       - name: Build guide examples
         run: |
           make mvkit-guide
