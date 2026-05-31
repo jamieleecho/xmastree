@@ -1,16 +1,17 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "document.h"
-#include "stdbool.h"
+#include <mvkit/mv_app.h>
+#include "mvkit/mv_document.h"
 
 
 static char message[128];
 
 
 /* Derived from Google AI */
-int str_end_cmp(const char *str, const char *suffix) {
+static int str_end_cmp(const char *str, const char *suffix) {
     size_t str_len = strlen(str);
     size_t suffix_len = strlen(suffix);
     if (suffix_len > str_len) {
@@ -20,7 +21,7 @@ int str_end_cmp(const char *str, const char *suffix) {
 }
 
 
-static void doc_ensure_extension(Document *doc) {
+static void doc_ensure_extension(MVDocument *doc) {
     if (str_end_cmp(doc->path, doc->extension)) {
         size_t str_len = strlen(doc->path);
         size_t suffix_len = strlen(doc->extension);
@@ -31,7 +32,7 @@ static void doc_ensure_extension(Document *doc) {
 }
 
 
-void document_init(Document *doc,
+void mv_document_init(MVDocument *doc,
                    const char *path,
                    const char *default_path,
                    const char *extension,
@@ -49,22 +50,22 @@ void document_init(Document *doc,
     strncpy(doc->path, path ? path : default_path, sizeof(doc->path));
     doc->path[MV_PATH_MAX - 1] = 0;
     if (path) {
-        document_revert(doc);
+        mv_document_revert(doc);
     }
     doc_ensure_extension(doc);
     mv_undo_manager_init(&(doc->undo_manager));
 }
 
 
-bool document_new(Document *doc) {
+bool mv_document_new(MVDocument *doc) {
     if (!doc->new_model) {
         return false;
     }
 
-    if (document_is_dirty(doc)) {
+    if (mv_document_is_dirty(doc)) {
         if (mv_app_show_message_box("Save before starting\r\na new document?", MVMessageBoxType_YesNo) ==
              MVMessageBoxResult_Yes) {
-            if (document_save(doc)) {
+            if (mv_document_save(doc)) {
                 mv_app_show_message_box("New aborted.", MVMessageBoxType_Info);
                 return false;
             }
@@ -88,15 +89,15 @@ bool document_new(Document *doc) {
 }
 
 
-bool document_open(Document *doc) {
+bool mv_document_open(MVDocument *doc) {
     if (!doc->open_model) {
         return false;
     }
 
-    if (document_is_dirty(doc)) {
+    if (mv_document_is_dirty(doc)) {
         if (mv_app_show_message_box("Save before opening\r\na new document?", MVMessageBoxType_YesNo) ==
              MVMessageBoxResult_Yes) {
-            if (document_save(doc)) {
+            if (mv_document_save(doc)) {
                 mv_app_show_message_box("Open aborted.", MVMessageBoxType_Info);
                 return false;
             }
@@ -119,19 +120,19 @@ bool document_open(Document *doc) {
         doc->file_backed = false;
         return true;
     }
-    document_opened(doc);
+    mv_document_opened(doc);
     return true;
 }
 
 
-void document_opened(Document *doc) {
+void mv_document_opened(MVDocument *doc) {
     doc->file_backed = true;
     mv_undo_manager_reset(&(doc->undo_manager));
     mv_app_refresh_menubar();
 }
 
 
-static error_code document_save_internal(Document *doc, bool force_overwrite) {
+static error_code mv_document_save_internal(MVDocument *doc, bool force_overwrite) {
     doc_ensure_extension(doc);
 
     if (!force_overwrite) {
@@ -161,18 +162,18 @@ static error_code document_save_internal(Document *doc, bool force_overwrite) {
 }
 
 
-void document_revert(Document *doc) {
+void mv_document_revert(MVDocument *doc) {
     if (!doc->open_model || !doc->file_backed) {
         return;
     }
 
-    if (document_is_dirty(doc)) {
+    if (mv_document_is_dirty(doc)) {
         char oldpath[MV_PATH_MAX];
         strncpy(oldpath, doc->path, sizeof(oldpath));
         oldpath[MV_PATH_MAX - 1] = 0;
         if (mv_app_show_message_box("Save before reverting\r\ndocument?", MVMessageBoxType_YesNo) ==
              MVMessageBoxResult_Yes) {
-            if (document_save_internal(doc, true)) {
+            if (mv_document_save_internal(doc, true)) {
                 strcpy(doc->path, oldpath);
                 mv_app_show_message_box("Revert aborted.", MVMessageBoxType_Info);
                 return;
@@ -185,7 +186,7 @@ void document_revert(Document *doc) {
 }
 
 
-error_code document_save_as(Document *doc) {
+error_code mv_document_save_as(MVDocument *doc) {
     if (!doc->save_model) {
         return 0;
     }
@@ -194,24 +195,24 @@ error_code document_save_as(Document *doc) {
         return 0;
     }
 
-    return document_save_internal(doc, false);
+    return mv_document_save_internal(doc, false);
 }
 
 
-error_code document_save(Document *doc) {
+error_code mv_document_save(MVDocument *doc) {
     if (!doc->save_model) {
         return 0;
     }
 
     if (!doc->file_backed) {
-        return document_save_as(doc);
+        return mv_document_save_as(doc);
     } else {
-        return document_save_internal(doc, true);
+        return mv_document_save_internal(doc, true);
     }
 }
 
 
-void document_make_change(Document *doc, const MVUndoItem *undo_item) {
+void mv_document_make_change(MVDocument *doc, const MVUndoItem *undo_item) {
     if (mv_undo_manager_all_undone(&(doc->undo_manager))) {
         mv_app_refresh_menubar();
     }
@@ -219,38 +220,38 @@ void document_make_change(Document *doc, const MVUndoItem *undo_item) {
 }
 
 
-bool document_is_dirty(const Document *doc) {
+bool mv_document_is_dirty(const MVDocument *doc) {
     /* Possible optimizer error when we use ! instead of == */
     return mv_undo_manager_all_undone(&(doc->undo_manager)) == 0;
 }
 
 
-bool document_can_new(const Document *doc) {
+bool mv_document_can_new(const MVDocument *doc) {
     return doc->new_model != NULL;
 }
 
 
-bool document_can_open(const Document *doc) {
+bool mv_document_can_open(const MVDocument *doc) {
     return doc->open_model != NULL;
 }
 
 
-bool document_can_revert(const Document *doc) {
+bool mv_document_can_revert(const MVDocument *doc) {
     return doc->open_model != NULL;
 }
 
 
-bool document_can_save(const Document *doc) {
+bool mv_document_can_save(const MVDocument *doc) {
     return doc->save_model != NULL;
 }
 
 
-bool document_can_undo(const Document *doc) {
+bool mv_document_can_undo(const MVDocument *doc) {
     return mv_undo_manager_can_undo(&(doc->undo_manager));
 }
 
 
-bool document_undo(Document *doc) {
+bool mv_document_undo(MVDocument *doc) {
     if (mv_undo_manager_all_undone(&(doc->undo_manager))) {
         return false;
     }

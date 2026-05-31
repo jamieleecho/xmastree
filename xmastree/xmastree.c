@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #include <mvkit/mv_app.h>
-#include "document.h"
+#include <mvkit/mv_document.h>
 #include <mvkit/mv_image.h>
 
 #include "toolbox.h"
@@ -21,7 +21,7 @@ static const int palette[] = {
 #define MN_HELP 30  /* app-chosen Help menu id (not a cgfx constant) */
 
 static Tree tree;
-static Document xmastree_doc;
+static MVDocument xmastree_doc;
 
 
 typedef enum {
@@ -92,8 +92,8 @@ static WNDSCR mywindow = {
 
 
 static void exit_action(MSRET *msinfo, int menuid, int itemno) {
-    if (document_is_dirty(&xmastree_doc)) {
-        if (document_save(&xmastree_doc) == 0) {
+    if (mv_document_is_dirty(&xmastree_doc)) {
+        if (mv_document_save(&xmastree_doc) == 0) {
             exit(0);
         }
     } else {
@@ -106,26 +106,26 @@ static TreeView tree_view;
 
 
 static void new_action(MSRET *msinfo, int menuid, int itemno) {
-    if (document_new(&xmastree_doc)) {
+    if (mv_document_new(&xmastree_doc)) {
         tree_view_refresh(&tree_view);
     }
 }
 
 
 static void open_action(MSRET *msinfo, int menuid, int itemno) {
-    if (document_open(&xmastree_doc)) {
+    if (mv_document_open(&xmastree_doc)) {
         tree_view_refresh(&tree_view);
     }
 }
 
 
 static void save_action(MSRET *msinfo, int menuid, int itemno) {
-    document_save(&xmastree_doc);
+    mv_document_save(&xmastree_doc);
 }
 
 
 static void save_as_action(MSRET *msinfo, int menuid, int itemno) {
-    document_save_as(&xmastree_doc);
+    mv_document_save_as(&xmastree_doc);
 }
 
 
@@ -139,7 +139,7 @@ static void about_action(MSRET *msinfo, int menuid, int itemno) {
 
 
 static void undo_action(MSRET *msinfo, int menuid, int itemno) {
-    if (document_undo(&xmastree_doc)) {
+    if (mv_document_undo(&xmastree_doc)) {
         tree_view_refresh(&tree_view);
     }
 }
@@ -191,7 +191,7 @@ static int xmastree_handle_click_event(MVUiEvent *event) {
     } else {
         if (tree_view_handle_event(&tree_view, event)) {
             MVUndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
-            document_make_change(&xmastree_doc, &undo_item);
+            mv_document_make_change(&xmastree_doc, &undo_item);
         }
     }
 
@@ -240,7 +240,7 @@ static void xmastree_pre_init() {
     Flush();
 
     tree_init(&tree);
-    document_init(
+    mv_document_init(
         &xmastree_doc,
         NULL,
         "tree",
@@ -271,8 +271,8 @@ static void xmastree_init(void) {
 
 
 void xmastree_refresh_menus_action() {
-    file_menu_items[FileMenuIndex_Save]._mienbl = (char)document_is_dirty(&xmastree_doc);
-    edit_menu_items[EditMenuIndex_Undo]._mienbl = (char)document_can_undo(&xmastree_doc);
+    file_menu_items[FileMenuIndex_Save]._mienbl = (char)mv_document_is_dirty(&xmastree_doc);
+    edit_menu_items[EditMenuIndex_Undo]._mienbl = (char)mv_document_can_undo(&xmastree_doc);
 }
 
 
@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
 
     if (argc == 2) {
         tree_open(&tree, argv[1]);
-        document_opened(&xmastree_doc);
+        mv_document_opened(&xmastree_doc);
     }
 
     mv_app_run(&mywindow, xmastree_init, menu_actions,

@@ -22,5 +22,6 @@
 #include "mvkit/mv_image.h"
 #include "mvkit/mv_file_dialog.h"
 #include "mvkit/mv_app.h"
+#include "mvkit/mv_document.h"
 
 #endif /* _MVKIT_H */
