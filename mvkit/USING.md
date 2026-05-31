@@ -282,16 +282,73 @@ make -C mvkit/guide/02-menu run
 The window opens with a **Help** menu; choosing **About…** pops the message box,
 and the window close box quits the app.
 
+## Window types, colors, and palettes
+
+This stage installs a color palette and draws an image that was converted from a
+PNG at build time. The example is in [`guide/03-palette`](guide/03-palette).
+
+### Window types
+
+`mv_app_run(...)` opens a plain **framed** window (cgfx `WT_FWIN`). For one with
+scrollbars, swap in `mv_app_run_with_scrollbars(...)` (`WT_FSWIN`) — same
+arguments. Both are thin macros over `mv_app_run_typed`, which takes the window
+type directly if you need another.
+
+### Colors and the palette
+
+The CoCo 3 draws from a 16-entry palette. MVKit wraps it as an `MVTheme` and
+installs it in `pre_init` with `mv_app_set_theme`:
+
+```c
+static const MVTheme theme = { {
+    0x00, 0x07, 0x38, 0x3f,   /* 0-3  chrome ramp: black, dark grey, light grey, white */
+    0x24, 0x12, 0x09, 0x36,   /* 4-7  red, green, blue, yellow */
+    0x1b, 0x2d, 0x20, 0x10,
+    0x08, 0x04, 0x07, 0x38
+} };
+
+mv_app_set_theme(&theme);
+```
+
+The values are cgfx color numbers. **Registers 0-3 are the window-chrome ramp**
+and must run darkest → lightest: the OS-9 window manager draws the menu bar,
+dialog borders, shadows, and scrollbars from those four, so a wrong order makes
+the chrome look broken. Registers 4-15 are yours. (MVKit ships
+`mv_theme_default` with the standard ramp if you don't need a custom one — see
+`mv_theme.h`.) Code names registers by index, e.g. `_cgfx_bcolor(MV_OUTPATH, 0)`
+clears the window to chrome-darkest.
+
+### Images from PNGs
+
+Art is authored as a PNG, converted to an OS-9 image at build time, and loaded
+at run time:
+
+1. Drop a PNG in `assets/sys-images/`. `app.mk` runs `png-to-os9-image` on each,
+   producing a palette-indexed `.i09` under `SYS/<app>/` on the disk.
+2. The conversion maps each pixel to the nearest entry in
+   **`assets/app-palette.txt`** — which lists the *same 16 colors* as your
+   `MVTheme`, written as CoCo `R,G,B` (0-3). **The two must agree:** a pixel that
+   is red in the PNG becomes index 4, and the installed theme draws index 4 as
+   red. (They're two encodings of one palette — keep them in sync.)
+3. Load and draw it:
+
+```c
+mv_image_init("palette");                 /* resources in /dd/SYS/palette/ */
+mv_image_load_resource("logo.i09", 2);    /* into image buffer 2 */
+...
+mv_image_draw(2, 8, 8);                    /* blit at (8, 8) */
+```
+
+`make -C mvkit/guide/03-palette run` opens the window with the converted image
+drawn on a black background.
+
 ## The rest of the guide
 
 The remaining stages each add one capability, building on the last:
 
-1. **Window types, colors, and palettes** — framed vs. scrollable windows, the
-   window-chrome color ramp, and converting PNG art into loadable OS-9 images
-   via `app-palette.txt`.
-2. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
-3. **Dialogs** — the built-in message boxes and the file open/save browsers.
-4. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-5. **Undo** — recording reversible changes with the document's undo manager.
+1. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
+2. **Dialogs** — the built-in message boxes and the file open/save browsers.
+3. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+4. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
