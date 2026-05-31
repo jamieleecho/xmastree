@@ -1,9 +1,12 @@
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <mvkit/mv_app.h>
 #include <mvkit/mv_document.h>
 #include <mvkit/mv_image.h>
+#include <mvkit/mv_menu.h>
 #include <mvkit/mv_theme.h>
 
 #include <mvkit/mv_image_grid.h>
@@ -249,6 +252,12 @@ static void xmastree_toolbox_item_selected(MVImageGrid *toolbox) {
 
 
 static void xmastree_init(void) {
+    /* The *MenuIndex_ constants are hand-counted, so they drift if menu items
+       or separators are reordered. These checks (compiled out under NDEBUG)
+       catch that early. */
+    assert(strncmp(file_menu_items[FileMenuIndex_Save]._mittl, "Save", 5) == 0);
+    assert(strncmp(edit_menu_items[EditMenuIndex_Undo]._mittl, "Undo", 5) == 0);
+
     _cgfx_bcolor(MV_OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(MV_OUTPATH);
 
@@ -263,8 +272,8 @@ static void xmastree_init(void) {
 
 
 void xmastree_refresh_menus_action() {
-    file_menu_items[FileMenuIndex_Save]._mienbl = (char)mv_document_is_dirty(&xmastree_doc);
-    edit_menu_items[EditMenuIndex_Undo]._mienbl = (char)mv_document_can_undo(&xmastree_doc);
+    mv_menu_item_set_enabled(file_menu_items, FileMenuIndex_Save, mv_document_is_dirty(&xmastree_doc));
+    mv_menu_item_set_enabled(edit_menu_items, EditMenuIndex_Undo, mv_document_can_undo(&xmastree_doc));
 }
 
 
