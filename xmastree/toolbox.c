@@ -3,8 +3,9 @@
 
 #include <cgfx.h>
 
-#include "app.h"
-#include "image.h"
+#include <stdbool.h>
+#include <mvkit/mv_defs.h>
+#include <mvkit/mv_image.h>
 #include "toolbox.h"
 
 
@@ -41,10 +42,10 @@ static void tool_box_toggle_item_selection(ToolBox *toolbox) {
     int item = toolbox->item;
     int button_x = toolbox->x + (item % TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_WIDTH + 1;
     int button_y = toolbox->y + (item / TOOLBOX_ITEMS_PER_ROW) * TOOLBOX_BUTTON_HEIGHT + 1;
-    _cgfx_lset(OUTPATH, LOG_XOR);
-    _cgfx_fcolor(OUTPATH, TOOLBOX_FOREGROUND_COLOR);
-    _cgfx_setdptr(OUTPATH, button_x, button_y);
-    _cgfx_rbar(OUTPATH, TOOLBOX_BUTTON_WIDTH - 2, TOOLBOX_BUTTON_HEIGHT - 2);
+    _cgfx_lset(MV_OUTPATH, LOG_XOR);
+    _cgfx_fcolor(MV_OUTPATH, TOOLBOX_FOREGROUND_COLOR);
+    _cgfx_setdptr(MV_OUTPATH, button_x, button_y);
+    _cgfx_rbar(MV_OUTPATH, TOOLBOX_BUTTON_WIDTH - 2, TOOLBOX_BUTTON_HEIGHT - 2);
     Flush();
 }
 
@@ -74,10 +75,10 @@ int tool_box_item(ToolBox *toolbox) {
 
 
 void tool_box_clear(ToolBox *toolbox) {
-    _cgfx_lset(OUTPATH, LOG_NONE);
-    _cgfx_fcolor(OUTPATH, TOOLBOX_BACKGROUND_COLOR);
-    _cgfx_setdptr(OUTPATH, toolbox->x, toolbox->y);
-    _cgfx_rbar(OUTPATH, toolbox->width, toolbox->height);
+    _cgfx_lset(MV_OUTPATH, LOG_NONE);
+    _cgfx_fcolor(MV_OUTPATH, TOOLBOX_BACKGROUND_COLOR);
+    _cgfx_setdptr(MV_OUTPATH, toolbox->x, toolbox->y);
+    _cgfx_rbar(MV_OUTPATH, toolbox->width, toolbox->height);
 }
 
 
@@ -98,7 +99,7 @@ void tool_box_refresh(ToolBox *toolbox){
     if (!toolbox->is_visible) {
         return;
     }
-    _cgfx_fcolor(OUTPATH, TOOLBOX_FOREGROUND_COLOR);
+    _cgfx_fcolor(MV_OUTPATH, TOOLBOX_FOREGROUND_COLOR);
     for(int yy = 0; yy < TOOLBOX_NUM_ITEMS; yy += 1) {
         for(int xx = 0; xx < TOOLBOX_ITEMS_PER_ROW; xx = xx + 1) {
             int item = (yy * TOOLBOX_ITEMS_PER_ROW) + xx;
@@ -107,9 +108,9 @@ void tool_box_refresh(ToolBox *toolbox){
             }
             int x = (xx * TOOLBOX_BUTTON_WIDTH) + toolbox->x;
             int y = (yy * TOOLBOX_BUTTON_HEIGHT) + toolbox->y;
-            _cgfx_setdptr(OUTPATH, x, y);
-            _cgfx_rbox(OUTPATH, TOOLBOX_BUTTON_WIDTH, TOOLBOX_BUTTON_HEIGHT);
-            image_draw_image(toolbox->image_ids[item], x + 1, y + 1);
+            _cgfx_setdptr(MV_OUTPATH, x, y);
+            _cgfx_rbox(MV_OUTPATH, TOOLBOX_BUTTON_WIDTH, TOOLBOX_BUTTON_HEIGHT);
+            mv_image_draw(toolbox->image_ids[item], x + 1, y + 1);
         }
     }
 

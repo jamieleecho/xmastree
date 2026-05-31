@@ -1,31 +1,30 @@
 #include <cgfx.h>
 #include <fcntl.h>
 #include <os.h>
+#include <stdlib.h>   /* exit */
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
-#include "stdbool.h"
-
-#include "app.h"
-#include "image.h"
+#include "mvkit/mv_image.h"
 
 
 static const char *my_app_name;
-static char buffer[APP_PATH_MAX];
+static char buffer[MV_PATH_MAX];
 static int pid;
 
 
-void image_init(const char *app_name) {
+void mv_image_init(const char *app_name) {
     my_app_name = app_name;
     int err = _os_getpid(&pid);
     if (err) {
         exit(err);
     }
-    image_free_all_buffers();
+    mv_image_free_all_buffers();
 }
 
 
-error_code image_load_image(const char *path, int buffer_number) {
+error_code mv_image_load(const char *path, int buffer_number) {
     Flush();
     int file = open(path, FAP_READ);
     int jj, err, kk = 0;
@@ -37,7 +36,7 @@ error_code image_load_image(const char *path, int buffer_number) {
     buffer[1] = 0x2b;
     buffer[2] = (char)pid;
     buffer[3] = (char)buffer_number;
-    if (write(OUTPATH, buffer, 4) < 0) {
+    if (write(MV_OUTPATH, buffer, 4) < 0) {
         err = errno;
         close(file);
         return err;
@@ -54,7 +53,7 @@ error_code image_load_image(const char *path, int buffer_number) {
             return err;
         } else {
             kk = kk + jj;
-            if (write(OUTPATH, buffer, jj) < 0) {
+            if (write(MV_OUTPATH, buffer, jj) < 0) {
                 err = errno;
                 close(file);
                 return err;
@@ -66,26 +65,26 @@ error_code image_load_image(const char *path, int buffer_number) {
 }
 
 
-error_code image_load_image_resource(const char *name, int buffer_number) {
+error_code mv_image_load_resource(const char *name, int buffer_number) {
     strcpy(buffer, "/dd/SYS/");
     strncat(buffer, my_app_name, sizeof(buffer));
     strncat(buffer, "/", sizeof(buffer));
     strncat(buffer, name, sizeof(buffer));
-    buffer[APP_PATH_MAX - 1] = 0;
-    return image_load_image(buffer, buffer_number);
+    buffer[MV_PATH_MAX - 1] = 0;
+    return mv_image_load(buffer, buffer_number);
 }
 
 
-error_code image_draw_image(int buffer_number, int x, int y) {
-    return _cgfx_putblk(OUTPATH, pid, buffer_number, x, y);
+error_code mv_image_draw(int buffer_number, int x, int y) {
+    return _cgfx_putblk(MV_OUTPATH, pid, buffer_number, x, y);
 }
 
 
-error_code image_free_buffer(int buffer_number) {
-    return _cgfx_kilbuf(OUTPATH, pid, buffer_number);
+error_code mv_image_free_buffer(int buffer_number) {
+    return _cgfx_kilbuf(MV_OUTPATH, pid, buffer_number);
 }
 
 
-error_code image_free_all_buffers(void) {
-    return _cgfx_kilbuf(OUTPATH, pid, 0);
+error_code mv_image_free_all_buffers(void) {
+    return _cgfx_kilbuf(MV_OUTPATH, pid, 0);
 }

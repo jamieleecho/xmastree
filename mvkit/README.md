@@ -30,14 +30,17 @@ make            # builds libmvkit.a
 
 Apps link it with `-Imvkit/include -Lmvkit -lmvkit`, alongside `-lc -lcgfx`.
 
-## Modules (target API)
+## Modules
 
-| Module           | AppKit analog              | Status   |
-|------------------|----------------------------|----------|
-| `mv_undo_manager`| `NSUndoManager`            | planned  |
-| `mv_image`       | `NSImage`                  | planned  |
-| `mv_file_dialog` | `NSOpenPanel` / `NSSavePanel` | planned |
-| `mv_document`    | `NSDocument`               | planned  |
-| `mv_app`         | `NSApplication`            | planned  |
+| Module           | AppKit analog              | Status    |
+|------------------|----------------------------|-----------|
+| `mv_undo_manager`| `NSUndoManager`            | migrated  |
+| `mv_image`       | `NSImage`                  | migrated  |
+| `mv_file_dialog` | `NSOpenPanel` / `NSSavePanel` | migrated |
+| `mv_app`         | `NSApplication`            | migrated (split: init / run / message_box / dialog) |
+| `mv_document`    | `NSDocument`               | migrated  |
 
-`mv_version` (current) is a Phase 0 placeholder proving the build plumbing.
+`mv_defs` holds foundational definitions shared across modules (`MV_PATH_MAX`,
+`MV_INPATH`/`MV_OUTPATH`, and the canonical `Flush()` declaration). `mv_version`
+reports the framework version. Include the whole API via `<mvkit/mvkit.h>`, or a
+single module via e.g. `<mvkit/mv_document.h>`.

@@ -14,7 +14,9 @@ LIB := libmvkit.a
 
 # Object modules that make up the library. Modules are added here as they are
 # migrated out of xmastree (see PLAN.md, Phase 2).
-MODS := src/mv_version.o
+MODS := src/mv_version.o src/mv_undo_manager.o src/mv_image.o src/mv_file_dialog.o \
+        src/mv_app_init.o src/mv_app_run.o src/mv_app_message_box.o src/mv_app_dialog.o \
+        src/mv_document.o
 
 .PHONY: all clean help
 

@@ -1,5 +1,5 @@
 /*
- * app_file_dialog() is xmastree's Save/Open file dialog, cloned from cmoc_os9's
+ * mv_file_dialog() is MVKit's Save/Open file dialog, cloned from cmoc_os9's
  * cgfx MVFName() and customized with Save/Open + Cancel buttons. `confirm_label`
  * is the text on the confirm button ("Open"/"Save"). Returns a pointer to the
  * chosen filename, or NULL if cancelled.
@@ -14,7 +14,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "file_dialog.h"
+#include <mvkit/mv_defs.h>
+#include "mvkit/mv_file_dialog.h"
 
 #define FILE_DIALOG_BOX_WIDTH    24   /* content (22) + WT_DBOX border */
 #define FILE_DIALOG_BOX_HEIGHT1  14   /* content (12) + WT_DBOX border */
@@ -30,12 +31,11 @@ static char dbuf[32];
 static MSRET mp;
 static struct sgbuf oldopts, newopts;
 
-error_code Flush(void);
 long _gs_pos(path_id path);
 int getstr(int path, const char *title, char *s, int n, int column, int row, int fg, int bg);
 
 /* True if `s` ends with `ext`, which includes its leading dot (e.g. ".xmt"). */
-static int app_has_ext(const char *s, const char *ext)
+static int mv_has_ext(const char *s, const char *ext)
 {
     int slen = strlen(s);
     int elen = strlen(ext);
@@ -45,7 +45,7 @@ static int app_has_ext(const char *s, const char *ext)
 
 /* True if `name` can be opened as a directory (the cheap way to tell, since an
    OS-9 directory entry doesn't carry the dir attribute). */
-static int app_is_dir(const char *name)
+static int mv_is_dir(const char *name)
 {
     int p = open(name, FAM_READ | S_DIR);
 
@@ -58,11 +58,11 @@ static int app_is_dir(const char *name)
 /* If `ext` is non-NULL/non-empty and `s` does not already end with it, append
    `ext` (which includes its dot, e.g. ".xmt"), provided `ext` and the NUL still
    fit in a buffer of `size` bytes. */
-static void app_append_ext(char *s, int size, const char *ext)
+static void mv_append_ext(char *s, int size, const char *ext)
 {
     int slen, elen;
 
-    if (!ext || !*ext || app_has_ext(s, ext))
+    if (!ext || !*ext || mv_has_ext(s, ext))
         return;
     slen = strlen(s);
     elen = strlen(ext);
@@ -274,7 +274,7 @@ static void read_mouse(int path)
     mp.pt_wry /= 8;
 }
 
-char *app_file_dialog(path_id path, const char *title, const char *confirm_label,
+char *mv_file_dialog(path_id path, const char *title, const char *confirm_label,
                       int allow_new, const char *ext,
                       int column, int row, int fg, int bg)
 {
@@ -381,7 +381,7 @@ char *app_file_dialog(path_id path, const char *title, const char *confirm_label
             if (ext)
             {
                 strhcpy(_FName, dbuf);
-                if (!app_has_ext(_FName, ext) && !app_is_dir(_FName))
+                if (!mv_has_ext(_FName, ext) && !mv_is_dir(_FName))
                     continue;
             }
             files[index++] = (int) (_gs_pos(dpath) - 32L);
@@ -595,7 +595,7 @@ char *app_file_dialog(path_id path, const char *title, const char *confirm_label
                            enter. Save (allow_new) normalizes the name to carry
                            the extension; Open returns the pick as-is. */
                         if (allow_new)
-                            app_append_ext(_FName, sizeof(_FName), ext);
+                            mv_append_ext(_FName, sizeof(_FName), ext);
                         _cgfx_owend(path);
                         _ss_opt(path, &oldopts);
                         return _FName;
