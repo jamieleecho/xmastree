@@ -1,29 +1,23 @@
 #ifndef _TREE_VIEW_H
 #define _TREE_VIEW_H
 
-#include <mvkit/mv_app.h>
-#include "toolbox.h"
+#include <mvkit/mv_view.h>
 #include "tree.h"
 
-#define TREE_VIEW_X (10 + TOOLBOX_WIDTH)
-#define TREE_VIEW_Y 0
-#define TREE_VIEW_WIDTH (320 - 16 - TREE_VIEW_X)
-#define TREE_VIEW_HEIGHT (200 - 16 - TREE_VIEW_Y)
 
-
+/* xmastree's content view: an MVView that renders the tree model and turns
+   clicks into "add an ornament" edits. Embeds MVView first so it can be
+   dispatched to via mv_view_dispatch_click() / mv_view_draw(). */
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
+    MVView view;
     Tree *tree;
     int item_id;
-    int image_ids[TOOLBOX_NUM_ITEMS];
+    const int *image_ids;
 } TreeView;
 
-extern void tree_view_init(TreeView *view, Tree *tree, int item_id, const int *image_ids);
-extern bool tree_view_handle_event(TreeView *view, MVUiEvent *event);
-extern void tree_view_refresh(const TreeView *view);
+extern void tree_view_init(TreeView *view, int x, int y, int width, int height,
+                           Tree *tree, int item_id, const int *image_ids);
+extern void tree_view_refresh(TreeView *view);
 extern void tree_view_set_item_id(TreeView *view, int item_id);
 
 #endif /* _TREE_VIEW_H */

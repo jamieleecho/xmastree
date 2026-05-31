@@ -5,7 +5,7 @@
 #include <mvkit/mv_document.h>
 #include <mvkit/mv_image.h>
 
-#include "toolbox.h"
+#include <mvkit/mv_image_grid.h>
 #include "tree.h"
 #include "tree_view.h"
 #include "version.h"
@@ -19,6 +19,17 @@ static const int palette[] = {
 #define XMAS_BACKGROUND 0
 
 #define MN_HELP 30  /* app-chosen Help menu id (not a cgfx constant) */
+
+/* Layout: a 2-column tool palette at top-left, the tree canvas to its right. */
+#define XMAS_NUM_ORNAMENTS 10
+#define TOOLBOX_COLUMNS    2
+#define TOOLBOX_X          4
+#define TOOLBOX_Y          4
+#define TOOLBOX_WIDTH      (TOOLBOX_COLUMNS * (MV_IMAGE_GRID_ITEM_WIDTH + MV_IMAGE_GRID_ITEM_BORDER))
+#define TREE_VIEW_X        (10 + TOOLBOX_WIDTH)
+#define TREE_VIEW_Y        0
+#define TREE_VIEW_WIDTH    (320 - 16 - TREE_VIEW_X)
+#define TREE_VIEW_HEIGHT   (200 - 16 - TREE_VIEW_Y)
 
 static Tree tree;
 static MVDocument xmastree_doc;
@@ -126,7 +137,7 @@ static MVMenuItemAction menu_actions[] = {
 };
 
 
-static ToolBox toolbox;
+static MVImageGrid toolbox;
 
 
 static int xmastree_handle_key_event(MVUiEvent *event) {
@@ -135,7 +146,7 @@ static int xmastree_handle_key_event(MVUiEvent *event) {
         if (item == -1) {
             item = 9;
         }
-        tool_box_select_item(&toolbox, item);
+        mv_image_grid_select(&toolbox, item);
     } else if (event->info.key.character == '\x1A') {
         undo_action((MSRET *)NULL, -1, -1);
     } else {
@@ -145,22 +156,18 @@ static int xmastree_handle_key_event(MVUiEvent *event) {
 }
 
 
-static int image_ids[TOOLBOX_NUM_ITEMS] = {
+static int image_ids[XMAS_NUM_ORNAMENTS] = {
     3, 5, 7, 9, 11, 13, 15, 17, 19, 21
 };
 
 
 static int xmastree_handle_click_event(MVUiEvent *event) {
-    int x = event->info.mouse.pt_wrx;
-    int y = event->info.mouse.pt_wry;
-
-    if (x < toolbox.x + toolbox.width) {
-        tool_box_select_item_at_xy(&toolbox, x, y);
-    } else {
-        if (tree_view_handle_event(&tree_view, event)) {
-            MVUndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
-            mv_document_make_change(&xmastree_doc, &undo_item);
-        }
+    if (mv_view_dispatch_click(&toolbox.view, event)) {
+        return true;
+    }
+    if (mv_view_dispatch_click(&tree_view.view, event)) {
+        MVUndoItem undo_item = { (void (*)(void *))tree_remove_last_item, &tree };
+        mv_document_make_change(&xmastree_doc, &undo_item);
     }
 
     return true;
@@ -230,8 +237,8 @@ static void xmastree_pre_init(int argc, char **argv) {
 }
 
 
-static void xmastree_toolbox_item_selected(ToolBox *toolbox) {
-    tree_view_set_item_id(&tree_view, tool_box_item(toolbox));
+static void xmastree_toolbox_item_selected(MVImageGrid *toolbox) {
+    tree_view_set_item_id(&tree_view, mv_image_grid_selected(toolbox));
 }
 
 
@@ -239,8 +246,10 @@ static void xmastree_init(void) {
     _cgfx_bcolor(MV_OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(MV_OUTPATH);
 
-    tool_box_init(&toolbox, 4, 4, image_ids, xmastree_toolbox_item_selected);
-    tree_view_init(&tree_view, &tree, tool_box_item(&toolbox), image_ids);
+    mv_image_grid_init(&toolbox, TOOLBOX_X, TOOLBOX_Y, XMAS_NUM_ORNAMENTS,
+                       TOOLBOX_COLUMNS, image_ids, xmastree_toolbox_item_selected);
+    tree_view_init(&tree_view, TREE_VIEW_X, TREE_VIEW_Y, TREE_VIEW_WIDTH, TREE_VIEW_HEIGHT,
+                   &tree, mv_image_grid_selected(&toolbox), image_ids);
     tree_view_refresh(&tree_view);
 
     Flush();
