@@ -119,6 +119,9 @@ mvkit/src/*.o
 # mvkit generated API docs (doxygen OUTPUT_DIRECTORY)
 mvkit/docs/
 
+# MAME run artifacts from the guide examples (`make -C mvkit/guide/* run`)
+mvkit/guide/*/cfg/
+
 # xmastree and convenience files
 /*.dsk
 *.tmp
