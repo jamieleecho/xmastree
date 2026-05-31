@@ -51,44 +51,12 @@ static MIDSCR help_menu_items[] = {
 };
 
 static MNDSCR menus[] = {
-    {
-        "File",          /* menu title */
-        MN_FILE,         /* menu id */
-        11,              /* menu width */
-        sizeof(file_menu_items) / sizeof(file_menu_items[0]),
-        MN_ENBL,         /* menu enabled */
-        {0, 0},          /* reserved */
-        file_menu_items  /* pointer to items */
-    },
-    {
-        "Edit",          /* menu title */
-        MN_EDIT,         /* menu id */
-        11,              /* menu width */
-        sizeof(edit_menu_items) / sizeof(edit_menu_items[0]),
-        MN_ENBL,         /* menu enabled */
-        {0, 0},          /* reserved */
-        edit_menu_items  /* pointer to items */
-    },
-    {
-        "Help",          /* menu title */
-        MN_HELP,         /* menu id */
-        11,              /* menu width */
-        sizeof(help_menu_items) / sizeof(help_menu_items[0]),
-        MN_ENBL,         /* menu enabled */
-        {0, 0},          /* reserved */
-        help_menu_items  /* pointer to items */
-    }
+    MV_MENU("File", MN_FILE, file_menu_items),
+    MV_MENU("Edit", MN_EDIT, edit_menu_items),
+    MV_MENU("Help", MN_HELP, help_menu_items),
 };
 
-static WNDSCR mywindow = {
-    "xmastree",                     /* window title */
-    sizeof(menus)/sizeof(MNDSCR),   /* number of menus */
-    40,                             /* min. window width */
-    24,                             /* min. window height */
-    0xC0C0,       	                /* sync bytes */
-    {0, 0, 0, 0, 0, 0, 0},          /* reserved */
-    menus                           /* pointer to menu descriptors */
-};
+mv_set_menus(mywindow, "xmastree", menus);
 
 
 static void exit_action(MSRET *msinfo, int menuid, int itemno) {
@@ -212,7 +180,11 @@ static void xmastree_action(MVUiEvent *event) {
 }
 
 
-static void xmastree_pre_init() {
+static void xmastree_pre_init(int argc, char **argv) {
+    if (argc > 2) {
+        exit(1);
+    }
+
     _cgfx_setgc(MV_OUTPATH, GRP_PTR, PTR_SLP);
     mv_app_init(palette, sizeof(palette)/sizeof(palette[0]));
     mv_image_init("xmastree");
@@ -250,6 +222,11 @@ static void xmastree_pre_init() {
         (int (*)(void *, const char *))tree_open,
         (int (*)(void *, const char *))tree_save
     );
+
+    if (argc == 2) {
+        tree_open(&tree, argv[1]);
+        mv_document_opened(&xmastree_doc);
+    }
 }
 
 
@@ -277,19 +254,6 @@ void xmastree_refresh_menus_action() {
 
 
 int main(int argc, char **argv) {
-    if (argc > 2) {
-        return 1;
-    }
-
-    xmastree_pre_init();
-
-    if (argc == 2) {
-        tree_open(&tree, argv[1]);
-        mv_document_opened(&xmastree_doc);
-    }
-
-    mv_app_run(&mywindow, xmastree_init, menu_actions,
-                    xmastree_refresh_menus_action, xmastree_action);
-
-    return 0;
+    return mv_app_run(argc, argv, &mywindow, xmastree_pre_init, xmastree_init,
+                      menu_actions, xmastree_refresh_menus_action, xmastree_action);
 }

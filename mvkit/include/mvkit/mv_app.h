@@ -69,15 +69,22 @@ typedef enum {
 extern void mv_app_init(const int *palette, size_t num_colors);
 
 /** Open `mywindow`, enter the main event loop, and run until the program exits
-   (this function does not return). The callbacks, any of which may be NULL:
+   (in practice this does not return; the int return type lets main() be a
+   single `return mv_app_run(...);`). Callbacks may be NULL, or pass the
+   mv_app_*_nop defaults below. In order:
+     pre_init              - run first, before window setup, with the process
+                             argc/argv; do palette/image/model setup here, and
+                             open a document named on the command line if wanted
      init                  - run once after the window is set up
      menu_actions          - menu dispatch table (see MVMenuItemAction)
      refresh_menus_action  - run before redrawing the menu bar; update item
                              enable/disable state here
      application_action    - called with each key press and content-area mouse
                              click for the app to handle */
-extern void mv_app_run(
+extern int mv_app_run(
+    int argc, char **argv,
     WNDSCR *mywindow,
+    void (*pre_init)(int argc, char **argv),
     void (*init)(void),
     const MVMenuItemAction *menu_actions,
     void (*refresh_menus_action)(void),
@@ -102,5 +109,48 @@ extern char *mv_app_show_open_dialog(char *path, const char *ext);
 /** Like mv_app_show_open_dialog(), but a Save browser: it also offers a
    "[new file]" entry and appends `ext` to a typed name that lacks it. */
 extern char *mv_app_show_save_dialog(char *path, const char *ext);
+
+
+/* Default no-op handlers, so a minimal app can fill mv_app_run's callback
+   slots explicitly instead of passing NULL. mv_app_menu_actions_nop is a
+   sentinel-only dispatch table (every selection is ignored). */
+extern void mv_app_pre_init_nop(int argc, char **argv);
+extern void mv_app_init_nop(void);
+extern void mv_app_refresh_menus_action_nop(void);
+extern void mv_app_event_nop(MVUiEvent *event);
+extern const MVMenuItemAction mv_app_menu_actions_nop[];
+
+
+/* Default window geometry used by the menu/window macros below. */
+#define MV_WINDOW_MIN_WIDTH  40
+#define MV_WINDOW_MIN_HEIGHT 24
+#define MV_WINDOW_SYNC       0xC0C0
+#define MV_MENU_WIDTH        11
+
+/* Declare one row of a menus[] table: a menu titled `title` with id `menu_id`
+   whose items are the static MIDSCR array `items`. */
+#define MV_MENU(title, menu_id, items) \
+    { (title), (menu_id), MV_MENU_WIDTH, sizeof(items) / sizeof((items)[0]), \
+      MN_ENBL, {0, 0}, (items) }
+
+/* Declare a window descriptor `var` titled `title`, driven by the static
+   MNDSCR array `menus`. Fills in the menu count and default geometry. */
+#define mv_set_menus(var, title, menus) \
+    static WNDSCR var = { \
+        (title), \
+        sizeof(menus) / sizeof((menus)[0]), \
+        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
+        {0, 0, 0, 0, 0, 0, 0}, \
+        (menus) \
+    }
+
+/* Declare a window descriptor `var` titled `title` with no menu bar. */
+#define mv_menu_none(var, title) \
+    static WNDSCR var = { \
+        (title), 0, \
+        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
+        {0, 0, 0, 0, 0, 0, 0}, \
+        (MNDSCR *)0 \
+    }
 
 #endif /* _MVKIT_MV_APP_H */

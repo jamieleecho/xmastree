@@ -87,13 +87,19 @@ void mv_app_refresh_menubar(void) {
 }
 
 
-void mv_app_run(WNDSCR *mywindow, void (*init)(void),
-                const MVMenuItemAction *menu_actions,
-                void (*refresh_menus_action)(void),
-                void (*application_action)(MVUiEvent *event)) {
-    int local_sig, itemno, menuid, ii;
+int mv_app_run(int argc, char **argv, WNDSCR *mywindow,
+               void (*pre_init)(int argc, char **argv),
+               void (*init)(void),
+               const MVMenuItemAction *menu_actions,
+               void (*refresh_menus_action)(void),
+               void (*application_action)(MVUiEvent *event)) {
+    int itemno, menuid, ii;
     MVMenuItemAction const * menu_item_action;
     MVUiEvent event;
+
+    if (pre_init) {
+        pre_init(argc, argv);
+    }
 
     echo_sw(MV_OUTPATH, 0);
     intercept();
@@ -162,4 +168,6 @@ void mv_app_run(WNDSCR *mywindow, void (*init)(void),
             }
         }
     }
+
+    return 0;   /* not reached: the event loop runs until the process exits */
 }
