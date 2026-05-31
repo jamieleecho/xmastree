@@ -139,7 +139,7 @@ make -C mvkit/guide/01-hello run      # launch it in MAME (on the host)
 The smallest real MVKit app opens a window and runs. The complete example is in
 [`guide/01-hello`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/01-hello).
 
-![01-hello — a framed window printing Loaded.](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/01-hello/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/01-hello/screenshot.png" alt="01-hello — a framed window printing Loaded." width="512">
 
 `main.c`:
 
@@ -212,7 +212,7 @@ Stage 1's window had no menu bar. This stage adds a **Help** menu with an
 **About…** item that opens a message box. The example is in
 [`guide/02-menu`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/02-menu).
 
-![02-menu — choosing Help ▸ About… opens a message box](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/02-menu/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/02-menu/screenshot.png" alt="02-menu — choosing Help ▸ About… opens a message box" width="512">
 
 `main.c`:
 
@@ -290,7 +290,7 @@ and the window close box quits the app.
 This stage installs a color palette and draws an image that was converted from a
 PNG at build time. The example is in [`guide/03-palette`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/03-palette).
 
-![03-palette — an image converted from a PNG, drawn in the window](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/03-palette/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/03-palette/screenshot.png" alt="03-palette — an image converted from a PNG, drawn in the window" width="512">
 
 ### Window types
 
@@ -353,7 +353,7 @@ drawn on a black background.
 (it embeds an `MVView`). The example is in [`guide/04-grid`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/04-grid): four
 buttons in a 2-column grid.
 
-![04-grid — a 2×2 grid of shape buttons, the selected one outlined](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/04-grid/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/04-grid/screenshot.png" alt="04-grid — a 2×2 grid of shape buttons, the selected one outlined" width="512">
 
 ```c
 #define NUM_BUTTONS 4
@@ -405,7 +405,7 @@ MVKit's modal dialogs: a message box and the file open/save browsers. The
 example is in [`guide/05-dialogs`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/05-dialogs) — a "Dialogs" menu whose
 items open each one and report the result.
 
-![05-dialogs — the file Open browser, with hello.txt listed](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/05-dialogs/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/05-dialogs/screenshot.png" alt="05-dialogs — the file Open browser, with hello.txt listed" width="512">
 
 ### Message box
 
@@ -447,7 +447,7 @@ against throwing away unsaved work (loosely after `NSDocument`). The example is
 in [`guide/06-document`](https://github.com/jamieleecho/xmastree/tree/main/mvkit/guide/06-document): the model is a single integer
 counter, and a **Count ▸ Increment** item changes it.
 
-![06-document — the counter document showing its count and modified state](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/06-document/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/06-document/screenshot.png" alt="06-document — the counter document showing its count and modified state" width="512">
 
 ### Your model and three callbacks
 
@@ -527,7 +527,7 @@ passed to `mv_document_make_change`. This stage spends that. The example,
 menu; the only additions are that menu, an `undo_action`, and one line in
 `refresh_menus`.
 
-![07-undo — the counter document with an Edit ▸ Undo menu](https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/07-undo/screenshot.png)
+<img src="https://raw.githubusercontent.com/jamieleecho/xmastree/main/mvkit/guide/07-undo/screenshot.png" alt="07-undo — the counter document with an Edit ▸ Undo menu" width="512">
 
 An undo item is a function plus an argument — "to reverse this change, call
 `undo_function(object)`":
