@@ -1,0 +1,24 @@
+name: Build API Docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    name: Build MVKit API docs
+    runs-on: ubuntu-latest
+    container: jamieleecho/coco-dev:latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Build docs
+        run: |
+          make -C mvkit docs
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvkit-api-docs
+          path: mvkit/docs/html
+          if-no-files-found: error
