@@ -425,8 +425,10 @@ and returns it — or `NULL` if cancelled. `ext` (with the dot, e.g. `".txt"`, o
 `NULL` for all) filters the listing. `mv_app_show_save_dialog` is the same but
 adds a "[new file]" entry and appends `ext` to a typed name that lacks it.
 
-`make -C mvkit/guide/05-dialogs run`, then pick from the Dialogs menu; each
-choice prints its result to the window.
+The example ships a `hello.txt` at the disk root (via `app.mk`'s `DATA_FILES`,
+which copies extra files onto the disk), so the Open browser has a `.txt` to
+list. `make -C mvkit/guide/05-dialogs run`, then pick from the Dialogs menu;
+each choice prints its result to the window.
 
 ## The rest of the guide
 
