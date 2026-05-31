@@ -21,6 +21,7 @@
 #include "mvkit/mv_event.h"
 #include "mvkit/mv_version.h"
 #include "mvkit/mv_theme.h"
+#include "mvkit/mv_menu.h"
 #include "mvkit/mv_undo_manager.h"
 #include "mvkit/mv_image.h"
 #include "mvkit/mv_file_dialog.h"

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <mvkit/mv_defs.h>
 #include <mvkit/mv_event.h>   /* MVUiEvent */
+#include <mvkit/mv_menu.h>    /* MV_MENU / mv_set_menus DSL */
 
 /**
  * @file
@@ -119,36 +120,7 @@ extern void mv_app_event_nop(MVUiEvent *event);
 extern const MVMenuItemAction mv_app_menu_actions_nop[];
 
 
-/* Default window geometry used by the menu/window macros below. */
-#define MV_WINDOW_MIN_WIDTH  40
-#define MV_WINDOW_MIN_HEIGHT 24
-#define MV_WINDOW_SYNC       0xC0C0
-#define MV_MENU_WIDTH        11
-
-/* Declare one row of a menus[] table: a menu titled `title` with id `menu_id`
-   whose items are the static MIDSCR array `items`. */
-#define MV_MENU(title, menu_id, items) \
-    { (title), (menu_id), MV_MENU_WIDTH, sizeof(items) / sizeof((items)[0]), \
-      MN_ENBL, {0, 0}, (items) }
-
-/* Declare a window descriptor `var` titled `title`, driven by the static
-   MNDSCR array `menus`. Fills in the menu count and default geometry. */
-#define mv_set_menus(var, title, menus) \
-    static WNDSCR var = { \
-        (title), \
-        sizeof(menus) / sizeof((menus)[0]), \
-        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
-        {0, 0, 0, 0, 0, 0, 0}, \
-        (menus) \
-    }
-
-/* Declare a window descriptor `var` titled `title` with no menu bar. */
-#define mv_menu_none(var, title) \
-    static WNDSCR var = { \
-        (title), 0, \
-        MV_WINDOW_MIN_WIDTH, MV_WINDOW_MIN_HEIGHT, MV_WINDOW_SYNC, \
-        {0, 0, 0, 0, 0, 0, 0}, \
-        (MNDSCR *)0 \
-    }
+/* The menu-bar / window-descriptor declaration DSL (MV_MENU, MV_MENU_ITEM,
+   mv_set_menus, ...) lives in <mvkit/mv_menu.h>, included above. */
 
 #endif /* _MVKIT_MV_APP_H */

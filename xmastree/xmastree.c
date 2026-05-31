@@ -1,9 +1,12 @@
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <mvkit/mv_app.h>
 #include <mvkit/mv_document.h>
 #include <mvkit/mv_image.h>
+#include <mvkit/mv_menu.h>
 #include <mvkit/mv_theme.h>
 
 #include <mvkit/mv_image_grid.h>
@@ -46,13 +49,13 @@ typedef enum {
 } FileMenuIndex;
 
 static MIDSCR file_menu_items[] = {
-    {"New", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
-    {"Open...", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"Save", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"Save As...", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
-    {"Exit", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("New"),
+    MV_MENU_SEPARATOR,
+    MV_MENU_ITEM("Open..."),
+    MV_MENU_ITEM("Save"),
+    MV_MENU_ITEM("Save As..."),
+    MV_MENU_SEPARATOR,
+    MV_MENU_ITEM("Exit"),
 };
 
 typedef enum {
@@ -60,11 +63,11 @@ typedef enum {
 } EditMenuIndex;
 
 static MIDSCR edit_menu_items[] = {
-    {"Undo", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("Undo"),
 };
 
 static MIDSCR help_menu_items[] = {
-    {"About...", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("About..."),
 };
 
 static MNDSCR menus[] = {
@@ -249,6 +252,12 @@ static void xmastree_toolbox_item_selected(MVImageGrid *toolbox) {
 
 
 static void xmastree_init(void) {
+    /* The *MenuIndex_ constants are hand-counted, so they drift if menu items
+       or separators are reordered. These checks (compiled out under NDEBUG)
+       catch that early. */
+    assert(strncmp(file_menu_items[FileMenuIndex_Save]._mittl, "Save", 5) == 0);
+    assert(strncmp(edit_menu_items[EditMenuIndex_Undo]._mittl, "Undo", 5) == 0);
+
     _cgfx_bcolor(MV_OUTPATH, XMAS_BACKGROUND);
     _cgfx_clear(MV_OUTPATH);
 
@@ -263,8 +272,8 @@ static void xmastree_init(void) {
 
 
 void xmastree_refresh_menus_action() {
-    file_menu_items[FileMenuIndex_Save]._mienbl = (char)mv_document_is_dirty(&xmastree_doc);
-    edit_menu_items[EditMenuIndex_Undo]._mienbl = (char)mv_document_can_undo(&xmastree_doc);
+    mv_menu_item_set_enabled(file_menu_items, FileMenuIndex_Save, mv_document_is_dirty(&xmastree_doc));
+    mv_menu_item_set_enabled(edit_menu_items, EditMenuIndex_Undo, mv_document_can_undo(&xmastree_doc));
 }
 
 
