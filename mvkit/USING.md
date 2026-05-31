@@ -380,7 +380,8 @@ How it fits together:
   (loaded with `mv_image_load_resource`). The grid blits each into its cell.
 - **Layout** — `mv_image_grid_init(grid, x, y, num_items, columns, image_ids,
   on_select)` arranges the buttons (default 24×24 cells) and draws them
-  immediately; the selected item gets an XOR highlight.
+  immediately; the selected item is shown with an outline box (the image keeps
+  its true colors).
 - **Clicks** — the grid is an `MVView`, so an app routes content clicks to it:
   `mv_view_dispatch_click(&grid.view, event)` hit-tests, updates the selection,
   and fires `on_select`. (There's no automatic view hierarchy yet — you keep
