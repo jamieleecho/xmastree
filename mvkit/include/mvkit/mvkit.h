@@ -1,7 +1,8 @@
 #ifndef _MVKIT_H
 #define _MVKIT_H
 
-/*
+/**
+ * @file
  * MVKit -- an opinionated framework for building Multi-Vue applications on the
  * Tandy Color Computer 3 under NitrOS-9, loosely inspired by Apple's AppKit.
  *

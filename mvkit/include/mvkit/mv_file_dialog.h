@@ -3,7 +3,7 @@
 
 #include <cgfx.h>   /* path_id */
 
-/*
+/**
  * MVKit's Save/Open file browser, cloned from cmoc_os9's cgfx MVFName() and
  * customized with confirm + Cancel buttons. `confirm_label` is the text on the
  * confirm button (e.g. "Open" or "Save"); a Cancel button is always shown.

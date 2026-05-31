@@ -5,7 +5,7 @@
 #define MVKIT_VERSION_MINOR 1
 #define MVKIT_VERSION_PATCH 0
 
-/* Returns the MVKit framework version as a static "MAJOR.MINOR.PATCH" string. */
+/** Returns the MVKit framework version as a static "MAJOR.MINOR.PATCH" string. */
 extern const char *mv_version(void);
 
 #endif /* _MVKIT_MV_VERSION_H */
