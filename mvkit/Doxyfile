@@ -12,7 +12,7 @@ OUTPUT_DIRECTORY       = docs
 #---------------------------------------------------------------------------
 # Input -- the public API lives in the headers
 #---------------------------------------------------------------------------
-INPUT                  = include README.md
+INPUT                  = include README.md USING.md
 USE_MDFILE_AS_MAINPAGE = README.md
 FILE_PATTERNS          = *.h *.md
 RECURSIVE              = YES

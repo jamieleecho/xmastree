@@ -1,0 +1,133 @@
+# Using MVKit
+
+A step-by-step guide to building Multi-Vue applications for the Tandy Color
+Computer 3 with MVKit.
+
+> This guide is built up in stages. Each stage has a complete, runnable example
+> under [`examples/guide/`](../examples/guide) that you can build, run, and diff
+> against the next. This first part covers the *why*, the requirements, and
+> installation; the app-building stages follow.
+
+## Introduction
+
+MVKit is an **opinionated application framework** for writing windowed programs
+that run under [Multi-Vue](https://en.wikipedia.org/wiki/Multi-Vue) on NitrOS-9
+— think of it as sitting down with AppKit, but for a 1986 8-bit machine.
+
+Multi-Vue gives the CoCo 3 a mouse-driven, windowed desktop with menus,
+dialogs, and a window manager. Writing for it directly means a lot of low-level
+window-manager bookkeeping. MVKit's job is to take that bookkeeping off your
+hands so you can write a real app — menus and actions, a document with
+open/save/undo, image views, modal dialogs — in plain C.
+
+### Philosophy
+
+- **Opinionated, so you don't have to decide.** MVKit picks one good way to do
+  the common things: a run loop with lifecycle callbacks
+  ([`mv_app_run`](mv_app.h)), `NSDocument`-style file handling
+  ([`mv_document`](mv_document.h)), a minimal view protocol ([`mv_view`](mv_view.h))
+  with a ready-made image-button grid ([`mv_image_grid`](mv_image_grid.h)),
+  built-in modal dialogs, and a palette/theme model
+  ([`mv_theme`](mv_theme.h)) that keeps the system chrome looking right.
+
+- **Modern tools, retro target.** You write C (compiled with
+  [cmoc](http://sarrazip.com/dev/cmoc.html)) and draw art as PNGs; the toolchain
+  converts PNGs to OS-9 images, assembles an OS-9 disk, and runs it in
+  [MAME](https://www.mamedev.org/). The whole toolchain lives in a Docker image,
+  so your machine stays clean and builds are reproducible.
+
+- **Easy by default, correct by construction.** Sensible defaults that look
+  right (the window-chrome color ramp), guard rails that fail at *compile* time
+  rather than on the CoCo (e.g. menu-window size floors), and a small RAM
+  footprint (one public function per translation unit, so the linker pulls in
+  only what you use).
+
+- **Self-contained and installable.** Install MVKit once into cmoc's shared
+  directory and every app just does `#include <mvkit/mvkit.h>` and links
+  `-lmvkit` — no `-I`/`-L` juggling.
+
+If you have used AppKit or any retained-mode UI framework, MVKit will feel
+familiar; if you have written CoCo assembly, it will feel like a holiday.
+
+## Requirements
+
+This is the part that takes the most setup. You need:
+
+- **Docker** (Desktop 4.x / Engine 24+). The entire CoCo toolchain —
+  [cmoc](http://sarrazip.com/dev/cmoc.html) (C compiler),
+  [LWTOOLS](https://www.lwtools.ca) (`lwasm`/`lwar`/`lwlink` assembler & linker),
+  [ToolShed](https://github.com/nitros9project/toolshed) (`os9` disk tools),
+  the PNG→OS-9 image converters, and Doxygen — ships in the
+  [`jamieleecho/coco-dev`](https://github.com/jamieleecho/coco-dev) image
+  (`>= 0.83`). You do **not** install any of these on your host. All build
+  commands below run *inside* that image (via a dev container, CI, or
+  `docker run`).
+
+- **[cmoc_os9](https://github.com/nitros9project/cmoc_os9)** — the OS-9 C
+  library (`libc`) and CoCo graphics library (`libcgfx`) that MVKit and your app
+  link against. It is cloned and built for you by the project Makefile (pinned to
+  a known-good commit), so you do not fetch it by hand.
+
+- **A NitrOS-9 Level 2 CoCo 3 base disk image.** Your app is copied onto a
+  bootable NitrOS-9 disk; the build starts from a base image (this repo ships
+  one under `disks/`). This is the master disk Multi-Vue boots from.
+
+- **[MAME](https://www.mamedev.org/) 0.269+** with the `coco3` driver, plus the
+  CoCo 3 ROMs, **only if you want to run your app on an emulator** (you do). MAME
+  runs on the *host* (it needs a display), not in the Docker image. Real CoCo 3
+  hardware (512 KB+, an 80-track drive, a mouse) works too.
+
+- **`make` and `git`** on the host, and **Python 3.9+ with
+  [uv](https://docs.astral.sh/uv/)** (used by the image-conversion utilities and
+  the pre-commit hooks).
+
+The good news: once Docker is installed and you can run the `coco-dev` image,
+everything else is fetched and built by `make`.
+
+## Installation
+
+MVKit installs into cmoc's shared directory (`/usr/local/share/cmoc`), which
+cmoc searches automatically — so after installing, an app needs no `-I`/`-L` for
+MVKit. From inside the `coco-dev` environment:
+
+```sh
+# in the mvkit/ directory
+make            # build libmvkit.a
+make install    # copy headers + libmvkit.a into cmoc's shared dir
+```
+
+`make install` places the headers under
+`/usr/local/share/cmoc/include/mvkit/`, the `<stdbool.h>` shim (cmoc ships
+none) at the include root, and `libmvkit.a` in
+`/usr/local/share/cmoc/lib/`. Override `PREFIX` (and set `DESTDIR`) for a staged
+or packaged install; `make uninstall` reverses it. See the
+[MVKit README](README.md) for the build details.
+
+With MVKit installed, the smallest possible program is:
+
+```c
+#include <mvkit/mvkit.h>
+```
+
+and it links with `-lmvkit -lc -lcgfx`. The next stages turn that into a real
+windowed app — and introduce `app.mk`, the small reusable Makefile that reduces
+each app's build to a few lines.
+
+## The rest of the guide
+
+The remaining stages each add one capability, building on the last:
+
+1. **A simple app** — open a window and use the lifecycle callbacks
+   (`pre_init` / `init`): print a loading message, pause, then a loaded message.
+2. **A menu and an action** — add a `Help ▸ About…` menu item that opens a
+   message box, plus the app icon and launcher (`app-icon.png`, `aif`) so it
+   appears on the Multi-Vue desktop.
+3. **Window types, colors, and palettes** — framed vs. scrollable windows, the
+   window-chrome color ramp, and converting PNG art into loadable OS-9 images
+   via `app-palette.txt`.
+4. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
+5. **Dialogs** — the built-in message boxes and the file open/save browsers.
+6. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+7. **Undo** — recording reversible changes with the document's undo manager.
+
+Each stage links to its example app and to the relevant API docs.
