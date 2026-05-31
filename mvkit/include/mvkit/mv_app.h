@@ -125,6 +125,17 @@ extern const MVMenuItemAction mv_app_menu_actions_nop[];
 #define MV_WINDOW_SYNC       0xC0C0
 #define MV_MENU_WIDTH        11
 
+/* Declare one row of a MIDSCR items[] table: a menu item labelled `title`,
+   initially enabled. Hides MIDSCR's trailing reserved bytes (always zero).
+   Toggle enable/disable at runtime in the run loop's refresh_menus_action. */
+#define MV_MENU_ITEM(title)          { (title), MN_ENBL, {0, 0, 0, 0, 0} }
+
+/* Like MV_MENU_ITEM but initially disabled (greyed out). */
+#define MV_MENU_ITEM_DISABLED(title) { (title), MN_DSBL, {0, 0, 0, 0, 0} }
+
+/* A non-selectable separator row (a disabled dashed line). */
+#define MV_MENU_SEPARATOR            { "----------", MN_DSBL, {0, 0, 0, 0, 0} }
+
 /* Declare one row of a menus[] table: a menu titled `title` with id `menu_id`
    whose items are the static MIDSCR array `items`. */
 #define MV_MENU(title, menu_id, items) \

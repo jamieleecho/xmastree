@@ -46,13 +46,13 @@ typedef enum {
 } FileMenuIndex;
 
 static MIDSCR file_menu_items[] = {
-    {"New", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
-    {"Open...", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"Save", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"Save As...", MN_ENBL, {0, 0, 0, 0, 0}},
-    {"----------", MN_DSBL, {0, 0, 0, 0, 0}},
-    {"Exit", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("New"),
+    MV_MENU_SEPARATOR,
+    MV_MENU_ITEM("Open..."),
+    MV_MENU_ITEM("Save"),
+    MV_MENU_ITEM("Save As..."),
+    MV_MENU_SEPARATOR,
+    MV_MENU_ITEM("Exit"),
 };
 
 typedef enum {
@@ -60,11 +60,11 @@ typedef enum {
 } EditMenuIndex;
 
 static MIDSCR edit_menu_items[] = {
-    {"Undo", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("Undo"),
 };
 
 static MIDSCR help_menu_items[] = {
-    {"About...", MN_ENBL, {0, 0, 0, 0, 0}},
+    MV_MENU_ITEM("About..."),
 };
 
 static MNDSCR menus[] = {
