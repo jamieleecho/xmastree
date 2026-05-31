@@ -150,5 +150,5 @@ help:
 	{ doc = "" }' $(MAKEFILE_LIST)
 
 ## Run the disk image in the MAME CoCo 3 emulator
-run: ${TARGET_DSK}
+run:
 	$(MAME_COMMAND) -flop1 ${TARGET_DSK}
