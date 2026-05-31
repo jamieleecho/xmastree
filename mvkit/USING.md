@@ -392,12 +392,47 @@ How it fits together:
 `make -C mvkit/guide/04-grid run`, then click a button — its index prints and
 the highlight moves.
 
+## Dialogs
+
+MVKit's modal dialogs: a message box and the file open/save browsers. The
+example is in [`guide/05-dialogs`](guide/05-dialogs) — a "Dialogs" menu whose
+items open each one and report the result.
+
+### Message box
+
+```c
+MVMessageBoxResult r = mv_app_show_message_box("Proceed?", MVMessageBoxType_YesNo);
+/* r == MVMessageBoxResult_Yes or _No */
+```
+
+`mv_app_show_message_box(message, type)` shows a modal box and returns the button
+pressed. `type` selects the buttons — `Info` / `Warning` / `Error` (a lone OK),
+`OkCancel`, or `YesNo`. The result is `Ok`/`Yes` (the primary button, value 0) or
+`Cancel`/`No`. Embed `\r\n` in `message` to wrap onto up to three lines.
+
+### File open / save
+
+```c
+char path[MV_PATH_MAX];
+if (mv_app_show_open_dialog(path, ".txt")) {   /* or NULL to list every file */
+    /* path holds the chosen file */
+}
+```
+
+`mv_app_show_open_dialog(path, ext)` shows a file browser centered on screen,
+copies the chosen name into `path` (a buffer of at least `MV_PATH_MAX` bytes),
+and returns it — or `NULL` if cancelled. `ext` (with the dot, e.g. `".txt"`, or
+`NULL` for all) filters the listing. `mv_app_show_save_dialog` is the same but
+adds a "[new file]" entry and appends `ext` to a typed name that lacks it.
+
+`make -C mvkit/guide/05-dialogs run`, then pick from the Dialogs menu; each
+choice prints its result to the window.
+
 ## The rest of the guide
 
 The remaining stages each add one capability, building on the last:
 
-1. **Dialogs** — the built-in message boxes and the file open/save browsers.
-2. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-3. **Undo** — recording reversible changes with the document's undo manager.
+1. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+2. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
