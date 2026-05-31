@@ -204,19 +204,94 @@ make run        # launch it in MAME
 Launched from the Multi-Vue desktop, the window prints `Loading...`, pauses,
 then `Loaded.`.
 
+## A menu and an action
+
+Stage 1's window had no menu bar. This stage adds a **Help** menu with an
+**About…** item that opens a message box. The example is in
+[`guide/02-menu`](guide/02-menu).
+
+`main.c`:
+
+```c
+#include <stdio.h>
+
+#include <mvkit/mvkit.h>
+
+#define MN_HELP 30   /* an app-chosen menu id (cgfx reserves the low numbers) */
+
+static MIDSCR help_items[] = {
+    MV_MENU_ITEM("About..."),
+};
+
+static MNDSCR menus[] = {
+    MV_MENU("Help", MN_HELP, help_items),
+};
+
+mv_set_menus(menu_window, "menu", menus);
+
+static void menu_init(void) {
+    printf("Choose Help > About...\n");
+    Flush();
+}
+
+static void about_action(MSRET *msinfo, int menuid, int itemno) {
+    mv_app_show_message_box("menu example\r\nMVKit guide, stage 2",
+                            MVMessageBoxType_Info);
+}
+
+static void unknown_action(MSRET *msinfo, int menuid, int itemno) {
+}
+
+static const MVMenuItemAction menu_actions[] = {
+    {MN_HELP, 1, about_action},   /* Help item 1 ("About...") */
+    {-1, -1, unknown_action},     /* catch-all sentinel */
+};
+
+int main(int argc, char **argv) {
+    return mv_app_run(argc, argv, &menu_window,
+        mv_app_pre_init_nop, menu_init, menu_actions,
+        mv_app_refresh_menus_action_nop, mv_app_event_nop);
+}
+```
+
+Declaring the menu:
+
+- A menu is a `MIDSCR items[]` table wrapped in a `MNDSCR menus[]` table.
+  `MV_MENU_ITEM("About...")` is one item; `MV_MENU("Help", MN_HELP, help_items)`
+  is the Help menu with the app-chosen id `MN_HELP`. `mv_set_menus(window, ...)`
+  replaces stage 1's `mv_menu_none` with a window that carries `menus`. These
+  macros hide the cgfx structs' reserved fields (see `mv_menu.h`).
+
+Handling the selection:
+
+- `menu_actions[]` is a dispatch table of `MVMenuItemAction` rows. When the user
+  picks Help ▸ About… (menu `MN_HELP`, item `1`), `mv_app_run` calls
+  `about_action`; the trailing `{-1, -1, ...}` row catches anything without its
+  own entry.
+- `about_action` opens a modal box with `mv_app_show_message_box(message, type)`.
+  `MVMessageBoxType_Info` shows a lone **OK**; embed `\r\n` to wrap the message
+  onto more lines. (The full set of dialogs comes in a later stage.)
+
+Build and run as before:
+
+```sh
+make -C mvkit/guide/02-menu        # -> build/menu.os9
+make -C mvkit/guide/02-menu run
+```
+
+The window opens with a **Help** menu; choosing **About…** pops the message box,
+and the window close box quits the app.
+
 ## The rest of the guide
 
 The remaining stages each add one capability, building on the last:
 
-1. **A menu and an action** — add a `Help ▸ About…` menu item that opens a
-   message box, plus the app icon and launcher (`app-icon.png`, `aif`) so it
-   appears on the Multi-Vue desktop.
-2. **Window types, colors, and palettes** — framed vs. scrollable windows, the
+1. **Window types, colors, and palettes** — framed vs. scrollable windows, the
    window-chrome color ramp, and converting PNG art into loadable OS-9 images
    via `app-palette.txt`.
-3. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
-4. **Dialogs** — the built-in message boxes and the file open/save browsers.
-5. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
-6. **Undo** — recording reversible changes with the document's undo manager.
+2. **The image grid** — a grid of selectable image buttons (`mv_image_grid`).
+3. **Dialogs** — the built-in message boxes and the file open/save browsers.
+4. **Documents** — `mv_document`: new / open / save / revert and dirty tracking.
+5. **Undo** — recording reversible changes with the document's undo manager.
 
 Each stage links to its example app and to the relevant API docs.
