@@ -123,7 +123,14 @@ extern const MVMenuItemAction mv_app_menu_actions_nop[];
 #define MV_WINDOW_MIN_WIDTH  40
 #define MV_WINDOW_MIN_HEIGHT 24
 #define MV_WINDOW_SYNC       0xC0C0
-#define MV_MENU_WIDTH        11
+
+/* The default dropdown width is the LENGTH of this dash string, so a menu's
+   width and a separator's dashes share one source of truth and can't drift.
+   cowin draws an item's title at its own length (it does NOT clip to the menu
+   width), so a separator needs exactly as many dashes as the menu is wide. */
+#define MV_MENU_WIDTH_OF(dashes) (sizeof(dashes) - 1)
+#define MV_MENU_DASHES           "-----------"   /* 11 dashes */
+#define MV_MENU_WIDTH            MV_MENU_WIDTH_OF(MV_MENU_DASHES)
 
 /* Declare one row of a MIDSCR items[] table: a menu item labelled `title`,
    initially enabled. Hides MIDSCR's trailing reserved bytes (always zero).
@@ -133,13 +140,28 @@ extern const MVMenuItemAction mv_app_menu_actions_nop[];
 /* Like MV_MENU_ITEM but initially disabled (greyed out). */
 #define MV_MENU_ITEM_DISABLED(title) { (title), MN_DSBL, {0, 0, 0, 0, 0} }
 
-/* A non-selectable separator row (a disabled dashed line). */
-#define MV_MENU_SEPARATOR            { "----------", MN_DSBL, {0, 0, 0, 0, 0} }
+/* A non-selectable separator row (a disabled dashed line). MV_MENU_SEPARATOR
+   spans the default menu width; for a menu declared with MV_MENU_W, use
+   MV_MENU_SEPARATOR_S with a dash string of that width -- the string's length
+   IS the width, so there is no per-width #if ladder. */
+#define MV_MENU_SEPARATOR            MV_MENU_SEPARATOR_S(MV_MENU_DASHES)
+#define MV_MENU_SEPARATOR_S(dashes)  { (dashes), MN_DSBL, {0, 0, 0, 0, 0} }
 
 /* Declare one row of a menus[] table: a menu titled `title` with id `menu_id`
-   whose items are the static MIDSCR array `items`. */
+   whose items are the static MIDSCR array `items`. MV_MENU uses the default
+   dropdown width; MV_MENU_W takes an explicit `width` (the byte cowin uses to
+   size the dropdown). To keep a custom-width menu's separators aligned, derive
+   both the width and the separators from one dash string:
+
+       #define EDIT_DASHES "--------------"
+       static MIDSCR edit_items[] = {
+           MV_MENU_ITEM("Undo"), MV_MENU_SEPARATOR_S(EDIT_DASHES), ...
+       };
+       ... MV_MENU_W("Edit", MN_EDIT, MV_MENU_WIDTH_OF(EDIT_DASHES), edit_items) ... */
 #define MV_MENU(title, menu_id, items) \
-    { (title), (menu_id), MV_MENU_WIDTH, sizeof(items) / sizeof((items)[0]), \
+    MV_MENU_W(title, menu_id, MV_MENU_WIDTH, items)
+#define MV_MENU_W(title, menu_id, width, items) \
+    { (title), (menu_id), (width), sizeof(items) / sizeof((items)[0]), \
       MN_ENBL, {0, 0}, (items) }
 
 /* Declare a window descriptor `var` titled `title`, driven by the static
