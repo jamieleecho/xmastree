@@ -1,4 +1,5 @@
 #include <cgfx.h>
+#include <signal.h>
 #include <unistd.h>   /* read, sleep */
 
 #include "mvkit/mv_app.h"
@@ -13,25 +14,8 @@
 
 
 static char sigcode = 0;
-asm void sighandler(void) {
-    asm {
-        stb ,u
-        rti
-    }
-}
-
-
-void
-intercept()
-{
-    asm
-    {
-        pshs    u
-        leax    sighandler
-        leau    sigcode
-        os9     F$Icpt
-        puls    u
-    }
+void sighandler(int signal) {
+    sigcode = signal;
 }
 
 
@@ -102,7 +86,7 @@ int mv_app_run(int argc, char **argv, WNDSCR *mywindow,
     }
 
     echo_sw(MV_OUTPATH, 0);
-    intercept();
+    intercept(sighandler);
 
     _cgfx_curoff(MV_OUTPATH);
     _cgfx_tcharsw(MV_OUTPATH, false);
