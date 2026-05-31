@@ -115,7 +115,7 @@ libcgfx: cmoc_os9
 libmvkit: cmoc_os9
 	$(MAKE) -C ${MVKIT_DIR} install
 
-## Build the Using MVKit guide example apps (mvkit/examples/guide/)
+## Build the Using MVKit guide example apps (mvkit/guide/)
 mvkit-guide: libc libcgfx libmvkit
 	$(MAKE) -C ${MVKIT_DIR} guide
 
