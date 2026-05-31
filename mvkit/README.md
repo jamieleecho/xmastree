@@ -33,9 +33,12 @@ Apps link it with `-Imvkit/include -Lmvkit -lmvkit`, alongside `-lc -lcgfx`.
 
 ## API documentation
 
-The public headers are annotated for [Doxygen](https://www.doxygen.nl/), which
-ships in the coco-dev image (>= 0.83) alongside cmoc. From this directory inside
-the container:
+The generated API docs are published at **https://jamieleecho.github.io/xmastree/**
+and are rebuilt automatically whenever the `main` branch is updated.
+
+To build them locally, the public headers are annotated for
+[Doxygen](https://www.doxygen.nl/), which ships in the coco-dev image (>= 0.83)
+alongside cmoc. From this directory inside the container:
 
 ```
 make docs        # generates HTML into docs/ (gitignored)
