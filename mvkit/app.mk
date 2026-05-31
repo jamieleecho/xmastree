@@ -41,6 +41,9 @@ WIN_BG       ?= 3          # default window background palette register
 APP_PALETTE  ?= $(ASSETS)/app-palette.txt
 IMAGES_DIR   ?= $(ASSETS)/sys-images
 
+# Extra files to copy verbatim to the disk root (e.g. sample documents).
+DATA_FILES   ?=
+
 # Dependencies. MVKit is found automatically in cmoc's shared dir; cmoc_os9
 # (libc/cgfx) and the NitrOS-9 base disk are still named explicitly. BASEIMAGE
 # is required to build the disk image.
@@ -102,7 +105,7 @@ $(IMGDIR)/%.i09: $(IMAGES_DIR)/%.png $(APP_PALETTE) | $(IMGDIR)
 $(IMGDIR)/%m.i09: $(IMAGES_DIR)/%.png $(APP_PALETTE) | $(IMGDIR)
 	png-to-os9-image --mask-index=0 $< $(APP_PALETTE) $@
 
-$(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS)
+$(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS) $(DATA_FILES)
 	@test -n "$(BASEIMAGE)" || { echo "set BASEIMAGE := <nitros9 base .os9 disk>"; exit 1; }
 	cp $(BASEIMAGE) $@
 	@os9 makdir $@,CMDS/ICONS
@@ -116,6 +119,10 @@ $(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS)
 	@for img in $(IMGS); do \
 		os9 copy $$img $@,$(SYSDIR)/$$(basename $$img); \
 		$(ATTR_DATA) $@,$(SYSDIR)/$$(basename $$img); \
+	done
+	@for f in $(DATA_FILES); do \
+		os9 copy $$f $@,$$(basename $$f); \
+		$(ATTR_DATA) $@,$$(basename $$f); \
 	done
 	@echo "Built $@"
 
