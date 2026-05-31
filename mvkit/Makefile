@@ -79,10 +79,11 @@ docs:
 guide:
 	@for d in ${GUIDE_EXAMPLES}; do echo "==> $$d"; ${MAKE} -C $$d || exit 1; done
 
-## Remove build artifacts and generated docs
+## Remove build artifacts, generated docs, and each guide example's build
 clean:
 	@rm -f src/*.o ${LIB}
 	@rm -rf docs
+	@for d in ${GUIDE_EXAMPLES}; do if [ -f "$$d/Makefile" ]; then ${MAKE} --no-print-directory -C $$d clean; fi; done
 
 ## Show this help message
 help:
