@@ -220,9 +220,20 @@ Resolutions:
   frame parked for the whole run since the loop never returns). Call sites are
   unchanged, so adding the option broke nothing.
 
-### Phase 5 — (stretch) `toolbox` as MVKit's first View
-Generalize the 10-item hardcode into a reusable view/control. This is design
-work, not a lift — keep it out of the critical path until Phase 2 lands.
+### Phase 5 — `toolbox` as MVKit's first View
+Status: **implemented.** Both toolbox and tree_view already shared one shape
+(frame + draw + click handling), so this defined that as a protocol and shipped
+the first concrete control:
+- `mv_view` — the `MVView` protocol (frame, is_visible, draw/handle_click fn
+  pointers) + helpers (`contains_point`, `draw`, `dispatch_click`). Concrete
+  views embed it first.
+- `mv_image_grid` — `MVImageGrid`, the generalized tool palette (variable item
+  count / columns / size / colors; single-select), conforming to `MVView`.
+  Replaced xmastree's hardcoded `ToolBox`.
+- `TreeView` stays app-specific but now conforms to `MVView`.
+- Event routing stays **manual**: the app keeps its own view list and calls
+  `mv_view_dispatch_click` per view (a framework view hierarchy / responder
+  chain is deferred — see below).
 
 ### Phase 6 — Upstream prep
 Align `mvkit/Makefile` and layout with cmoc_os9's lib conventions; add tests
@@ -252,5 +263,8 @@ prefixes to match.
 - Whether `mv_app_run` takes an `MVAppConfig` struct (window, callbacks, and
   possibly name/palette/extension/colors) instead of positional params — now
   folded into **Phase 4** (app-init cleanup).
-- Toolbox generalization shape (now **Phase 5**): item count, layout, and
-  selection model.
+- Toolbox generalization shape — resolved in **Phase 5**: `MVImageGrid` with
+  variable item count + columns, fixed (default 24x24) item size, single-select.
+- A real view hierarchy / responder chain (the window owns views and routes
+  events by hit-test) instead of the app's manual `mv_view_dispatch_click` loop —
+  deferred; revisit once more than a couple of views per app is common.
