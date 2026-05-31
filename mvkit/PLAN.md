@@ -139,11 +139,18 @@ A single public header per module (e.g. `mv_app.h`) can still front several
 `.c` files — the header declares the API; the file split is purely about which
 object members the linker can omit.
 
-### Phase 3 — (stretch) `toolbox` as MVKit's first View
+### Phase 3 — Document the public API
+Add doc comments to every publicly consumable declaration in `mvkit/include/
+mvkit/` — each exported function, type, struct field, and constant — so MVKit
+reads as a documented framework before it grows or is upstreamed. Comments live
+on the header declarations (the public contract); implementation files keep only
+internal notes. No behavior change, so the build stays byte-identical.
+
+### Phase 4 — (stretch) `toolbox` as MVKit's first View
 Generalize the 10-item hardcode into a reusable view/control. This is design
 work, not a lift — keep it out of the critical path until Phase 2 lands.
 
-### Phase 4 — Upstream prep
+### Phase 5 — Upstream prep
 Align `mvkit/Makefile` and layout with cmoc_os9's lib conventions; add tests
 under cmoc_os9's `unittest/` harness. Then the directory copies up cleanly.
 
