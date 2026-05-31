@@ -37,7 +37,15 @@ The public headers are annotated for [Doxygen](https://www.doxygen.nl/). From
 this directory:
 
 ```
-doxygen Doxyfile        # generates HTML into docs/ (gitignored)
+make docs        # generates HTML into docs/ (gitignored)
+```
+
+Doxygen is not part of the cmoc toolchain, so `make docs` runs it from a Docker
+image by default (no install needed; run it on the host, where Docker is
+available). With Doxygen installed natively, use it directly instead:
+
+```
+make docs DOXYGEN=doxygen
 ```
 
 The `Doxyfile` sets `WARN_IF_UNDOCUMENTED`/`WARN_NO_PARAMDOC`, so a clean run
