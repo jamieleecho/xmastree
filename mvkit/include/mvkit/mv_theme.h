@@ -12,7 +12,7 @@
  * hardcoded color table tied to palette registers 0-3: the menu bar, dropdown
  * menus, the WT_DBOX dialog double-border, shadows, scrollbars and the 3D
  * edges. You cannot change WHICH registers it uses -- only their RGB. The
- * window manager's own rule (see THEME.md):
+ * window manager's own rule:
  *
  *     Registers 0-3 are the window-chrome ramp and MUST be ordered
  *     darkest -> lightest. Registers 4-15 are the app's to use freely.

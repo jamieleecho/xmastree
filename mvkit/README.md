@@ -9,9 +9,6 @@ its living integration test. The long-term home for this code is a dedicated
 section of [cmoc_os9](https://github.com/nitros9project/cmoc_os9); the directory
 layout here is chosen to make that move a near-verbatim copy.
 
-See [PLAN.md](PLAN.md) for the roadmap and status, and [THEME.md](THEME.md) for
-the theming/palette design.
-
 ## Layout
 
 ```
@@ -65,4 +62,4 @@ Foundational headers (no AppKit analog): `mv_defs` (shared constants —
 on it), and `mv_version` (framework version).
 
 Include the whole API via `<mvkit/mvkit.h>`, or a single module via e.g.
-`<mvkit/mv_document.h>`. See [THEME.md](THEME.md) for the palette/chrome rules.
+`<mvkit/mv_document.h>`. The palette/chrome rules live in `mv_theme.h`.

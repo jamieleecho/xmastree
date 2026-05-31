@@ -3,7 +3,7 @@
 # MVKit is the reusable, app-agnostic core extracted from the xmastree example
 # app. It links against cmoc_os9's libc/libcgfx exactly as the app does. The
 # layout (include/mvkit + src) mirrors cgfx so the eventual lift into cmoc_os9
-# is a near-verbatim copy. See PLAN.md.
+# is a near-verbatim copy.
 
 CC := cmoc
 AR := lwar
@@ -18,7 +18,7 @@ LIB := libmvkit.a
 DOXYGEN ?= doxygen
 
 # Object modules that make up the library. Modules are added here as they are
-# migrated out of xmastree (see PLAN.md, Phase 2).
+# migrated out of xmastree.
 MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_undo_manager_init.o src/mv_undo_manager_push_undo.o \
         src/mv_undo_manager_can_undo.o src/mv_undo_manager_undo.o \
