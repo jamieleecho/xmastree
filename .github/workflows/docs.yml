@@ -3,6 +3,17 @@ name: Build API Docs
 on:
   workflow_dispatch:
 
+# Permissions the deploy job needs to publish to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one Pages deployment at a time; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build-docs:
     name: Build MVKit API docs
@@ -16,9 +27,20 @@ jobs:
         run: |
           make -C mvkit docs
 
-      - name: Upload docs artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: mvkit-api-docs
           path: mvkit/docs/html
-          if-no-files-found: error
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
