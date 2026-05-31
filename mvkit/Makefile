@@ -25,7 +25,8 @@ MODS := src/mv_version.o src/mv_image.o src/mv_file_dialog.o \
         src/mv_document_init.o src/mv_document_new.o src/mv_document_open.o \
         src/mv_document_opened.o src/mv_document_revert.o src/mv_document_save_as.o \
         src/mv_document_save.o src/mv_document_make_change.o src/mv_document_undo.o \
-        src/mv_document_queries.o
+        src/mv_document_queries.o \
+        src/mv_view.o src/mv_image_grid.o
 
 .PHONY: all clean help
 
