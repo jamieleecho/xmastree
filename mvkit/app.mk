@@ -77,8 +77,8 @@ BASEIMAGE    ?=
 # MAME, for `make run` on the host (not in the container).
 MAME_DIR     ?= ~/Applications/mame
 MAME         ?= $(MAME_DIR)/mame
-MAME_FLAGS   ?= -speed 4 -window -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd \
-                -autoboot_delay 3 -autoboot_command 'dos\n'
+MAME_FLAGS   ?= -speed 4 -window -skip_gameinfo -rompath $(MAME_DIR)/roms -ext:fdc:wd17xx:0 525qd \
+                -autoboot_delay 1 -autoboot_command 'dos\n'
 
 # ---- derived ----------------------------------------------------------------
 BIN     := $(BUILD)/$(APP)
@@ -144,7 +144,7 @@ $(DSK): $(BASEIMAGE) $(BIN) $(ICON) $(AIF) $(IMGS) $(DATA_FILES)
 	@echo "Built $@"
 
 ## Launch the disk image in MAME (host-side; needs a display + CoCo 3 ROMs)
-run: $(DSK)
+run:
 	$(MAME) coco3 $(MAME_FLAGS) -flop1 $(DSK)
 
 ## Remove the build directory
